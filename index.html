@@ -516,13 +516,13 @@ html, body {
   <span class="tab-circle">&#x2192;</span>
   <span class="tab-title">&#x26A1; Electric<br>BEV</span>
   <span class="tab-sub">Click here<br>to switch</span>
-<a href="https://forms.office.com/e/VBj60vYwMx" target="_blank" style="display:block;margin-top:20px;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:900;color:#fff;text-decoration:none;text-align:center;background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.5);border-radius:10px;padding:10px 10px;line-height:1.5;">&#x270D;<br>Give<br>Feedback</a>
+<a href="https://forms.office.com/e/jJ7Sgw7WkD" target="_blank" style="display:block;margin-top:20px;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:900;color:#fff;text-decoration:none;text-align:center;background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.5);border-radius:10px;padding:10px 10px;line-height:1.5;">&#x270D;<br>Give<br>Feedback</a>
 </button>
 <button id="btn-to-ice" class="tc-side-tab">
   <span class="tab-circle">&#x2190;</span>
   <span class="tab-title">&#x26FD; Gasoline<br>ICE</span>
   <span class="tab-sub">Click here<br>to switch</span>
-<a href="https://forms.office.com/e/VBj60vYwMx" target="_blank" style="display:block;margin-top:20px;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:900;color:#fff;text-decoration:none;text-align:center;background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.5);border-radius:10px;padding:10px 10px;line-height:1.5;">&#x270D;<br>Give<br>Feedback</a>
+<a href="https://forms.office.com/e/jJ7Sgw7WkD" target="_blank" style="display:block;margin-top:20px;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:900;color:#fff;text-decoration:none;text-align:center;background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.5);border-radius:10px;padding:10px 10px;line-height:1.5;">&#x270D;<br>Give<br>Feedback</a>
 </button>
 
 <!-- PANELS -->
@@ -534,8 +534,9 @@ html, body {
   <!-- COCKPIT UI -->
   <div id="ice-cockpit">
     <canvas id="ice-mainCanvas"></canvas>
-    <!-- Trip history bar -->
-<div style="display:flex;align-items:center;justify-content:center;gap:8px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#999;padding:8px 0 5px;font-family:Arial,sans-serif;border-top:1px solid #222;"><span style="font-size:14px;color:#F0A500;">&#x2193;&#x2193;</span><span>Bottom area visible at vehicle stop only &mdash; for safety</span><span style="font-size:14px;color:#F0A500;">&#x2193;&#x2193;</span></div>
+    <!-- Stop-only zone -->
+    <div style="background:#181818;border-top:2px solid #F0A500;">
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#888;padding:6px 0 4px;font-family:Arial,sans-serif;border-bottom:1px solid #222;"><span style="color:#F0A500;font-size:11px;">&#x2193;</span><span>Visible at vehicle stop only</span><span style="color:#F0A500;font-size:11px;">&#x2193;</span></div>
     <div id="ice-trip-history">
       <div id="ice-trip-history-header">
         <span class="th-label">Last Trips</span>
@@ -564,7 +565,8 @@ html, body {
         <span class="fuel-cell-value" id="ice-priceDelta" style="color:#888;">—</span>
         <span class="fuel-cell-sub" id="ice-deltaHint">vs last refuel</span>
       </div>
-    </div>
+    </div><!-- /ice-fuel-bar -->
+    </div><!-- /stop-only zone -->
     <button id="ice-help-btn">?</button>
   </div>
 
@@ -627,7 +629,7 @@ html, body {
     </div>
 
     <div style="text-align:center;margin-bottom:14px;">
-      <a href="https://forms.office.com/e/VBj60vYwMx" target="_blank" style="display:inline-block;background:rgba(0,174,239,0.15);border:1px solid #00AEEF;color:#00AEEF;border-radius:8px;padding:9px 20px;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;font-weight:bold;text-decoration:none;">&#x270D; Share your feedback &rarr;</a>
+      <a href="https://forms.office.com/e/jJ7Sgw7WkD" target="_blank" style="display:inline-block;background:rgba(0,174,239,0.15);border:1px solid #00AEEF;color:#00AEEF;border-radius:8px;padding:9px 20px;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;font-weight:bold;text-decoration:none;">&#x270D; Share your feedback &rarr;</a>
     </div>
 
     <button id="ice-help-close-btn">Got it — let me explore &rarr;</button>
@@ -649,8 +651,8 @@ html, body {
     refuelPrice: null,   // price 5 days ago (live + 0.12)
     todayPrice:  null,   // live price
     fuelPrice:   1.95,   // used for calculation = refuelPrice
-    tripKm: 0, tripFuelCost: 0,
-    instantEurKm: 0,
+    tripKm: 0, tripFuelCost: 0, tripFuelLiters: 0,
+    instantEurKm: 0, instantLPer100km: 0,
     glowR: 0, glowG: 200, glowB: 80
   };
 
@@ -735,7 +737,7 @@ html, body {
       });
       buildTripHistory(true);
     }
-    state.tripKm = 0; state.tripFuelCost = 0;
+    state.tripKm = 0; state.tripFuelCost = 0; state.tripFuelLiters = 0;
   });
 
   /* ── Live price fetch ── */
@@ -793,9 +795,10 @@ html, body {
     state.currentRpm   += (state.targetRpm + drift - state.currentRpm) * 0.1;
     state.currentSpeed  = Math.max(state.minSpeed, Math.min(state.maxSpeed, state.currentRpm / 17.3));
 
-    state.instantEurKm =
-      ((0.000282 * state.currentSpeed**2 - 0.0163 * state.currentSpeed + 4.61) / 100.0)
-      * state.fuelPrice * state.dnaModifiers[state.dnaMode];
+    state.instantLPer100km =
+      (0.000282 * state.currentSpeed**2 - 0.0163 * state.currentSpeed + 4.61)
+      * state.dnaModifiers[state.dnaMode];
+    state.instantEurKm = (state.instantLPer100km / 100.0) * state.fuelPrice;
 
     const t = Math.max(0, Math.min(1, (state.instantEurKm - 0.09) / 0.14));
     state.glowR = Math.round(lerp(state.glowR, Math.round(255*t),       0.05));
@@ -803,8 +806,9 @@ html, body {
     state.glowB = Math.round(lerp(state.glowB, Math.round(80 - 80*t),   0.05));
 
     const step = (state.currentSpeed / 3600) * 0.016 * state.timeMultiplier;
-    state.tripKm       += step;
-    state.tripFuelCost += step * state.instantEurKm;
+    state.tripKm         += step;
+    state.tripFuelCost   += step * state.instantEurKm;
+    state.tripFuelLiters += step * (state.instantLPer100km / 100.0);
   }
 
   /* ── Gauge ── */
@@ -837,6 +841,18 @@ html, body {
     ctx.fillStyle='rgb(180,180,180)';
     ctx.font=`bold ${size*0.044}px Arial,sans-serif`;
     ctx.fillText(unit, cx, cy+size*0.13);
+  }
+
+  /* ── km/L label — right gauge bottom, below arc, same style as BEV kWh/100km ── */
+  function drawLitersLabel(W, H, gs) {
+    // ICE gauge: starts at gy=H*0.05, size=H*0.84 → bottom edge at H*0.89
+    // Place label just below, at H*0.955
+    const gaugeCx = (W - gs - gs*0.02) + gs / 2;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = `bold ${H * 0.044}px Consolas,monospace`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    const kmL = state.instantLPer100km > 0 ? (100 / state.instantLPer100km).toFixed(1) : '—';
+    ctx.fillText(kmL + ' km/L', gaugeCx, H * 0.955);
   }
 
   /* ── Draw ── */
@@ -888,15 +904,22 @@ html, body {
     ctx.textBaseline='alphabetic';
     ctx.fillText('EURO / KM', W/2, H*0.55);
 
-    // Distance only
-    ctx.fillStyle='rgba(200,200,200,0.55)';
-    ctx.font=`bold ${H*0.040}px Arial,sans-serif`;
-    ctx.textAlign='right'; ctx.textBaseline='alphabetic';
-    ctx.fillText('DISTANCE', cx+cw*0.44, H*0.64);
-    ctx.fillStyle='#FFFFFF';
-    ctx.font=`bold ${H*0.065}px Consolas,monospace`;
-    ctx.textAlign='left';
-    ctx.fillText(`${state.tripKm.toFixed(2)} KM`, cx+cw*0.50, H*0.64);
+    // Distance + consumed litres (two rows, like BEV)
+    const brows = [
+      ['DISTANCE', `${state.tripKm.toFixed(2)} KM`],
+      ['CONSUMED', `${state.tripFuelLiters.toFixed(2)} L`],
+    ];
+    const bsy = H*0.615, blh = H*0.095;
+    brows.forEach(([l, v], i) => {
+      ctx.fillStyle='rgba(200,200,200,0.55)';
+      ctx.font=`bold ${H*0.036}px Arial,sans-serif`;
+      ctx.textAlign='right'; ctx.textBaseline='alphabetic';
+      ctx.fillText(l, cx+cw*0.44, bsy + i*blh);
+      ctx.fillStyle='#FFFFFF';
+      ctx.font=`bold ${H*0.060}px Consolas,monospace`;
+      ctx.textAlign='left';
+      ctx.fillText(v, cx+cw*0.50, bsy + i*blh);
+    });
 
     // Total
     ctx.fillStyle='rgba(200,200,200,0.55)';
@@ -925,6 +948,7 @@ html, body {
     // Gauges
     drawGauge(gs*0.02,            gy, gs, state.currentRpm,   8000, 'RPM', false);
     drawGauge(W-gs-gs*0.02,       gy, gs, state.currentSpeed, 280,  'km/h', true);
+    drawLitersLabel(W, H, gs);
   }
 
   state._iceResetHover = false; state._iceResetBounds = null;
@@ -955,7 +979,9 @@ html, body {
   <div id="bev-cockpit">
     <canvas id="bev-mainCanvas"></canvas>
 
-    <div style="display:flex;align-items:center;justify-content:center;gap:8px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#999;padding:8px 0 5px;font-family:Arial,sans-serif;border-top:1px solid #222;"><span style="font-size:14px;color:#F0A500;">&#x2193;&#x2193;</span><span>Bottom area visible at vehicle stop only &mdash; for safety</span><span style="font-size:14px;color:#F0A500;">&#x2193;&#x2193;</span></div>
+    <!-- Stop-only zone -->
+    <div style="background:#0d1520;border-top:2px solid #00AEEF;">
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#6090b0;padding:6px 0 4px;font-family:Arial,sans-serif;border-bottom:1px solid #152030;"><span style="color:#00AEEF;font-size:11px;">&#x2193;</span><span>Visible at vehicle stop only</span><span style="color:#00AEEF;font-size:11px;">&#x2193;</span></div>
     <!-- Trip history -->
     <div id="bev-trip-history">
       <div id="bev-trip-history-header">
@@ -990,7 +1016,8 @@ html, body {
         <span class="e-cell-value" id="bev-chargeDelta" style="color:#FF7744;">—</span>
         <span class="e-cell-sub" id="bev-chargeDeltaHint">home vs fast</span>
       </div>
-    </div>
+    </div><!-- /bev-energy-bar -->
+    </div><!-- /stop-only zone -->
 
     <button id="bev-help-btn" style="display:none">?</button>
   </div>
