@@ -132,6 +132,60 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
 }
 #signature a{color:var(--blue);text-decoration:none}
 
+
+/* PEDALS
+   Two pedals straddling the seam between the cockpit and the deck:
+   they overlap the photo just enough to read as part of the car,
+   and they mirror the arrow keys (hold, don't tap). */
+#shell{position:relative;width:100%;max-width:1147px}
+#pedals{
+  position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);
+  z-index:12;display:flex;gap:14px;
+}
+.pedal{
+  display:flex;align-items:center;gap:10px;
+  background:linear-gradient(180deg,rgba(19,27,35,.96),rgba(8,11,15,.96));
+  border:1px solid #2a3947;border-radius:13px;
+  padding:11px 18px 11px 13px;
+  color:#93aabd;font-family:inherit;font-size:10px;font-weight:700;
+  letter-spacing:1.7px;text-transform:uppercase;
+  cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:none;
+  backdrop-filter:blur(3px);
+  box-shadow:0 10px 26px rgba(0,0,0,.6);
+  transition:border-color .15s,color .15s,box-shadow .15s,transform .08s;
+}
+.pedal .key{
+  display:grid;place-items:center;width:26px;height:26px;flex:none;
+  border:1px solid #2b3b4a;border-radius:7px;
+  font-size:14px;line-height:1;color:#cfe0ee;background:rgba(255,255,255,.03);
+}
+.pedal:hover{border-color:#3b5163;color:#cfe0ee}
+.pedal.active{transform:translateY(2px)}
+#pedal-gas.active{border-color:var(--green);color:#fff;box-shadow:0 0 26px rgba(61,220,132,.4)}
+#pedal-gas.active .key{border-color:var(--green);color:var(--green)}
+#pedal-brake.active{border-color:#ff5f4d;color:#fff;box-shadow:0 0 26px rgba(255,95,77,.35)}
+#pedal-brake.active .key{border-color:#ff5f4d;color:#ff5f4d}
+
+/* the nudge: the pedals breathe until the driver holds one for the first time */
+#pedals.untouched .pedal{animation:pedalCall 2.2s ease-in-out infinite}
+#pedals.untouched #pedal-brake{animation-delay:.35s}
+@keyframes pedalCall{
+  0%,100%{box-shadow:0 10px 26px rgba(0,0,0,.6)}
+  50%    {box-shadow:0 10px 26px rgba(0,0,0,.6),0 0 0 4px rgba(0,174,239,.18)}
+}
+#pedal-hint{
+  position:absolute;left:50%;bottom:100%;transform:translateX(-50%);
+  margin-bottom:9px;white-space:nowrap;
+  font-size:10px;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;
+  color:var(--blue);text-shadow:0 2px 10px #000;
+  transition:opacity .5s;pointer-events:none;
+}
+#pedals:not(.untouched) #pedal-hint{opacity:0}
+@media(max-width:520px){
+  .pedal .txt{display:none}
+  .pedal{padding:10px 12px}
+}
+
 /* ══════════ HELP ══════════ */
 #help-overlay{
   display:none;position:fixed;inset:0;background:rgba(0,0,0,.86);z-index:100;
@@ -167,6 +221,8 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
 <!-- ═══════════════════════════════════════════════════════════
      COCKPIT STAGE
      ═══════════════════════════════════════════════════════════ -->
+<div id="shell">
+
 <div id="stage">
 
   <!-- ▼▼ THE WINDSHIELD VIEW.
@@ -282,8 +338,10 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       <path d="M345,251 A54,54 0 0 1 393,282 L345,305 Z" fill="url(#sweepG)" opacity=".5"/>
       <text id="spd" x="345" y="316" text-anchor="middle" font-size="52" font-weight="600">128</text>
       <text x="345" y="341" text-anchor="middle" font-size="17" fill="#c3d6e6">km/h</text>
-      <text id="rpmTxt" x="347" y="404" text-anchor="middle" font-size="32" font-weight="600">2250</text>
-      <text x="347" y="422" text-anchor="middle" font-size="14" letter-spacing="1.2" fill="#c3d6e6">RPM</text>
+      <text id="rpmTxt" x="330" y="404" text-anchor="middle" font-size="32" font-weight="600">2250</text>
+      <text x="330" y="422" text-anchor="middle" font-size="14" letter-spacing="1.2" fill="#c3d6e6">RPM</text>
+      <text id="gearTxt" x="412" y="404" text-anchor="middle" font-size="26" font-weight="600" fill="#dfeaf4">6</text>
+      <text x="412" y="422" text-anchor="middle" font-size="14" letter-spacing="1.2" fill="#c3d6e6">GEAR</text>
     </g>
 
     <!-- ── LIVE CONSUMPTION ───────────────────────────────── -->
@@ -320,7 +378,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       <text id="refuel" x="864" y="292" text-anchor="middle" font-size="25" font-weight="600">1.91 €/L</text>
       <line x1="797" y1="302" x2="931" y2="302" stroke="#7fd6ae" stroke-width=".8" opacity=".35"/>
       <text x="864" y="319" text-anchor="middle" font-size="16" fill="#cfe4d9">Local Price:</text>
-      <text id="local" x="864" y="344" text-anchor="middle" font-size="25" font-weight="600">2.10 €</text>
+      <text x="864" y="344" text-anchor="middle" font-size="25" font-weight="600"><tspan id="local">1.92 €</tspan><tspan id="localDist" dx="7" font-size="13" font-weight="400" fill="#8fd3b4">· 2.0 km</tspan></text>
       <line x1="797" y1="354" x2="931" y2="354" stroke="#7fd6ae" stroke-width=".8" opacity=".35"/>
       <text x="864" y="364" text-anchor="middle" font-size="16" fill="#cfe4d9">Fuel Level</text>
       <rect x="806" y="370" width="116" height="11" rx="2.5" fill="#0c1a17" stroke="#3f6a5c" stroke-width=".9"/>
@@ -341,6 +399,18 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     </g>
   </svg>
 </div>
+  <!-- PEDALS: they sit on the seam between the cockpit and the deck -->
+  <div id="pedals" class="untouched">
+    <div id="pedal-hint">Hold a pedal &mdash; or the &#8593; &#8595; arrow keys</div>
+    <button class="pedal" id="pedal-brake" type="button" aria-label="Brake: hold, or hold the down arrow key">
+      <span class="key">&#8595;</span><span class="txt">Brake</span>
+    </button>
+    <button class="pedal" id="pedal-gas" type="button" aria-label="Accelerate: hold, or hold the up arrow key">
+      <span class="key">&#8593;</span><span class="txt">Accelerate</span>
+    </button>
+  </div>
+
+</div><!-- /#shell -->
 
 <!-- ═══════════════════════════════════════════════════════════
      CONTROL DECK
@@ -378,11 +448,11 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     <div class="help-grid">
       <div class="help-section" style="border-left-color:var(--amber)">
         <div class="help-section-title" style="color:var(--amber)">⛽ Live consumption</div>
-        <p>Cost per km = <strong>consumption × pump price</strong>. Consumption follows speed on a real fuel-map curve — drag the <strong>Speed</strong> slider and watch the € / km move.</p>
+        <p>Cost per km = <strong>consumption × pump price</strong>. Consumption follows speed on a real fuel-map curve — <strong>hold</strong> the &#8593; <strong>Accelerate</strong> / &#8595; <strong>Brake</strong> pedals (or the arrow keys) and watch the € / km move.</p>
       </div>
       <div class="help-section" style="border-left-color:var(--blue)">
         <div class="help-section-title" style="color:var(--blue)">● Live prices</div>
-        <p><strong>Local Price</strong> is fetched from stations within 50 km (MIMIT open data). <strong>Last Refuel Price</strong> is what the fuel in the tank actually cost — and the trip cost is computed on that.</p>
+        <p><strong>Local Price</strong> is the price on the totem of the <strong>next station ahead</strong>, with the distance to it counting down — watch for it on the right of the road. Stations scatter ± 15 cents around the live local average (MIMIT open data, stations within 50 km). <strong>Last Refuel Price</strong> is what the fuel in the tank actually cost — and the trip cost is computed on that.</p>
       </div>
       <div class="help-section" style="border-left-color:var(--green);grid-column:1/-1">
         <div class="help-section-title" style="color:var(--green)">● Trip &amp; tank</div>
@@ -390,7 +460,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
            Press <strong>RESET</strong> — on the cluster or on the deck — to start a new trip from zero.</p>
       </div>
     </div>
-    <button id="help-cta">Got it — let me drive →</button>
+    <button id="help-cta">Got it — hold &#8593; to drive →</button>
   </div>
 </div>
 
@@ -425,14 +495,22 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
 (function () {
   const SVGNS = 'http://www.w3.org/2000/svg';
   const CX = 345, CY = 305, VMAX = 240;
-  const RPM_IDLE = 800, K_SPEED = 0.08828;   // 2250 rpm -> 128 km/h, as in the reference
+  const RPM_IDLE = 800;
   const ACC_MAX = 13, DEC_COAST = 4;         // km/h per second: full throttle at rest / lift-off
+
+  /* 6-speed gearbox, ratios expressed as engine rpm per km/h.
+     6th is calibrated on the reference cluster: 128 km/h -> 2250 rpm. */
+  const GEARS = [100, 58, 40, 30, 22.6, 17.58];
+  const UPSHIFT = 2600, DOWNSHIFT = 1250;    // rpm; the gap between them is the hysteresis
+  const SHIFT_LOCK = 0.6;                    // s before another shift is allowed
 
   const state = {
     targetSpeed: 128, currentSpeed: 128, currentRpm: 2250,
+    gear: 5, shiftLock: 0,
     driftAngle: 0,
     refuelPrice: 1.91,        // price of the fuel actually in the tank
-    localPrice:  2.10,        // live price around the vehicle
+    marketPrice: 1.85,        // live average around the vehicle: the centre the
+                              // stations along the road scatter around
     tankCapacity: 45, tankLiters: 27.5,
     tripKm: 48.09, tripLiters: 5.02, tripCost: 9.55,
     instantEurKm: 0.14, instantL100: 7.14
@@ -442,7 +520,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
   const el = {
     spd: $('spd'), rpm: $('rpmTxt'), eurKm: $('eurKm'), dist: $('dist'),
     cons: $('cons'), total: $('total'), refuel: $('refuel'), local: $('local'),
-    fuelbar: $('fuelbar')
+    localDist: $('localDist'), fuelbar: $('fuelbar'), gear: $('gearTxt')
   };
 
   /* ── dial ticks & numbers ───────────────────────────── */
@@ -486,6 +564,62 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
   const rpmSlider = $('rpmSlider'), rpmVal = $('rpmVal');
   rpmSlider.addEventListener('input', () => { state.targetSpeed = parseFloat(rpmSlider.value); });
 
+  /* -- pedals: hold to accelerate / brake ---------------
+     The pedals and the arrow keys drive the same thing the slider does, the
+     requested speed: holding one ramps it, releasing leaves it where it got to
+     (a lift-off, not a cruise cut). The slider follows, so the deck always
+     shows what the pedals asked for. */
+  const PEDAL_UP = 55, PEDAL_DOWN = 95;      // km/h of *requested* speed per second
+  const pedals = $('pedals'), gasBtn = $('pedal-gas'), brakeBtn = $('pedal-brake');
+  const held = { gas: false, brake: false };
+
+  function setPedal(which, on) {
+    if (held[which] === on) return;
+    held[which] = on;
+    (which === 'gas' ? gasBtn : brakeBtn).classList.toggle('active', on);
+    if (on) pedals.classList.remove('untouched');    // the hint has done its job
+  }
+
+  function bindPedal(btn, which) {
+    const down = e => { e.preventDefault(); setPedal(which, true); };
+    const up   = () => setPedal(which, false);
+    btn.addEventListener('pointerdown', e => {
+      down(e);
+      if (btn.setPointerCapture) btn.setPointerCapture(e.pointerId);
+    });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => btn.addEventListener(ev, up));
+    btn.addEventListener('contextmenu', e => e.preventDefault());
+    /* focused with the keyboard: space / enter hold it down too */
+    btn.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') down(e); });
+    btn.addEventListener('keyup',   e => { if (e.key === ' ' || e.key === 'Enter') up(); });
+    btn.addEventListener('blur', up);
+  }
+  bindPedal(gasBtn, 'gas');
+  bindPedal(brakeBtn, 'brake');
+
+  const arrowOf = e => e.key === 'ArrowUp' ? 'gas' : e.key === 'ArrowDown' ? 'brake' : null;
+  window.addEventListener('keydown', e => {
+    const which = arrowOf(e);
+    if (!which) return;
+    e.preventDefault();            // no page scroll, and the slider cannot steal the key
+    if (!e.repeat) setPedal(which, true);
+  });
+  window.addEventListener('keyup', e => {
+    const which = arrowOf(e);
+    if (which) { e.preventDefault(); setPedal(which, false); }
+  });
+  /* switching tab or window must not leave a pedal stuck down */
+  window.addEventListener('blur', () => { setPedal('gas', false); setPedal('brake', false); });
+
+  function applyPedals(dt) {
+    if (!held.gas && !held.brake) return;
+    let t = state.targetSpeed;
+    if (held.gas)   t += PEDAL_UP * dt;
+    if (held.brake) t -= PEDAL_DOWN * dt;
+    state.targetSpeed = Math.max(0, Math.min(VMAX, t));
+    rpmSlider.value = state.targetSpeed;
+  }
+
   /* ── help ───────────────────────────────────────────── */
   const overlay = $('help-overlay');
   const open  = () => overlay.classList.add('open');
@@ -508,7 +642,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       if (list.length < 3) throw new Error('no data');
       const avg = list.reduce((a, b) => a + b, 0) / list.length;
 
-      state.localPrice  = avg;
+      state.marketPrice = avg;
       state.refuelPrice = avg - 0.19;    // tank filled some days ago, cheaper
     } catch (e) {
       /* keep the demo prices already in state */
@@ -536,22 +670,52 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
      ══════════════════════════════════════════════════════════ */
   const road = (function () {
     const cv = $('road');
-    if (!cv) return { frame() {} };
+    if (!cv) return { frame() {}, station: () => ({ idx: 0, dist: 0, price: state.marketPrice }) };
     const ctx = cv.getContext('2d');
 
-    const VPX = 575, HZ = 60, YMAX = 176;   // vanishing point · last visible row
-    const F = 1500, CAMH = 1.2;             // focal (px) · eye height (m)
+    /* ── the camera, and why these numbers ─────────────────
+       The eye reads speed off the FASTEST thing on screen, and that is the
+       nearest visible tarmac. Its scroll rate at a screen row is
+
+           dy/dt = v * dy2 / (F * CAMH)      dy = row - HZ
+
+       so the whole sensation is set by F*CAMH and by how far below the
+       horizon the dashboard cuts the view. The mask crops the glass at
+       y ~ 122 in the middle: with the old 1500/1.2 that row was 29 m ahead
+       and swept 2.9 deg/s, where a real bonnet cuts at 8-10 m and 24-38.
+       Pulling F*CAMH down to 1080 and dropping the horizon to y 38 puts the
+       cut at 12.9 m and 15 deg/s: a 65 deg lens, which is what an interior
+       shot is taken with anyway. NOTHING about the physics changed - travel
+       is still metric, the dashes are still 12 m apart. */
+    const VPX = 575, HZ = 38, YMAX = 176;   // vanishing point · last visible row
+    const F = 900, CAMH = 1.2;              // focal (px) · eye height (m)
     const K = F * CAMH;                     // a ground row sits at y = HZ + K/z
     const LANE = 3.6, HALF = LANE * 1.5;    // 3 lanes, we sit in the middle one
     const SHOULDER = 2.4;
     const DASH = 12, DASH_ON = 4.5;         // lane marking period / painted part
     const Z_NEAR = K / (YMAX - HZ), Z_FAR = 420;
 
-    const SKY_HI = '#7fa8c9', SKY_LO = '#cfdce6';
-    const GRASS = '#4e5b3f', OPPOSITE = '#383d43';
-    const ASPHALT = '#33363b', VERGE = '#4f5249', PAINT = '#eceee8';
+    const MED = -(HALF + 1.1);              // median wall, on our left
+    const RAIL = HALF + SHOULDER;           // guardrail, past the right shoulder
 
-    let scale = 1, travel = 0, sway = 0, clock = 0, sized = false;
+    /* ── palette: every material is stated twice, near and far ──
+       each ground row is mixed between the two, so contrast falls off with
+       distance the way it really does instead of being a flat fill. */
+    const P = {
+      skyTop: [72, 118, 168], skyMid: [138, 174, 202], skyLow: [206, 219, 224],
+      hillFar: [132, 152, 172], hillNear: [88, 110, 108], trees: [58, 76, 62],
+      grassN: [64, 74, 50], grassF: [96, 108, 88],
+      asphN: [38, 40, 44], asphF: [84, 90, 97],
+      oppN: [46, 50, 56], oppF: [86, 92, 99],
+      vergeN: [70, 71, 62], vergeF: [100, 104, 100],
+      paintN: [238, 240, 234], paintF: [198, 206, 210]
+    };
+    const mix = (a, b, t) => 'rgb(' +
+      ((a[0] + (b[0] - a[0]) * t) | 0) + ',' +
+      ((a[1] + (b[1] - a[1]) * t) | 0) + ',' +
+      ((a[2] + (b[2] - a[2]) * t) | 0) + ')';
+
+    let scale = 1, travel = 0, sway = 0, bob = 0, clock = 0, sized = false;
 
     /* ── road centre line: two very long, very gentle bends ── */
     const curveC = s => 25 * Math.sin(s / 420) + 6 * Math.sin(s / 173);
@@ -565,14 +729,45 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     const sxOf = (X, z) => VPX + (X + curveAt(z) - sway) * F / z;
     const syOf = (Y, z) => HZ + (CAMH - Y) * F / z;
 
+    /* ── the rows, precomputed once ─────────────────────────
+       a screen row is always the same depth, so its fog, its scale and all of
+       its colours are constants: the scanline loop only places rectangles. */
+    const rows = [];
+    for (let y = HZ + 1; y <= YMAX; y++) {
+      const z = K / (y - HZ);
+      const f = 1 - Math.exp(-z / 190);          // 0 at the bonnet, ~1 far away
+      rows.push({
+        y: y, z: z, s: F / z, f: f,
+        asph: mix(P.asphN, P.asphF, f),
+        opp: mix(P.oppN, P.oppF, f),
+        grass: mix(P.grassN, P.grassF, f),
+        verge: mix(P.vergeN, P.vergeF, f),
+        paint: mix(P.paintN, P.paintF, f),
+        fade: Math.min(1, (y - HZ) / 9)          // kills the shimmer at the horizon
+      });
+    }
+
+    /* deterministic noise: the same metre of road always looks the same, so
+       the grain travels with the world instead of boiling in place */
+    function hash(n) {
+      n = (n ^ 61) ^ (n >>> 16); n = n + (n << 3); n ^= n >>> 4;
+      n = Math.imul(n, 0x27d4eb2d); n ^= n >>> 15;
+      return (n >>> 0) / 4294967296;
+    }
+
     /* ── canvas sizing: image coords in, device pixels out ─── */
     function fit() {
       const w = cv.clientWidth;
       if (!w) return;
       const dpr = Math.min(2, window.devicePixelRatio || 1);
-      cv.width = Math.round(w * dpr);
-      cv.height = Math.round(w * dpr * 641 / 1147);
-      scale = cv.width / 1147;
+      const px = Math.round(w * dpr);
+      /* assigning width WIPES the canvas, and the ResizeObserver fires on
+         every layout touch: resize only when the pixel size really changed,
+         or the road blinks out for a frame at random moments */
+      if (px === cv.width) { sized = true; return; }
+      cv.width = px;
+      cv.height = Math.round(px * 641 / 1147);
+      scale = px / 1147;
       sized = true;
     }
     fit();
@@ -593,8 +788,8 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
           : truck ? 22 + Math.random() * 3 : 27 + Math.random() * 5;
       traffic.push({
         x: (left ? -LANE : LANE) + (Math.random() - 0.5) * 0.5,
-        z: behind ? Z_NEAR + 2 : Z_FAR - Math.random() * 60,
-        v, truck,
+        z: behind ? Z_NEAR + 2 : 90 + Math.random() * (Z_FAR - 90),
+        v: v, truck: truck,
         w: truck ? 2.5 : 1.82,
         h: truck ? 3.5 : 1.45,
         color: truck ? '#7d8288' : CAR_COLORS[(Math.random() * CAR_COLORS.length) | 0]
@@ -607,9 +802,10 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         c.z += (c.v - ourV) * dt;
         if (c.z < Z_NEAR - 6 || c.z > Z_FAR + 90) traffic.splice(i, 1);
       }
-      if (traffic.length < 7 && Math.random() < 0.03) spawn(ourV);
+      if (traffic.length < 9 && Math.random() < 0.055) spawn(ourV);
     }
 
+    /* a vehicle is a silhouette, not a box: glasshouse, sill, wheels */
     function drawVehicle(c) {
       const s = F / c.z;
       const xc = sxOf(c.x, c.z);
@@ -617,19 +813,54 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       const w = c.w * s, h = yb - yt;
       if (h < 0.6 || xc < -600 || xc > 1747) return;
 
-      ctx.fillStyle = 'rgba(0,0,0,.30)';                       // contact shadow
-      ctx.fillRect(xc - w * 0.58, yb - h * 0.05, w * 1.16, Math.max(0.6, h * 0.10));
+      const fog = 1 - Math.exp(-c.z / 190);
+      const x0 = xc - w / 2;
 
-      ctx.fillStyle = c.color;                                  // body
-      ctx.fillRect(xc - w / 2, yt, w, h);
+      ctx.fillStyle = 'rgba(0,0,0,.34)';                        // contact shadow
+      ctx.fillRect(x0 - w * 0.10, yb - h * 0.04, w * 1.20, Math.max(0.7, h * 0.09));
 
-      if (h > 4) {
-        ctx.fillStyle = c.truck ? 'rgba(255,255,255,.10)' : 'rgba(15,25,35,.55)';
-        ctx.fillRect(xc - w * 0.42, yt + h * 0.10, w * 0.84, h * (c.truck ? 0.55 : 0.34));
-        ctx.fillStyle = 'rgba(210,60,45,.85)';                  // tail lights
-        const lw = Math.max(0.7, w * 0.14), lh = Math.max(0.7, h * 0.10);
-        ctx.fillRect(xc - w * 0.46, yb - h * 0.34, lw, lh);
-        ctx.fillRect(xc + w * 0.46 - lw, yb - h * 0.34, lw, lh);
+      if (h < 4) {                                              // far away: a chip
+        ctx.fillStyle = c.color;
+        ctx.fillRect(x0, yt + h * 0.12, w, h * 0.88);
+      } else if (c.truck) {
+        ctx.fillStyle = c.color;                                // box body
+        ctx.fillRect(x0, yt, w, h * 0.88);
+        ctx.fillStyle = 'rgba(255,255,255,.10)';                // side sheen
+        ctx.fillRect(x0, yt + h * 0.08, w, h * 0.30);
+        ctx.fillStyle = 'rgba(20,26,32,.55)';                   // under-body shadow
+        ctx.fillRect(x0, yb - h * 0.20, w, h * 0.11);
+        ctx.fillStyle = '#1b2026';                              // wheels
+        ctx.fillRect(x0 + w * 0.06, yb - h * 0.13, w * 0.16, h * 0.13);
+        ctx.fillRect(x0 + w * 0.78, yb - h * 0.13, w * 0.16, h * 0.13);
+      } else {
+        const roof = yt + h * 0.02, belt = yt + h * 0.40, sill = yb - h * 0.16;
+        ctx.fillStyle = c.color;
+        ctx.beginPath();                                        // tapered glasshouse
+        ctx.moveTo(x0 + w * 0.20, roof);
+        ctx.lineTo(x0 + w * 0.80, roof);
+        ctx.lineTo(x0 + w, belt);
+        ctx.lineTo(x0 + w, sill);
+        ctx.lineTo(x0, sill);
+        ctx.lineTo(x0, belt);
+        ctx.closePath(); ctx.fill();
+        ctx.fillStyle = 'rgba(16,26,36,.62)';                   // rear glass
+        ctx.fillRect(x0 + w * 0.17, roof + h * 0.06, w * 0.66, h * 0.28);
+        ctx.fillStyle = '#181d23';                              // tyres
+        ctx.fillRect(x0 + w * 0.02, sill, w * 0.17, yb - sill);
+        ctx.fillRect(x0 + w * 0.81, sill, w * 0.17, yb - sill);
+      }
+
+      if (h > 3.2) {                                            // tail lights
+        const lw = Math.max(0.8, w * 0.15), lh = Math.max(0.8, h * 0.09);
+        ctx.fillStyle = 'rgba(224,64,48,' + (0.9 - fog * 0.45).toFixed(2) + ')';
+        ctx.fillRect(x0 + w * 0.04, yb - h * (c.truck ? 0.30 : 0.42), lw, lh);
+        ctx.fillRect(x0 + w * 0.96 - lw, yb - h * (c.truck ? 0.30 : 0.42), lw, lh);
+      }
+
+      // the air in between: without it a far truck reads as a cut-out
+      if (fog > 0.04) {
+        ctx.fillStyle = 'rgba(186,201,213,' + (fog * 0.62).toFixed(3) + ')';
+        ctx.fillRect(x0 - w * 0.12, yt - 0.5, w * 1.24, h + 1.5);
       }
     }
 
@@ -654,14 +885,444 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     }
 
     // evenly spaced uprights — the strongest speed cue we have
-    function posts(X, every, width, top, fill) {
+    function posts(X, every, width, yLo, yHi, fill) {
       ctx.fillStyle = fill;
       const start = Math.ceil((travel + Z_NEAR) / every) * every;
       for (let s = start; s < travel + Z_FAR; s += every) {
         const z = s - travel;
         const w = Math.max(0.45, width * F / z);
-        const y0 = syOf(top, z), y1 = syOf(0, z);
-        ctx.fillRect(sxOf(X, z) - w / 2, y0, w, y1 - y0);
+        const y0 = syOf(yHi, z), y1 = syOf(yLo, z);
+        ctx.fillRect(sxOf(X, z) - w / 2, y0, w, Math.max(0.5, y1 - y0));
+      }
+    }
+
+    // small bright markers: they flick past and sell the speed at a glance
+    function studs(X, every, Y, size, near, far) {
+      const start = Math.ceil((travel + Z_NEAR) / every) * every;
+      for (let s = start; s < travel + 260; s += every) {
+        const z = s - travel;
+        const px = Math.max(0.6, size * F / z);
+        const a = Math.max(0, 1 - z / 260);
+        ctx.fillStyle = a > 0.55 ? near : far;
+        ctx.globalAlpha = 0.35 + a * 0.65;
+        ctx.fillRect(sxOf(X, z) - px / 2, syOf(Y, z) - px / 2, px, px);
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    /* the concrete median: without joints and shading it is a dead slab
+       filling half the windshield, and it is the closest thing to the eye */
+    function medianWall() {
+      ribbon(MED, 0, 0.92, '#8b918b');                    // face
+      ribbon(MED, 0.62, 0.92, '#9aa09a');                 // upper, catching the light
+      ribbon(MED, 0.86, 0.92, '#b6bbb4');                 // top cap
+      ribbon(MED, 0, 0.26, 'rgba(46,50,44,.45)');         // road grime at the foot
+      posts(MED, 6, 0.06, 0, 0.92, 'rgba(30,34,30,.30)'); // expansion joints
+      blades();                                           // anti-glare screen
+      studs(MED, 12, 0.70, 0.10, '#ffffff', '#c9d2cf');   // reflectors
+    }
+
+    /* the anti-glare blades on top of the median: they beat past at 2.5 m
+       spacing and are, at speed, the loudest thing in the frame — so they fade
+       out with distance before they can start to strobe */
+    function blades() {
+      const start = Math.ceil((travel + Z_NEAR) / 2.5) * 2.5;
+      for (let m = start; m < travel + 150; m += 2.5) {
+        const z = m - travel;
+        const w = Math.max(0.5, 0.07 * F / z);
+        const y0 = syOf(1.62, z), y1 = syOf(0.9, z);
+        ctx.fillStyle = 'rgba(58,66,64,' +
+          (0.46 * Math.max(0, 1 - z / 150)).toFixed(3) + ')';
+        ctx.fillRect(sxOf(MED, z) - w / 2, y0, w, Math.max(0.6, y1 - y0));
+      }
+    }
+
+    /* the metal guardrail on the right, as a W-beam: two flanges and a groove */
+    function guardrail() {
+      posts(RAIL, 4, 0.12, 0, 0.78, '#4b5359');
+      ribbon(RAIL, 0.50, 0.86, '#8b959d');
+      ribbon(RAIL, 0.66, 0.72, 'rgba(60,68,74,.55)');     // the groove
+      ribbon(RAIL, 0.80, 0.86, '#bcc4ca');                // top flange highlight
+      studs(RAIL, 25, 0.90, 0.11, '#ffb43c', '#d9a05a');  // amber delineators
+    }
+
+    /* a motorway sign every so often: it enters small, swells and leaves over
+       the roof in about a second — nothing reads as fast as that */
+    function signs() {
+      const EVERY = 500;
+      const start = Math.ceil((travel + 40) / EVERY) * EVERY;
+      for (let s = start; s < travel + Z_FAR; s += EVERY) {
+        const z = s - travel;
+        if (z > 320) continue;
+        if (s % ST_EVERY === 0) continue;   // that slot belongs to a fuel station
+        const X = RAIL + 2.2, w = 4.2 * F / z;
+        const xc = sxOf(X, z);
+        const yTop = syOf(5.6, z), yBot = syOf(3.4, z);
+        if (yBot < -40 || xc - w > 1300) continue;
+        ctx.globalAlpha = Math.min(1, (320 - z) / 90);
+        const lw = Math.max(0.6, 0.16 * F / z);
+        ctx.fillStyle = '#5e666b';                        // the two legs
+        ctx.fillRect(xc - w * 0.3, yBot, lw, syOf(0, z) - yBot);
+        ctx.fillRect(xc + w * 0.3, yBot, lw, syOf(0, z) - yBot);
+        ctx.fillStyle = '#1d6142';                        // the panel
+        ctx.fillRect(xc - w / 2, yTop, w, yBot - yTop);
+        ctx.strokeStyle = '#e7efe9';
+        ctx.lineWidth = Math.max(0.5, 0.06 * F / z);
+        ctx.strokeRect(xc - w / 2, yTop, w, yBot - yTop);
+        const h = yBot - yTop;
+        if (h > 6) {                                      // unreadable legend
+          ctx.fillStyle = 'rgba(232,240,234,.9)';
+          ctx.fillRect(xc - w * 0.34, yTop + h * 0.24, w * 0.52, h * 0.13);
+          ctx.fillRect(xc - w * 0.34, yTop + h * 0.55, w * 0.40, h * 0.13);
+        }
+        ctx.globalAlpha = 1;
+      }
+    }
+
+
+    /* ── fuel stations ────────────────────────────────────────
+       One every ST_EVERY metres, on the right past the guardrail: an apron,
+       a canopy on four pillars with two pumps under it, a shop, and the totem
+       that carries the price. The price comes from the station's *index*
+       through hash(), so it is decided once and does not shimmer while you
+       drive up to it; it scatters +/- ST_SPREAD around the live market
+       average (state.marketPrice), which is 1.85 until the API answers.
+
+       Spacing is the one number worth touching: 2 km is ~55 s at 130 km/h,
+       which is often enough to be seen during a demo. The real motorway
+       figure would be 5 km - a station every two and a half minutes. */
+    const ST_EVERY = 2000;                    // m between stations
+    const ST_SPREAD = 0.15;                   // euro, either side of the market price
+    const ST_TOTEM = RAIL + 3.6;              // the sign, just past the guardrail
+    const ST_X = RAIL + 6;                    // near edge of the forecourt
+
+    const stationPrice = i => state.marketPrice + (hash(i * 97 + 13) * 2 - 1) * ST_SPREAD;
+
+    /* the next station ahead: what the cluster counts down to */
+    function station() {
+      const idx = Math.floor(travel / ST_EVERY) + 1;
+      return { idx: idx, dist: idx * ST_EVERY - travel, price: stationPrice(idx) };
+    }
+
+    /* a flat quad given its four world corners [X, Y, z] */
+    function quad(c, fill) {
+      ctx.fillStyle = fill;
+      ctx.beginPath();
+      for (let i = 0; i < c.length; i++) {
+        const x = sxOf(c[i][0], c[i][2]), y = syOf(c[i][1], c[i][2]);
+        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      }
+      ctx.closePath(); ctx.fill();
+    }
+
+    /* a vertical post standing on the ground at (X, z) */
+    function pillar(X, z, top, w, fill) {
+      quad([[X - w, 0, z], [X + w, 0, z], [X + w, top, z], [X - w, top, z]], fill);
+    }
+
+    function stations() {
+      const idx = Math.floor(travel / ST_EVERY) + 1;
+      const z0 = idx * ST_EVERY - travel;
+      if (z0 > Z_FAR || z0 < 4) return;       // nothing in sight, or already beside us
+
+      const price = stationPrice(idx);
+      const zN = Math.max(4, z0 - 11), zF = z0 + 11;   // the plot runs 22 m along the road
+      ctx.globalAlpha = Math.min(1, (Z_FAR - z0) / 120);
+
+      /* the apron: concrete, so the station does not float on the grass */
+      quad([[ST_X - 3, 0, zN], [ST_X + 24, 0, zN], [ST_X + 24, 0, zF], [ST_X - 3, 0, zF]], '#9fa6aa');
+
+      /* shop, set back behind the canopy */
+      quad([[ST_X + 16, 0, z0 + 4], [ST_X + 25, 0, z0 + 4], [ST_X + 25, 3.2, z0 + 4], [ST_X + 16, 3.2, z0 + 4]], '#e3e8ea');
+      quad([[ST_X + 17, 0.6, z0 + 4], [ST_X + 24, 0.6, z0 + 4], [ST_X + 24, 2.2, z0 + 4], [ST_X + 17, 2.2, z0 + 4]], '#38505e');
+
+      /* the canopy: four pillars, a white slab, a red fascia on the near edge.
+         A real one stands at 5 m, this one at 4.4: above that it leaves through
+         the top of the glass while you are still driving up to it. */
+      [[ST_X + 1, zN + 2], [ST_X + 13, zN + 2], [ST_X + 1, zF - 2], [ST_X + 13, zF - 2]]
+        .forEach(pl => pillar(pl[0], pl[1], 3.9, 0.22, '#ccd4d9'));
+      quad([[ST_X, 4.4, zN], [ST_X + 14, 4.4, zN], [ST_X + 14, 4.4, zF], [ST_X, 4.4, zF]], '#eef2f4');
+      quad([[ST_X, 3.9, zN], [ST_X + 14, 3.9, zN], [ST_X + 14, 4.4, zN], [ST_X, 4.4, zN]], '#d0d7dc');
+      quad([[ST_X, 3.9, zN], [ST_X + 14, 3.9, zN], [ST_X + 14, 4.15, zN], [ST_X, 4.15, zN]], '#c4362f');
+
+      /* two pumps under it */
+      pillar(ST_X + 4, z0, 1.9, 0.45, '#dfe4e7');
+      pillar(ST_X + 10, z0, 1.9, 0.45, '#dfe4e7');
+
+      /* ── the price board, the only thing that HAS to be readable ──
+         Its height is a compromise with the windshield, not with reality: the
+         glass shows a strip from the horizon down, so anything tall leaves
+         through the top of the frame exactly when it gets close enough to
+         read. A board from 1.4 to 4.4 m stays inside the glass from ~200 m
+         down to ~40 m, which is the whole approach. */
+      const zt = Math.max(4, z0 - 6);
+      const BRD_LO = 1.4, BRD_HI = 4.4;
+      const half = 1.9, yTop = syOf(BRD_HI, zt), yBot = syOf(BRD_LO, zt);
+      const xc = sxOf(ST_TOTEM, zt), w = 2 * half * F / zt, h = yBot - yTop;
+      pillar(ST_TOTEM - 1.2, zt, BRD_LO + 0.1, 0.16, '#b9c1c6');
+      pillar(ST_TOTEM + 1.2, zt, BRD_LO + 0.1, 0.16, '#b9c1c6');
+      quad([[ST_TOTEM - half, BRD_LO, zt], [ST_TOTEM + half, BRD_LO, zt],
+            [ST_TOTEM + half, BRD_HI, zt], [ST_TOTEM - half, BRD_HI, zt]], '#0e2f4f');
+      ctx.strokeStyle = '#dfe8ee';
+      ctx.lineWidth = Math.max(0.4, 0.05 * F / zt);
+      ctx.strokeRect(xc - w / 2, yTop, w, h);
+      ctx.fillStyle = '#3ddc84';                       // brand band across the top
+      ctx.fillRect(xc - w / 2, yTop, w, h * 0.22);
+
+      if (h > 12) {                                     // close enough to read the price
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.font = '700 ' + (h * 0.42).toFixed(1) + 'px "Segoe UI",Arial,sans-serif';
+        ctx.fillText(price.toFixed(2), xc, yTop + h * 0.58);
+        if (h > 22) {
+          ctx.font = '600 ' + (h * 0.13).toFixed(1) + 'px "Segoe UI",Arial,sans-serif';
+          ctx.fillText('EURO / L', xc, yTop + h * 0.86);
+        }
+        ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    /* ── roadside trees ───────────────────────────────────────
+       Nothing sells speed like something close to the camera going past, and
+       a tree is the cheapest close thing there is: the eye knows how big one
+       should be, so it reads the sweep as metres per second instead of as
+       pixels. They stand outside both carriageways, one slot every TREE_STEP
+       metres with a third of the slots deliberately empty, because a regular
+       colonnade reads as a metronome and a real verge never is.
+
+       Every tree is drawn from its OWN slot index through hash(): species,
+       height, width, how lumpy the canopy is, its green and how far off the
+       road it stands. Same metre of road, same tree — they never shimmer,
+       and no two in view are the same. */
+    const TREE_STEP = 11;                   // m between slots (some stay empty)
+    const TREE_GAP = 26;                    // m of clearance kept around a station
+    const TREE_FAR = 300;                   // past this the backdrop treeline does the job
+
+    /* the greens a verge actually holds: cypress dark, poplar bright, olive,
+       pine blue-green, scrub yellow-green */
+    const TREE_GREEN = [
+      [42, 62, 40], [58, 86, 48], [66, 82, 54], [46, 72, 60], [78, 92, 52]
+    ];
+    const BARK = [62, 52, 44];
+
+    function drawTree(X, z, seed) {
+      const px = F / z;                                  // metres -> pixels here
+      const xc = sxOf(X, z);
+      if (xc < -400 || xc > 1560) return;                // long gone sideways
+
+      const f = 1 - Math.exp(-z / 190);                  // aerial perspective
+      const sp = hash(seed * 7 + 3);
+      const g = TREE_GREEN[(hash(seed * 29 + 5) * TREE_GREEN.length) | 0];
+      const lift = (hash(seed * 53 + 11) - 0.5) * 22;    // this tree's own shade
+      const leaf = mix([g[0] + lift, g[1] + lift, g[2] + lift], P.hillFar, f * 0.82);
+      const dark = mix([g[0] * 0.7 + lift, g[1] * 0.7 + lift, g[2] * 0.7 + lift], P.hillFar, f * 0.82);
+      const bark = mix(BARK, P.hillFar, f * 0.82);
+      const yGnd = syOf(0, z);
+
+      const blob = (X0, Y0, rx, ry, fill) => {           // one lump of foliage
+        ctx.fillStyle = fill;
+        ctx.beginPath();
+        ctx.ellipse(sxOf(X0, z), syOf(Y0, z), Math.max(0.35, rx * px), Math.max(0.35, ry * px), 0, 0, 6.2832);
+        ctx.fill();
+      };
+      const trunk = (top, w, taper) => {
+        ctx.fillStyle = bark;
+        ctx.beginPath();
+        ctx.moveTo(sxOf(X - w, z), yGnd);
+        ctx.lineTo(sxOf(X + w, z), yGnd);
+        ctx.lineTo(sxOf(X + w * taper, z), syOf(top, z));
+        ctx.lineTo(sxOf(X - w * taper, z), syOf(top, z));
+        ctx.closePath(); ctx.fill();
+      };
+
+      /* the shadow first: without it a tree floats a foot above the grass */
+      ctx.fillStyle = 'rgba(28,38,28,' + (0.26 * (1 - f * 0.8)).toFixed(3) + ')';
+      ctx.beginPath();
+      ctx.ellipse(xc, yGnd, Math.max(0.5, 1.8 * px), Math.max(0.3, 0.45 * px), 0, 0, 6.2832);
+      ctx.fill();
+
+      if (sp < 0.24) {
+        /* cypress: a flame. The tallest thing on the verge and the first to
+           leave through the top of the windshield */
+        const H = 7 + hash(seed * 17) * 5, W = 0.5 + hash(seed * 23) * 0.35;
+        ctx.fillStyle = leaf;
+        ctx.beginPath();
+        ctx.moveTo(xc, syOf(H, z));
+        ctx.quadraticCurveTo(sxOf(X + W * 1.7, z), syOf(H * 0.42, z), xc, yGnd);
+        ctx.quadraticCurveTo(sxOf(X - W * 1.7, z), syOf(H * 0.42, z), xc, syOf(H, z));
+        ctx.fill();
+        blob(X - W * 0.45, H * 0.55, W * 0.5, H * 0.24, dark);      // shaded side
+
+      } else if (sp < 0.46) {
+        /* umbrella pine: bare trunk, then a flat wide crown */
+        const H = 6.5 + hash(seed * 17) * 4, W = 2.4 + hash(seed * 23) * 1.6;
+        trunk(H * 0.66, 0.16 + hash(seed * 31) * 0.08, 0.7);
+        blob(X, H * 0.82, W, H * 0.13, dark);
+        blob(X + W * 0.15, H * 0.90, W * 0.82, H * 0.11, leaf);
+
+      } else if (sp < 0.74) {
+        /* broadleaf: two or three lumps, never the same two */
+        const H = 4.5 + hash(seed * 17) * 5.5, W = 1.5 + hash(seed * 23) * 2.0;
+        trunk(H * 0.42, 0.14 + hash(seed * 31) * 0.1, 0.55);
+        blob(X, H * 0.66, W, W * 0.92, dark);
+        blob(X + W * 0.28, H * 0.76, W * 0.72, W * 0.66, leaf);
+        if (hash(seed * 41) > 0.4) blob(X - W * 0.42, H * 0.58, W * 0.56, W * 0.52, leaf);
+
+      } else {
+        /* scrub: low, wide, and it is what fills the gaps */
+        const H = 1.3 + hash(seed * 17) * 1.6, W = 1.2 + hash(seed * 23) * 1.4;
+        blob(X, H * 0.5, W, H * 0.55, dark);
+        blob(X + W * 0.35, H * 0.62, W * 0.6, H * 0.45, leaf);
+      }
+    }
+
+    /* one row of trees, drawn far to near so the near ones overlap the far */
+    function treeRow(salt, side, near, span) {
+      const last = Math.floor((travel + TREE_FAR) / TREE_STEP);
+      const first = Math.ceil((travel + 6) / TREE_STEP);
+      for (let n = last; n >= first; n--) {
+        if (hash(n * 131 + salt) < 0.42) continue;                  // an empty slot
+        const s = n * TREE_STEP + (hash(n * 977 + salt) - 0.5) * 7;
+        const z = s - travel;
+        if (z < 6 || z > TREE_FAR) continue;
+        if (side > 0) {                                             // keep the forecourt clear
+          const m = s % ST_EVERY;
+          if (m < TREE_GAP || m > ST_EVERY - TREE_GAP) continue;
+        }
+        ctx.globalAlpha = Math.min(1, (TREE_FAR - z) / 70);
+        drawTree(side * (near + hash(n * 37 + salt) * span), z, n * 3 + salt);
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    /* Lateral offsets are the whole trick: a tree at 9.5 m leaves the frame
+       at 15 m ahead, so it sweeps the full width of the glass in the last
+       half second - that sweep IS the speed. The far rows only fill in. */
+    function trees() {
+      treeRow(0, -1, 19.5, 12);    // left: beyond the opposite carriageway
+      treeRow(7,  1,  9.5, 13);    // right: from just past the guardrail outwards
+    }
+
+    /* ── background: sky, sun, clouds, ridges ───────────────── */
+    function layer(par, fill, alpha, amp, freq, base) {
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = fill;
+      ctx.beginPath();
+      ctx.moveTo(0, HZ + 2);
+      for (let x = 0; x <= 1147; x += 8) {
+        const t = x * freq + travel * par;
+        const n = Math.sin(t) * 0.6 + Math.sin(t * 2.3 + 1.1) * 0.28 + Math.sin(t * 5.1) * 0.12;
+        ctx.lineTo(x, base - amp * (n + 0.6));
+      }
+      ctx.lineTo(1147, HZ + 2);
+      ctx.closePath(); ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+
+    function backdrop() {
+      const sky = ctx.createLinearGradient(0, -6, 0, HZ + 2);
+      sky.addColorStop(0, 'rgb(' + P.skyTop + ')');
+      sky.addColorStop(0.55, 'rgb(' + P.skyMid + ')');
+      sky.addColorStop(1, 'rgb(' + P.skyLow + ')');
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, -6, 1147, HZ + 8);
+
+      // a low sun off to the right, the only warm thing in the scene
+      const sun = ctx.createRadialGradient(790, 2, 0, 790, 2, 300);
+      sun.addColorStop(0, 'rgba(255,240,214,.34)');
+      sun.addColorStop(0.45, 'rgba(255,238,212,.12)');
+      sun.addColorStop(1, 'rgba(255,238,212,0)');
+      ctx.fillStyle = sun;
+      ctx.fillRect(440, -6, 707, HZ + 8);
+
+      // clouds sitting on the horizon, on a parallax so slow it reads as far
+      const drift = travel * 0.045;
+      for (let i = 0; i < 7; i++) {
+        const seed = hash(i * 977);
+        const x = ((seed * 2600 - drift * (0.5 + seed * 0.5)) % 1600 + 1600) % 1600 - 230;
+        const w = 90 + seed * 150, h = 4.5 + seed * 7;
+        const y = 5 + hash(i * 131 + 7) * 20;
+        const g = ctx.createRadialGradient(x, y, 0, x, y, w / 2);
+        g.addColorStop(0, 'rgba(255,255,255,.50)');
+        g.addColorStop(0.55, 'rgba(246,250,252,.18)');
+        g.addColorStop(1, 'rgba(246,250,252,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.ellipse(x, y, w / 2, h, 0, 0, 6.2832);
+        ctx.fill();
+      }
+
+      // two ridges and a treeline, each on its own parallax: that difference
+      // is what turns a flat band into distance
+      layer(0.00035, 'rgb(' + P.hillFar + ')', 0.55, 8, 0.0048, HZ - 3);
+      layer(0.00090, 'rgb(' + P.hillNear + ')', 0.72, 5.5, 0.0085, HZ - 1);
+      layer(0.00220, 'rgb(' + P.trees + ')', 0.92, 3.2, 0.0210, HZ + 2);
+    }
+
+    /* ── the ground, one scanline at a time ─────────────────── */
+    function ground() {
+      for (let i = 0; i < rows.length; i++) {
+        const r = rows[i], z = r.z, s = r.s, y = r.y;
+        const cx = VPX + (curveAt(z) - sway) * s;
+
+        ctx.fillStyle = r.grass;
+        ctx.fillRect(0, y, 1147, 1);
+        if (z < 130 && (travel + z) % 9 < 4.5) {           // mown bands: the
+          ctx.fillStyle = 'rgba(26,36,22,' +                // periphery has to
+            (0.13 * (1 - z / 130)).toFixed(3) + ')';        // move too
+          ctx.fillRect(0, y, 1147, 1);
+        }
+
+        ctx.fillStyle = r.opp;                              // the other carriageway
+        const oL = cx - (HALF + 12.5) * s, oR = cx - (HALF + 1.6) * s;
+        ctx.fillRect(oL, y, oR - oL, 1);
+
+        ctx.fillStyle = r.verge;
+        ctx.fillRect(cx - (HALF + 1.0) * s, y, (2 * HALF + SHOULDER + 1.0) * s, 1);
+        ctx.fillStyle = r.asph;
+        ctx.fillRect(cx - HALF * s, y, 2 * HALF * s, 1);
+
+        /* wheel ruts: the polished strips every lane carries, and the only
+           marks on the surface that do NOT scroll */
+        if (z < 90) {
+          ctx.fillStyle = 'rgba(150,160,170,' + (0.05 * (1 - z / 90)).toFixed(3) + ')';
+          for (let L = -1; L <= 1; L++) {
+            ctx.fillRect(cx + (L * LANE - 1.18) * s, y, 0.55 * s, 1);
+            ctx.fillRect(cx + (L * LANE + 0.63) * s, y, 0.55 * s, 1);
+          }
+        }
+
+        /* grain: the same metre of tarmac always draws the same speckles, so
+           the texture travels with the road instead of boiling */
+        if (z < 70) {
+          const band = ((travel + z) * 2.6) | 0;
+          const a = 0.16 * (1 - z / 70);
+          for (let k = 0; k < 6; k++) {
+            const h1 = hash(band * 7 + k * 71);
+            ctx.fillStyle = (h1 > 0.5 ? 'rgba(198,204,210,' : 'rgba(16,18,22,')
+              + (a * (0.4 + hash(band + k * 13) * 0.6)).toFixed(3) + ')';
+            ctx.fillRect(cx + (h1 * 2 - 1) * HALF * s, y, Math.max(1, 0.22 * s), 1);
+          }
+        }
+
+        /* a transverse tar seam every 20 m: cheap, and it flies at you */
+        if (z < 110 && (travel + z) % 20 < 0.35) {
+          ctx.fillStyle = 'rgba(22,24,28,' + (0.30 * (1 - z / 110)).toFixed(3) + ')';
+          ctx.fillRect(cx - HALF * s, y, 2 * HALF * s, 1);
+        }
+
+        /* paint: faded out near the horizon, where a hard line would crawl */
+        ctx.fillStyle = r.paint;
+        ctx.globalAlpha = r.fade;
+        const lw = Math.max(0.45, 0.15 * s);
+        ctx.fillRect(cx - (HALF - 0.12) * s - lw / 2, y, lw, 1);
+        ctx.fillRect(cx + (HALF - 0.12) * s - lw / 2, y, lw, 1);
+        if ((travel + z) % DASH < DASH_ON) {
+          ctx.fillRect(cx - (LANE / 2) * s - lw / 2, y, lw, 1);
+          ctx.fillRect(cx + (LANE / 2) * s - lw / 2, y, lw, 1);
+        }
+        ctx.globalAlpha = 1;
       }
     }
 
@@ -673,6 +1334,9 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       clock += dt;
       travel += v * dt;
       sway = 0.13 * Math.sin(clock * 0.6) + 0.05 * Math.sin(clock * 1.7);
+      // the faster we go, the more the body works: a fraction of a pixel, but
+      // the eye reads it as effort
+      bob = (v / 60) * (0.5 * Math.sin(clock * 7.3) + 0.3 * Math.sin(clock * 13.1));
       c0 = curveC(travel); d0 = curveD(travel);
       moveTraffic(v, dt);
 
@@ -680,86 +1344,36 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       ctx.clearRect(0, 0, 1147, 641);
       ctx.save();
       ctx.beginPath(); ctx.rect(0, 0, 1147, YMAX); ctx.clip();
+      ctx.translate(0, bob);
 
-      /* sky */
-      const sky = ctx.createLinearGradient(0, 0, 0, HZ);
-      sky.addColorStop(0, SKY_HI); sky.addColorStop(1, SKY_LO);
-      ctx.fillStyle = sky;
-      ctx.fillRect(0, 0, 1147, HZ + 1);
-
-      /* far treeline, on a very long parallax */
-      ctx.fillStyle = 'rgba(118,138,138,.45)';
-      ctx.beginPath();
-      ctx.moveTo(0, HZ + 1);
-      for (let x = 0; x <= 1147; x += 12) {
-        const t = x * 0.011 + travel * 0.0016;
-        ctx.lineTo(x, HZ - 3.5 - 2.6 * Math.sin(t) - 1.4 * Math.sin(t * 2.7));
-      }
-      ctx.lineTo(1147, HZ + 1);
-      ctx.closePath(); ctx.fill();
-
-      /* the ground, one scanline at a time: every row is a depth */
-      for (let y = HZ + 1; y <= YMAX; y++) {
-        const z = K / (y - HZ), s = F / z;
-        const cx = VPX + (curveAt(z) - sway) * s;
-
-        ctx.fillStyle = GRASS;
-        ctx.fillRect(0, y, 1147, 1);
-        // faint mown bands: the periphery has to move too, or speed reads low
-        if (z < 120 && (travel + z) % 9 < 4.5) {
-          ctx.fillStyle = 'rgba(28,38,24,' + (0.11 * (1 - z / 120)).toFixed(3) + ')';
-          ctx.fillRect(0, y, 1147, 1);
-        }
-
-        ctx.fillStyle = OPPOSITE;                    // carriageway going the other way
-        const oL = cx - (HALF + 12.5) * s, oR = cx - (HALF + 1.6) * s;
-        ctx.fillRect(oL, y, oR - oL, 1);
-
-        ctx.fillStyle = VERGE;
-        ctx.fillRect(cx - (HALF + 1.0) * s, y, (2 * HALF + SHOULDER + 1.0) * s, 1);
-        ctx.fillStyle = ASPHALT;
-        ctx.fillRect(cx - HALF * s, y, 2 * HALF * s, 1);
-
-        ctx.fillStyle = PAINT;                       // two edge lines, two dashed
-        const lw = Math.max(0.45, 0.15 * s);
-        ctx.fillRect(cx - (HALF - 0.12) * s - lw / 2, y, lw, 1);
-        ctx.fillRect(cx + (HALF - 0.12) * s - lw / 2, y, lw, 1);
-        if ((travel + z) % DASH < DASH_ON) {
-          ctx.fillRect(cx - (LANE / 2) * s - lw / 2, y, lw, 1);
-          ctx.fillRect(cx + (LANE / 2) * s - lw / 2, y, lw, 1);
-        }
-      }
-
-      /* concrete divider on the left, metal guardrail on the right */
-      ribbon(-(HALF + 1.1), 0, 0.95, '#969b95');
-      ribbon(-(HALF + 1.1), 0.82, 0.95, '#b0b4ad');
-      posts(-(HALF + 1.1), 8, 0.16, 0.55, 'rgba(35,40,45,.45)');
-
-      posts(HALF + SHOULDER, 4, 0.11, 0.72, '#6d747a');
-      ribbon(HALF + SHOULDER, 0.52, 0.80, '#959ea5');
-      ribbon(HALF + SHOULDER, 0.73, 0.80, '#bcc4ca');
-
-      /* traffic, far to near */
+      backdrop();
+      ground();
+      trees();            // behind the barriers: they must occlude the trunks
+      medianWall();
+      guardrail();
+      signs();
+      stations();
       traffic.sort((a, b) => b.z - a.z).forEach(drawVehicle);
 
       /* haze: thick at the horizon, gone by the time it reaches the dashboard */
       const hz = ctx.createLinearGradient(0, HZ, 0, YMAX);
-      hz.addColorStop(0, '#b7c7d5');
-      hz.addColorStop(0.10, 'rgba(183,199,213,.58)');
-      hz.addColorStop(0.30, 'rgba(183,199,213,.20)');
-      hz.addColorStop(1, 'rgba(183,199,213,0)');
+      hz.addColorStop(0, 'rgba(192,207,218,.72)');
+      hz.addColorStop(0.12, 'rgba(188,203,215,.30)');
+      hz.addColorStop(0.34, 'rgba(186,201,213,.10)');
+      hz.addColorStop(1, 'rgba(186,201,213,0)');
       ctx.fillStyle = hz;
       ctx.fillRect(0, HZ, 1147, YMAX - HZ);
 
       ctx.restore();
     }
 
-    return { frame };
+    return { frame, station };
   })();
 
   /* ── physics: consumption follows speed ─────────────── */
   function update(dt) {
     state.driftAngle += 0.04;
+    applyPedals(dt);
 
     /* the car cannot jump to the requested speed: power-limited acceleration
        that fades as drag builds up, so the top of the dial takes real effort */
@@ -780,8 +1394,22 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     const v = Math.max(0, Math.min(VMAX, state.currentSpeed));
     state.currentSpeed = v;
 
+    /* gearbox: the ratio picks the revs, and the up/down thresholds are far
+       enough apart that the box cannot hunt between two gears */
+    state.shiftLock = Math.max(0, state.shiftLock - dt);
+    if (state.shiftLock === 0) {
+      if (state.gear < GEARS.length - 1 && GEARS[state.gear] * v > UPSHIFT) {
+        state.gear++; state.shiftLock = SHIFT_LOCK;
+      } else if (state.gear > 0 && GEARS[state.gear] * v < DOWNSHIFT) {
+        // hard braking skips gears, as a real box does
+        while (state.gear > 0 && GEARS[state.gear] * v < DOWNSHIFT) state.gear--;
+        state.shiftLock = SHIFT_LOCK;
+      }
+    }
+    /* below walking pace the clutch is out: the engine falls back to idle */
     const drift = Math.sin(state.driftAngle) * 12;
-    state.currentRpm = v < 1 ? RPM_IDLE : RPM_IDLE + v / K_SPEED + drift;
+    const rpmTarget = Math.max(RPM_IDLE, GEARS[state.gear] * v) + drift;
+    state.currentRpm += (rpmTarget - state.currentRpm) * Math.min(1, dt * 9);
 
     if (v < 1) {
       state.instantL100  = 0;
@@ -803,12 +1431,20 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
   function render() {
     el.spd.textContent    = Math.round(state.currentSpeed);
     el.rpm.textContent    = Math.round(state.currentRpm);
+    el.gear.textContent   = state.currentSpeed < 1 ? 'N' : state.gear + 1;
     el.eurKm.textContent  = state.instantEurKm.toFixed(2);
     el.dist.textContent   = state.tripKm.toFixed(2);
     el.cons.textContent   = state.tripLiters.toFixed(2);
     el.total.textContent  = 'EUR ' + state.tripCost.toFixed(2);
     el.refuel.textContent = state.refuelPrice.toFixed(2) + ' €/L';
-    el.local.textContent  = state.localPrice.toFixed(2) + ' €';
+
+    /* Local Price is the price of the NEXT station on the road, and it counts
+       down to it: metres under a kilometre, so the last stretch feels alive */
+    const st = road.station();
+    el.local.textContent    = st.price.toFixed(2) + ' €';
+    el.localDist.textContent = '· ' + (st.dist >= 995     // 995 m already rounds to "1.0 km"
+      ? (st.dist / 1000).toFixed(1) + ' km'
+      : Math.round(st.dist / 10) * 10 + ' m');
 
     const lvl = Math.max(0, Math.min(1, state.tankLiters / state.tankCapacity));
     el.fuelbar.setAttribute('width', (lvl * 100).toFixed(1));
