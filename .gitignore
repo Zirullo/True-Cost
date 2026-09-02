@@ -1,0 +1,6 @@
+# Backup manuali sostituiti dalla cronologia git: i file restano su disco,
+# ma non nel repo. La storia che raccontavano e' nei primi commit.
+BCK/
+OLD index.html
+index - Copia.html
+index - Copia (2).html

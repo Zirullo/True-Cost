@@ -1,0 +1,1549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Star*Up True Cost — Stellantis</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  background: #060606; width: 100%; min-height: 100%;
+  font-family: Arial, sans-serif; overflow-x: hidden;
+}
+
+/* ── Carousel ── */
+#tc-switcher { width: 100%; overflow: hidden; position: relative; }
+#tc-panels {
+  display: flex; width: 200%;
+  transition: transform 0.45s cubic-bezier(0.77,0,0.175,1);
+}
+#tc-panels.show-bev { transform: translateX(-50%); }
+.tc-panel { width: 50%; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
+
+/* ── Side switch tabs — fixed, full height, outside content ── */
+.tc-side-tab {
+  position: fixed; top: 0; bottom: 0;
+  width: calc((100vw - 900px) / 2);
+  min-width: 60px;
+  z-index: 200;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  cursor: pointer; border: none;
+  font-family: Arial, sans-serif;
+  transition: filter 0.2s, opacity 0.2s;
+  gap: 12px;
+}
+#btn-to-bev {
+  left: 0;
+  background: linear-gradient(to right, #007fb0, #00AEEF);
+  color: #fff;
+  box-shadow: 6px 0 32px rgba(0,174,239,0.4);
+}
+#btn-to-bev:hover { filter: brightness(1.12); }
+#btn-to-ice {
+  right: 0;
+  background: linear-gradient(to left, #a06d00, #F0A500);
+  color: #fff;
+  box-shadow: -6px 0 32px rgba(240,165,0,0.4);
+}
+#btn-to-ice:hover { filter: brightness(1.12); }
+
+/* big arrow circle */
+.tab-circle {
+  width: 54px; height: 54px; border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; font-weight: 900;
+  border: 2px solid rgba(255,255,255,0.5);
+  flex-shrink: 0;
+}
+.tab-title {
+  font-size: 12px; font-weight: 900; letter-spacing: 1.5px;
+  text-transform: uppercase; text-align: center;
+  line-height: 1.4;
+}
+.tab-sub {
+  font-size: 10px; opacity: 0.75; text-align: center;
+  font-weight: bold; letter-spacing: 1px; text-transform: uppercase;
+  line-height: 1.5;
+}
+
+/* Page top padding for nav */
+
+
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: #080808; width: 100%; min-height: 100%;
+    display: flex; flex-direction: column; align-items: center;
+    font-family: Arial, sans-serif;
+  }
+
+  /* ── Page layout ── */
+  #ice-page { width: 100%; max-width: 900px; padding: 0 0 32px; }
+
+
+
+  #ice-trip-history {
+    padding: 0;
+    background: #030303;
+    border-top: 1px solid #222;
+    overflow: hidden;
+  }
+  #ice-trip-history-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 16px 5px;
+  }
+  .th-label {
+    font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase;
+    color: #777; font-weight: bold; white-space: nowrap;
+  }
+  .th-line {
+    flex: 1; height: 1px;
+    background: linear-gradient(to right, #333, transparent);
+  }
+  #ice-trip-cards {
+    display: flex; align-items: stretch;
+    gap: 0; padding: 0 0 14px 0;
+    overflow: hidden;
+  }
+  .trip-card {
+    flex: 1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 8px 6px 6px;
+    border-right: 1px solid #1a1a1a;
+    min-width: 0;
+    transition: opacity 0.4s;
+    cursor: default;
+  }
+  .trip-card:last-child { border-right: none; }
+  .trip-card:hover { background: rgba(255,255,255,0.03); }
+  .tc-date {
+    font-size: 9px; letter-spacing: 1px; text-transform: uppercase;
+    font-family: Arial, sans-serif; font-weight: bold;
+    color: #999; margin-bottom: 3px;
+  }
+  .tc-km {
+    font-size: 10px; font-family: 'Consolas', monospace;
+    color: #777; margin-bottom: 6px;
+  }
+  .tc-cost {
+    font-size: 20px; font-weight: bold;
+    font-family: 'Consolas', monospace;
+    color: #ddd; line-height: 1;
+  }
+  .tc-unit {
+    font-size: 9px; color: #555; font-family: Arial, sans-serif;
+    margin-top: 3px;
+  }
+  /* most recent card highlight */
+  .trip-card:last-child .tc-cost { color: #F0A500; }
+  .trip-card:last-child .tc-date { color: #bbb; }
+  .trip-card:last-child .tc-km   { color: #999; }
+  @keyframes slideIn { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
+  .trip-card.new-entry { animation: slideIn 0.4s ease; }
+
+
+  /* ══════════════════════════════════════
+     COCKPIT UI  (dark glass panel)
+  ══════════════════════════════════════ */
+  #ice-cockpit {
+    background: #020202;
+    border-radius: 0 0 20px 20px;
+    overflow: hidden;
+    position: relative;
+  }
+  canvas#mainCanvas { display: block; width: 100%; }
+
+  /* fuel info bar under canvas */
+  #ice-fuel-bar {
+    display: flex; align-items: stretch;
+    border-top: 1px solid #1a1a1a;
+    background: #050505;
+  }
+  .fuel-cell {
+    flex: 1; padding: 10px 16px;
+    display: flex; flex-direction: column; gap: 3px;
+    border-right: 1px solid #111;
+  }
+  .fuel-cell:last-child { border-right: none; }
+  .fuel-cell-label {
+    font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+    color: #444; font-weight: bold;
+  }
+  .fuel-cell-value {
+    font-size: 17px; font-weight: bold;
+    font-family: 'Consolas', monospace; color: #F0A500;
+  }
+  .fuel-cell-sub {
+    font-size: 10px; color: #555; line-height: 1.4;
+  }
+  .fuel-cell-sub.live { color: #1D9E75; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+  .dot-live {
+    display: inline-block; width: 6px; height: 6px;
+    background: #1D9E75; border-radius: 50%;
+    margin-right: 4px; vertical-align: middle;
+    animation: pulse 2s infinite;
+  }
+
+  /* ══════════════════════════════════════
+     CONTROLS  (separated, lighter panel)
+  ══════════════════════════════════════ */
+  #ice-controls-section {
+    margin: 16px 12px 0;
+    background: #0e0e0e;
+    border: 1px solid #1c1c1c;
+    border-radius: 14px;
+    padding: 18px 24px 20px;
+  }
+  .controls-title {
+    font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase;
+    color: #333; font-weight: bold; margin-bottom: 16px;
+    padding-bottom: 10px; border-bottom: 1px solid #181818;
+  }
+
+  /* DNA row */
+  .dna-row {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 18px;
+  }
+  .control-label {
+    font-size: 10px; color: #555; font-weight: bold;
+    letter-spacing: 1px; text-transform: uppercase;
+    min-width: 80px; font-family: 'Consolas', monospace;
+  }
+  .dna-btn {
+    width: 46px; height: 46px; border-radius: 50%;
+    background: #0a0a0a; border: 1.5px solid #2a2a2a;
+    font-size: 17px; font-weight: bold; cursor: pointer;
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    font-family: 'Consolas', monospace;
+  }
+  .dna-btn .mode-name {
+    display: block; font-size: 8px; letter-spacing: 1px;
+    font-family: Arial, sans-serif; font-weight: normal; opacity: 0.6;
+  }
+  .dna-btn.A { color: #00FF00; }
+  .dna-btn.N { color: #FFFFFF; }
+  .dna-btn.D { color: #FF4444; }
+  .dna-btn.A.active { border-color: #00FF00; background: #071407; box-shadow: 0 0 12px rgba(0,255,0,0.2); }
+  .dna-btn.N.active { border-color: #FFFFFF; background: #141414; box-shadow: 0 0 12px rgba(255,255,255,0.1); }
+  .dna-btn.D.active { border-color: #FF4444; background: #160707; box-shadow: 0 0 12px rgba(255,68,68,0.2); }
+  .dna-hint { font-size: 11px; color: #333; margin-left: 6px; font-style: italic; }
+
+  /* Sliders */
+  .slider-row {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+  }
+  .slider-row:last-child { margin-bottom: 0; }
+  input[type=range] { flex: 1; height: 4px; cursor: pointer; border-radius: 2px; }
+  input#rpmSlider  { accent-color: #FFFFFF; height: 5px; }
+  input#timeSlider { accent-color: #00AEEF; }
+  .slider-val {
+    font-size: 12px; font-weight: bold;
+    font-family: 'Consolas', monospace; min-width: 46px; text-align: right;
+  }
+  .slider-val.rpm-val  { color: #FFFFFF; }
+  .slider-val.time-val { color: #00AEEF; }
+
+  /* Reset button */
+  #ice-reset-btn {
+    margin-top: 16px; padding: 8px 20px;
+    background: transparent; border: 1px solid #2a2a2a;
+    color: #555; border-radius: 6px; font-size: 11px;
+    letter-spacing: 1px; text-transform: uppercase;
+    font-family: 'Consolas', monospace; cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  #ice-reset-btn:hover { border-color: #555; color: #aaa; }
+
+  /* ══════════════════════════════════════
+     HELP POPUP
+  ══════════════════════════════════════ */
+  #ice-help-btn {
+    position: absolute; right: 14px; top: 14px;
+    width: 34px; height: 34px; border-radius: 50%;
+    background: #00AEEF; border: none;
+    color: #020202; font-size: 16px; font-weight: bold;
+    cursor: pointer; z-index: 10;
+    box-shadow: 0 0 12px rgba(0,174,239,0.4);
+    transition: background 0.2s;
+  }
+  #ice-help-btn:hover { background: #33C3FF; }
+  #ice-help-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.82); z-index: 100;
+    align-items: flex-start; justify-content: center;
+    overflow-y: auto; padding: 16px 12px 32px;
+  }
+  #ice-help-overlay.open { display: flex; }
+  #ice-help-card {
+    background: #0c0c0c; border: 1px solid #222;
+    border-radius: 14px; padding: 18px 22px 18px;
+    max-width: 720px; width: 98%; position: relative;
+    color: #FFFFFF;
+    box-shadow: 0 0 60px rgba(0,174,239,0.12);
+  }
+  #ice-help-card h2 { font-size: 16px; font-weight: bold; margin-bottom: 10px; line-height: 1.3; }
+  #ice-help-card h2 span { color: #00AEEF; }
+  .help-section { margin-bottom: 0; padding-left: 10px; border-left: 2px solid #1e1e1e; }
+  .help-section.blue { border-left-color: #00AEEF; }
+  .help-section.gold { border-left-color: #F0A500; }
+  .help-section.green { border-left-color: #1D9E75; }
+  .help-section-title { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; font-weight: bold; margin-bottom: 5px; }
+  .help-section-title.blue { color: #00AEEF; }
+  .help-section-title.gold { color: #F0A500; }
+  .help-section-title.green { color: #1D9E75; }
+  .help-section p { font-size: 11px; line-height: 1.55; color: #BBBBBB; }
+  .help-section p strong { color: #FFFFFF; }
+  .pill-row { display: flex; gap: 6px; flex-wrap: wrap; margin: 5px 0; }
+  .pill { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; font-family: 'Consolas', monospace; border: 1px solid; }
+  .pill.A { color: #00FF00; border-color: #00FF00; background: rgba(0,255,0,0.05); }
+  .pill.N { color: #FFFFFF; border-color: #555;    background: rgba(255,255,255,0.03); }
+  .pill.D { color: #FF4444; border-color: #FF4444; background: rgba(255,68,68,0.05); }
+  #ice-help-close { position: absolute; top: 12px; right: 14px; background: none; border: none; color: #444; font-size: 22px; cursor: pointer; }
+  #ice-help-close:hover { color: #fff; }
+  #ice-help-close-btn {
+    display: block; width: 100%; margin-top: 18px;
+    background: #00AEEF; border: none; border-radius: 8px;
+    color: #020202; font-family: Arial, sans-serif; font-weight: bold;
+    font-size: 13px; letter-spacing: 1px; padding: 11px;
+    cursor: pointer; text-transform: uppercase;
+  }
+  #ice-help-close-btn:hover { background: #33C3FF; }
+
+  /* ── Signature ── */
+  #ice-signature {
+    text-align: center; font-size: 10px; letter-spacing: 1.5px;
+    color: rgba(100,100,100,0.5); padding: 14px 0 0;
+    text-transform: uppercase;
+  }
+
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: #060810; width: 100%; min-height: 100%;
+    display: flex; flex-direction: column; align-items: center;
+    font-family: Arial, sans-serif;
+  }
+  #bev-page { width: 100%; max-width: 900px; padding: 0 0 32px; }
+
+  /* ── Trip History ── */
+  #bev-trip-history {
+    padding: 0; background: #040508;
+    border-top: 1px solid #1a2030; overflow: hidden;
+  }
+  #bev-trip-history-header {
+    display: flex; align-items: center; gap: 10px; padding: 8px 16px 5px;
+  }
+  .th-label {
+    font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase;
+    color: #4a6080; font-weight: bold; white-space: nowrap;
+  }
+  .th-line { flex: 1; height: 1px; background: linear-gradient(to right, #1a2a3a, transparent); }
+  #bev-trip-cards { display: flex; align-items: stretch; padding: 0 0 14px 0; overflow: hidden; }
+  .trip-card {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 8px 6px 6px; border-right: 1px solid #0f1520;
+    min-width: 0; transition: opacity 0.4s; cursor: default;
+  }
+  .trip-card:last-child { border-right: none; }
+  .trip-card:hover { background: rgba(0,174,239,0.03); }
+  .tc-date { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; font-family: Arial, sans-serif; font-weight: bold; color: #556880; margin-bottom: 3px; }
+  .tc-km   { font-size: 10px; font-family: 'Consolas', monospace; color: #445566; margin-bottom: 4px; }
+  .tc-kwh  { font-size: 10px; font-family: 'Consolas', monospace; color: #334455; margin-bottom: 5px; }
+  .tc-cost { font-size: 20px; font-weight: bold; font-family: 'Consolas', monospace; color: #aabbcc; line-height: 1; }
+  .tc-unit { font-size: 9px; color: #334455; font-family: Arial, sans-serif; margin-top: 3px; }
+  .trip-card:last-child .tc-cost { color: #00AEEF; }
+  .trip-card:last-child .tc-date { color: #88aacc; }
+  .trip-card:last-child .tc-km   { color: #667788; }
+  .trip-card:last-child .tc-kwh  { color: #556677; }
+  @keyframes slideIn { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
+  .trip-card.new-entry { animation: slideIn 0.4s ease; }
+
+  /* ── Cockpit ── */
+  #bev-cockpit {
+    background: #030408; border-radius: 0 0 20px 20px;
+    overflow: hidden; position: relative;
+  }
+  canvas#mainCanvas { display: block; width: 100%; }
+
+  /* ── Energy bar ── */
+  #bev-energy-bar {
+    display: flex; align-items: stretch;
+    border-top: 1px solid #0d1520; background: #040508;
+  }
+  .e-cell {
+    flex: 1; padding: 10px 14px;
+    display: flex; flex-direction: column; gap: 3px;
+    border-right: 1px solid #0a0f18;
+  }
+  .e-cell:last-child { border-right: none; }
+  .e-cell-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: #5a7898; font-weight: bold; }
+  .e-cell-value { font-size: 16px; font-weight: bold; font-family: 'Consolas', monospace; color: #00AEEF; }
+  .e-cell-sub   { font-size: 10px; color: #6688aa; line-height: 1.4; }
+  .e-cell-sub.live { color: #1D9E75; }
+
+  /* home price input */
+  #bev-home-price-wrap {
+    display: flex; align-items: center; gap: 5px; margin-top: 2px;
+  }
+  #bev-homePriceInput {
+    background: #0a1020; border: 1px solid #1a2a40; color: #00AEEF;
+    font-family: 'Consolas', monospace; font-size: 15px; font-weight: bold;
+    width: 72px; padding: 2px 5px; border-radius: 4px;
+    text-align: right;
+  }
+  #bev-homePriceInput:focus { outline: none; border-color: #00AEEF; }
+  .e-unit { font-size: 12px; color: #446688; font-family: 'Consolas', monospace; }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+  .dot-live { display: inline-block; width: 6px; height: 6px; background: #1D9E75; border-radius: 50%; margin-right: 4px; vertical-align: middle; animation: pulse 2s infinite; }
+  .dot-fast { display: inline-block; width: 6px; height: 6px; background: #F0A500; border-radius: 50%; margin-right: 4px; vertical-align: middle; animation: pulse 2.4s infinite; }
+
+  /* ── Controls ── */
+  #bev-controls-section {
+    margin: 16px 12px 0; background: #070a10;
+    border: 1px solid #0f1828; border-radius: 14px; padding: 18px 24px 20px;
+  }
+  .controls-title { font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; color: #1a2a40; font-weight: bold; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid #0d1520; }
+  .regen-row { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+  .control-label { font-size: 10px; color: #334455; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; min-width: 80px; font-family: 'Consolas', monospace; }
+  .regen-btn {
+    width: 46px; height: 46px; border-radius: 50%;
+    background: #070a10; border: 1.5px solid #1a2a3a;
+    font-size: 11px; font-weight: bold; cursor: pointer;
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    font-family: Arial, sans-serif; color: #445566;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2;
+  }
+  .regen-btn .r-icon { font-size: 15px; }
+  .regen-btn .r-label { font-size: 7px; letter-spacing: 0.5px; opacity: 0.7; }
+  .regen-btn.regen-off.active  { border-color: #888; background: #141414; box-shadow: 0 0 10px rgba(255,255,255,0.08); color: #ccc; }
+  .regen-btn.regen-low.active  { border-color: #00AEEF; background: #04101a; box-shadow: 0 0 12px rgba(0,174,239,0.2); color: #00AEEF; }
+  .regen-btn.regen-high.active { border-color: #1D9E75; background: #04140e; box-shadow: 0 0 12px rgba(29,158,117,0.25); color: #1D9E75; }
+  .regen-hint { font-size: 11px; color: #1a2a3a; margin-left: 6px; font-style: italic; }
+
+  .slider-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .slider-row:last-child { margin-bottom: 0; }
+  input[type=range] { flex: 1; height: 4px; cursor: pointer; border-radius: 2px; }
+  input#powerSlider { accent-color: #00AEEF; height: 5px; }
+  input#timeSlider  { accent-color: #1D9E75; }
+  .slider-val { font-size: 12px; font-weight: bold; font-family: 'Consolas', monospace; min-width: 52px; text-align: right; }
+  .slider-val.power-val { color: #00AEEF; }
+  .slider-val.time-val  { color: #1D9E75; }
+
+  #bev-reset-btn {
+    margin-top: 16px; padding: 8px 20px;
+    background: transparent; border: 1px solid #1a2a3a; color: #2a3a50;
+    border-radius: 6px; font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
+    font-family: 'Consolas', monospace; cursor: pointer; transition: border-color 0.2s, color 0.2s;
+  }
+  #bev-reset-btn:hover { border-color: #00AEEF; color: #00AEEF; }
+
+  /* ── Help ── */
+  #bev-help-btn {
+    position: absolute; right: 14px; top: 14px; width: 34px; height: 34px;
+    border-radius: 50%; background: #00AEEF; border: none;
+    color: #030408; font-size: 16px; font-weight: bold;
+    cursor: pointer; z-index: 10; box-shadow: 0 0 14px rgba(0,174,239,0.5);
+    transition: background 0.2s;
+  }
+  #bev-help-btn:hover { background: #33C3FF; }
+  #bev-help-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.88); z-index: 100;
+    align-items: flex-start; justify-content: center;
+    overflow-y: auto; padding: 16px 12px 32px;
+  }
+  #bev-help-overlay.open { display: flex; }
+  #bev-help-card {
+    background: #070a10; border: 1px solid #1a2a3a;
+    border-radius: 14px; padding: 18px 22px 18px;
+    max-width: 720px; width: 98%; position: relative; color: #FFFFFF;
+    box-shadow: 0 0 60px rgba(0,174,239,0.1);
+  }
+  #bev-help-card h2 { font-size: 16px; font-weight: bold; margin-bottom: 10px; line-height: 1.3; }
+  #bev-help-card h2 span { color: #00AEEF; }
+  .help-section { margin-bottom: 0; padding-left: 10px; border-left: 2px solid #1a2a3a; }
+  .help-section p { font-size: 11px; line-height: 1.55; color: #7a9abb; }
+  .help-section p strong { color: #FFFFFF; }
+  .help-section-title { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; font-weight: bold; margin-bottom: 5px; }
+  .pill-row { display: flex; gap: 6px; flex-wrap: wrap; margin: 5px 0; }
+  .pill { padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: bold; border: 1px solid; }
+  .pill.off  { color: #aaa;    border-color: #555;    background: rgba(255,255,255,0.03); }
+  .pill.low  { color: #00AEEF; border-color: #00AEEF; background: rgba(0,174,239,0.06); }
+  .pill.high { color: #1D9E75; border-color: #1D9E75; background: rgba(29,158,117,0.06); }
+  #bev-help-close { position: absolute; top: 12px; right: 14px; background: none; border: none; color: #2a3a50; font-size: 22px; cursor: pointer; }
+  #bev-help-close:hover { color: #fff; }
+  #bev-help-close-btn {
+    display: block; width: 100%; margin-top: 14px;
+    background: #00AEEF; border: none; border-radius: 8px;
+    color: #030408; font-family: Arial, sans-serif; font-weight: bold;
+    font-size: 13px; letter-spacing: 1px; padding: 11px;
+    cursor: pointer; text-transform: uppercase;
+  }
+  #bev-help-close-btn:hover { background: #33C3FF; }
+
+  #bev-signature { text-align: center; font-size: 10px; letter-spacing: 1.5px; color: rgba(0,100,160,0.35); padding: 14px 0 0; text-transform: uppercase; }
+
+
+#ice-page { width: 100%; max-width: 900px; padding-bottom: 32px; margin: 0 auto; }
+#bev-page { width: 100%; max-width: 900px; padding-bottom: 32px; margin: 0 auto; }
+
+  /* ── Cockpit reset buttons ── */
+  .cockpit-reset {
+    position: absolute; bottom: 12px; right: 12px;
+    background: rgba(10,10,14,0.85); border: 1px solid #333;
+    color: #666; border-radius: 20px; padding: 5px 14px;
+    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    font-weight: bold; cursor: pointer; font-family: Arial, sans-serif;
+    transition: border-color 0.2s, color 0.2s;
+    z-index: 10;
+  }
+  .cockpit-reset:hover { border-color: #F0A500; color: #F0A500; }
+  #bev-cockpit-reset:hover { border-color: #00AEEF; color: #00AEEF; }
+  #ice-cockpit .cockpit-reset { bottom: 12px; }
+  #bev-cockpit .cockpit-reset { bottom: 12px; }
+</style>
+</head>
+<body>
+
+<!-- SIDE TABS -->
+<button id="btn-to-bev" class="tc-side-tab">
+  <span class="tab-circle">&#x2192;</span>
+  <span class="tab-title">&#x26A1; Electric<br>BEV</span>
+  <span class="tab-sub">Click here<br>to switch</span>
+<a href="https://forms.office.com/e/jJ7Sgw7WkD" target="_blank" style="display:block;margin-top:20px;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:900;color:#fff;text-decoration:none;text-align:center;background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.5);border-radius:10px;padding:10px 10px;line-height:1.5;">&#x270D;<br>Give<br>Feedback</a>
+</button>
+<button id="btn-to-ice" class="tc-side-tab">
+  <span class="tab-circle">&#x2190;</span>
+  <span class="tab-title">&#x26FD; Gasoline<br>ICE</span>
+  <span class="tab-sub">Click here<br>to switch</span>
+<a href="https://forms.office.com/e/jJ7Sgw7WkD" target="_blank" style="display:block;margin-top:20px;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:900;color:#fff;text-decoration:none;text-align:center;background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.5);border-radius:10px;padding:10px 10px;line-height:1.5;">&#x270D;<br>Give<br>Feedback</a>
+</button>
+
+<!-- PANELS -->
+<div id="tc-switcher">
+  <div id="tc-panels">
+    <div class="tc-panel">
+      <div id="ice-page">
+
+  <!-- COCKPIT UI -->
+  <div id="ice-cockpit">
+    <canvas id="ice-mainCanvas"></canvas>
+    <!-- Stop-only zone -->
+    <div style="background:#181818;border-top:2px solid #F0A500;">
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#888;padding:6px 0 4px;font-family:Arial,sans-serif;border-bottom:1px solid #222;"><span style="color:#F0A500;font-size:11px;">&#x2193;</span><span>Visible at vehicle stop only</span><span style="color:#F0A500;font-size:11px;">&#x2193;</span></div>
+    <div id="ice-trip-history">
+      <div id="ice-trip-history-header">
+        <span class="th-label">Last Trips</span>
+        <div class="th-line"></div>
+      </div>
+      <div id="ice-trip-cards"><!-- populated by JS --></div>
+    </div>
+    <div id="ice-fuel-bar">
+      <div class="fuel-cell">
+        <span class="fuel-cell-label">Fuel Type</span>
+        <span class="fuel-cell-value" style="color:#aaa;font-size:14px;">⛽ Gasoline</span>
+        <span class="fuel-cell-sub">Self service</span>
+      </div>
+      <div class="fuel-cell">
+        <span class="fuel-cell-label">Last Refuel</span>
+        <span class="fuel-cell-value" id="ice-refuelPrice">— €/L</span>
+        <span class="fuel-cell-sub" id="ice-refuelDate">5 days ago</span>
+      </div>
+      <div class="fuel-cell">
+        <span class="fuel-cell-label">Today's Price</span>
+        <span class="fuel-cell-value" id="ice-todayPrice" style="color:#1D9E75;">—</span>
+        <span class="fuel-cell-sub live" id="ice-todayHint"><span class="dot-live"></span>Fetching...</span>
+      </div>
+      <div class="fuel-cell">
+        <span class="fuel-cell-label">Price Change</span>
+        <span class="fuel-cell-value" id="ice-priceDelta" style="color:#888;">—</span>
+        <span class="fuel-cell-sub" id="ice-deltaHint">vs last refuel</span>
+      </div>
+    </div><!-- /ice-fuel-bar -->
+    </div><!-- /stop-only zone -->
+    <button id="ice-help-btn">?</button>
+  </div>
+
+  <!-- CONTROLS (separated) -->
+  <div id="ice-controls-section">
+    <div class="controls-title">Simulator Controls</div>
+
+
+    <div class="slider-row">
+      <span class="control-label">Throttle</span>
+      <input type="range" id="ice-rpmSlider" min="865" max="4844" value="2250" step="1">
+      <span class="slider-val rpm-val" id="ice-rpmVal">2250 rpm</span>
+    </div>
+
+    <div class="slider-row">
+      <span class="control-label">Time Warp</span>
+      <input type="range" id="ice-timeSlider" min="1" max="20" value="1" step="1">
+      <span class="slider-val time-val" id="ice-timeVal">1×</span>
+    </div>
+
+    <button id="ice-reset-btn" style="display:none">↺ Reset Trip</button>
+  </div>
+
+  <div id="ice-signature">Star*Up 2026 &nbsp;·&nbsp; True Cost Project &nbsp;·&nbsp; Stellantis</div>
+</div>
+
+<!-- HELP POPUP -->
+<div id="ice-help-overlay">
+  <div id="ice-help-card">
+    <button id="ice-help-close">×</button>
+    <div style="font-size:10px;letter-spacing:2px;color:#00AEEF;font-weight:bold;text-transform:uppercase;margin-bottom:8px;">Star*Up 2026 &middot; Stellantis</div>
+    <h2>True Cost: what if your car told you exactly what each km <span>costs?</span></h2>
+    <p style="font-size:11px;color:#666;line-height:1.5;margin-bottom:14px;">
+      Drivers think in money, not in litres or kWh. Yet no cockpit shows the real cost of mobility in real time.<br>
+      This project — selected for <strong style="color:#00AEEF">Star*Up 2026</strong> — proves it's already possible using <strong style="color:#fff">Stellantis Connected Services</strong> and live price data.
+    </p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+      <div class="help-section" style="border-left-color:#F0A500;background:rgba(240,165,0,0.04);border-radius:0 6px 6px 0;padding:10px 12px;">
+        <div class="help-section-title" style="color:#F0A500;">&#x26FD; Gasoline · ICE</div>
+        <p>Cost per km = <strong style="color:#fff">consumption &times; pump price</strong>.<br>
+        Live price fetched automatically from stations within 50 km (MIMIT open data).<br>
+        Last refuel price vs today's price — always visible, no manual input.</p>
+      </div>
+      <div class="help-section" style="border-left-color:#00AEEF;background:rgba(0,174,239,0.04);border-radius:0 6px 6px 0;padding:10px 12px;">
+        <div class="help-section-title" style="color:#00AEEF;">&#x26A1; Electric · BEV</div>
+        <p>Cost per km = <strong style="color:#fff">kWh &times; home tariff</strong>.<br>
+        Nearest fast charger price shown for comparison.<br>
+        Drag the power slider left to simulate regenerative braking — cost goes <strong style="color:#1D9E75">negative</strong>.</p>
+      </div>
+      <div class="help-section" style="border-left-color:#F0A500;background:rgba(240,165,0,0.04);border-radius:0 6px 6px 0;padding:10px 12px;">
+        <div class="help-section-title" style="color:#F0A500;">&#x25CF; Trip History</div>
+        <p>Last 6 trips logged automatically — date, km, cost. Press <strong style="color:#fff">Reset Trip</strong> to save the current run. In production: via Connected Services, no app needed.</p>
+      </div>
+      <div class="help-section" style="border-left-color:#1D9E75;background:rgba(29,158,117,0.04);border-radius:0 6px 6px 0;padding:10px 12px;">
+        <div class="help-section-title" style="color:#1D9E75;">&#x25CF; Live Data</div>
+        <p>Fuel prices: real Italian pump data, updated every 10 min via <strong style="color:#fff">TomTom Fuel Prices API</strong> (Stellantis ecosystem).<br>
+        Stellantis Connect Fleet has confirmed interest in integration.</p>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-bottom:14px;">
+      <a href="https://forms.office.com/e/jJ7Sgw7WkD" target="_blank" style="display:inline-block;background:rgba(0,174,239,0.15);border:1px solid #00AEEF;color:#00AEEF;border-radius:8px;padding:9px 20px;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;font-weight:bold;text-decoration:none;">&#x270D; Share your feedback &rarr;</a>
+    </div>
+
+    <button id="ice-help-close-btn">Got it — let me explore &rarr;</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  const canvas = document.getElementById('ice-mainCanvas');
+  const ctx    = canvas.getContext('2d');
+
+  const state = {
+    minSpeed: 30, maxSpeed: 280,
+    targetRpm: 2250, currentRpm: 2250, currentSpeed: 130,
+    driftAngle: 0, timeMultiplier: 1,
+    dnaMode: 'N',
+    dnaModifiers: { A: 0.85, N: 1.0, D: 1.20 },
+    dnaHints: { A: 'Advanced efficiency — fuel saving active', N: 'Natural — standard driving', D: 'Dynamic — performance mode' },
+    refuelPrice: null,   // price 5 days ago (live + 0.12)
+    todayPrice:  null,   // live price
+    fuelPrice:   1.95,   // used for calculation = refuelPrice
+    tripKm: 0, tripFuelCost: 0, tripFuelLiters: 0,
+    instantEurKm: 0, instantLPer100km: 0,
+    glowR: 0, glowG: 200, glowB: 80
+  };
+
+  /* ── Resize ── */
+  function resize() {
+    const dpr = window.devicePixelRatio || 1;
+    const w   = canvas.parentElement.clientWidth || 900;
+    const h   = Math.round(w * 0.42);
+    canvas.width  = w * dpr; canvas.height = h * dpr;
+    canvas.style.width  = w + 'px'; canvas.style.height = h + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  /* ── DNA buttons ── */
+  const dnaHintEl = document.getElementById('ice-dna-hint-text');
+  document.querySelectorAll('.dna-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.dnaMode = btn.dataset.mode;
+      document.querySelectorAll('.dna-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      dnaHintEl.textContent = state.dnaHints[state.dnaMode];
+    });
+  });
+
+  /* ── Sliders ── */
+  const rpmSlider = document.getElementById('ice-rpmSlider');
+  const rpmValEl  = document.getElementById('ice-rpmVal');
+  rpmSlider.addEventListener('input', () => {
+    state.targetRpm = parseFloat(rpmSlider.value);
+    rpmValEl.textContent = Math.round(rpmSlider.value) + ' rpm';
+  });
+  const timeSlider = document.getElementById('ice-timeSlider');
+  const timeValEl  = document.getElementById('ice-timeVal');
+  timeSlider.addEventListener('input', () => {
+    state.timeMultiplier = parseInt(timeSlider.value);
+    timeValEl.textContent = timeSlider.value + '×';
+  });
+
+  /* ── Trip history ── */
+  const tripLog = [
+    { date: '25 Apr', km: 312, cost: 41.20 },
+    { date: '28 Apr', km: 87,  cost: 11.80 },
+    { date: '02 May', km: 195, cost: 26.40 },
+    { date: '06 May', km: 44,  cost:  6.10 },
+    { date: '10 May', km: 228, cost: 30.90 },
+    { date: '13 May', km: 71,  cost:  9.70 },
+  ];
+  const MAX_TRIPS = 6;
+
+  const OPACITIES = [0.18, 0.32, 0.46, 0.62, 0.78, 1.0];
+
+  function buildTripHistory(newEntry) {
+    const container = document.getElementById('ice-trip-cards');
+    container.innerHTML = '';
+    const visible = tripLog.slice(-MAX_TRIPS);
+    visible.forEach((t, i) => {
+      const card = document.createElement('div');
+      const isNewest = (i === visible.length - 1);
+      card.className = 'trip-card' + (newEntry && isNewest ? ' new-entry' : '');
+      card.style.opacity = OPACITIES[i] ?? 1;
+      card.innerHTML = `
+        <span class="tc-date">${t.date}</span>
+        <span class="tc-km">${t.km} km</span>
+        <span class="tc-cost">€${t.cost.toFixed(2)}</span>
+        <span class="tc-unit">fuel cost</span>`;
+      container.appendChild(card);
+    });
+  }
+  buildTripHistory(false);
+
+  /* ── Reset — saves current trip to log ── */
+  document.getElementById('ice-reset-btn').addEventListener('click', () => {
+    if (state.tripKm > 0.5) {
+      const now = new Date();
+      const label = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+      tripLog.push({
+        date: label,
+        km:   Math.round(state.tripKm * 10) / 10,
+        cost: Math.round(state.tripFuelCost * 100) / 100
+      });
+      buildTripHistory(true);
+    }
+    state.tripKm = 0; state.tripFuelCost = 0; state.tripFuelLiters = 0;
+  });
+
+  /* ── Live price fetch ── */
+  async function fetchPrice() {
+    const API = 'https://prezzi-carburante.onrender.com/api/distributori?latitude=41.9028&longitude=12.4964&distance=50&fuel=benzina&results=100';
+    try {
+      const res  = await fetch(API, { signal: AbortSignal.timeout(12000) });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      const list = data.map(d => d.prezzo).filter(p => p > 0.8 && p < 4);
+      if (list.length < 3) throw new Error('No data');
+      const avg = list.reduce((a,b)=>a+b,0) / list.length;
+
+      state.todayPrice  = avg;
+      state.refuelPrice = avg + 0.12;   // simulated: 5 days ago was higher
+      state.fuelPrice   = state.refuelPrice;
+
+      const now = new Date().toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit'});
+      const refuelDate = (() => {
+        const d = new Date(); d.setDate(d.getDate() - 5);
+        return d.toLocaleDateString('it-IT', {day:'2-digit',month:'short'});
+      })();
+      const delta = (state.todayPrice - state.refuelPrice).toFixed(3);
+      const sign  = delta > 0 ? '+' : '';
+
+      document.getElementById('ice-refuelPrice').textContent  = '€ ' + state.refuelPrice.toFixed(3) + '/L';
+      document.getElementById('ice-refuelDate').textContent   = refuelDate + ' (5 days ago)';
+      document.getElementById('ice-todayPrice').textContent   = '€ ' + state.todayPrice.toFixed(3) + '/L';
+      document.getElementById('ice-todayHint').innerHTML      = '<span class="dot-live"></span>Avg within 50 km &mdash; ' + now + ' &mdash; ' + list.length + ' stations';
+      document.getElementById('ice-priceDelta').textContent   = sign + delta + ' €/L';
+      document.getElementById('ice-priceDelta').style.color   = parseFloat(delta) <= 0 ? '#1D9E75' : '#FF7744';
+      document.getElementById('ice-deltaHint').textContent    = parseFloat(delta) <= 0 ? 'cheaper today' : 'pricier today';
+
+    } catch(e) {
+      document.getElementById('ice-todayHint').innerHTML = 'Unavailable';
+      document.getElementById('ice-todayHint').style.color = '#555';
+    }
+  }
+  fetchPrice();
+
+  /* ── Help popup ── */
+  const overlay = document.getElementById('ice-help-overlay');
+  overlay.classList.add('open');
+  document.getElementById('ice-help-btn').addEventListener('click',     () => overlay.classList.add('open'));
+  document.getElementById('ice-help-close').addEventListener('click',   () => overlay.classList.remove('open'));
+  document.getElementById('ice-help-close-btn').addEventListener('click',() => overlay.classList.remove('open'));
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
+
+  /* ── Physics ── */
+  function lerp(a,b,t){ return a + (b-a)*t; }
+
+  function updatePhysics() {
+    state.driftAngle += 0.04;
+    const drift = Math.sin(state.driftAngle) * 12;
+    state.currentRpm   += (state.targetRpm + drift - state.currentRpm) * 0.1;
+    state.currentSpeed  = Math.max(state.minSpeed, Math.min(state.maxSpeed, state.currentRpm / 17.3));
+
+    state.instantLPer100km =
+      (0.000282 * state.currentSpeed**2 - 0.0163 * state.currentSpeed + 4.61)
+      * state.dnaModifiers[state.dnaMode];
+    state.instantEurKm = (state.instantLPer100km / 100.0) * state.fuelPrice;
+
+    const t = Math.max(0, Math.min(1, (state.instantEurKm - 0.09) / 0.14));
+    state.glowR = Math.round(lerp(state.glowR, Math.round(255*t),       0.05));
+    state.glowG = Math.round(lerp(state.glowG, Math.round(200-180*t),   0.05));
+    state.glowB = Math.round(lerp(state.glowB, Math.round(80 - 80*t),   0.05));
+
+    const step = (state.currentSpeed / 3600) * 0.016 * state.timeMultiplier;
+    state.tripKm         += step;
+    state.tripFuelCost   += step * state.instantEurKm;
+    state.tripFuelLiters += step * (state.instantLPer100km / 100.0);
+  }
+
+  /* ── Gauge ── */
+  function drawGauge(x, y, size, value, maxVal, unit, decimals) {
+    const cx = x + size/2, cy = y + size/2, r = size * 0.46;
+    const r2 = size * 0.33;  // inner ring
+    const start = 225 * Math.PI/180, sweep = 270 * Math.PI/180;
+    const gc = `rgb(${state.glowR},${state.glowG},${state.glowB})`;
+    const gc2 = `rgba(${state.glowR},${state.glowG},${state.glowB},0.35)`;
+
+    // Outer track
+    ctx.beginPath(); ctx.arc(cx,cy,r,start,start+sweep);
+    ctx.strokeStyle='rgb(22,22,22)'; ctx.lineWidth=size*0.05; ctx.lineCap='round'; ctx.stroke();
+    // Inner track
+    ctx.beginPath(); ctx.arc(cx,cy,r2,start,start+sweep);
+    ctx.strokeStyle='rgb(16,16,16)'; ctx.lineWidth=size*0.025; ctx.stroke();
+
+    const pct = Math.min(Math.max(0,value),maxVal)/maxVal;
+    // Outer arc
+    ctx.beginPath(); ctx.arc(cx,cy,r,start,start+sweep*pct);
+    ctx.strokeStyle=gc; ctx.lineWidth=size*0.034; ctx.stroke();
+    // Inner arc — same pct, dimmer
+    ctx.beginPath(); ctx.arc(cx,cy,r2,start,start+sweep*pct);
+    ctx.strokeStyle=gc2; ctx.lineWidth=size*0.018; ctx.stroke();
+
+    ctx.fillStyle='#FFFFFF';
+    ctx.font=`bold ${size*0.17}px Consolas,monospace`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(decimals ? value.toFixed(1) : Math.round(value).toString(), cx, cy-size*0.06);
+    ctx.fillStyle='rgb(180,180,180)';
+    ctx.font=`bold ${size*0.044}px Arial,sans-serif`;
+    ctx.fillText(unit, cx, cy+size*0.13);
+  }
+
+  /* ── km/L label — right gauge bottom, below arc, same style as BEV kWh/100km ── */
+  function drawLitersLabel(W, H, gs) {
+    // ICE gauge: starts at gy=H*0.05, size=H*0.84 → bottom edge at H*0.89
+    // Place label just below, at H*0.955
+    const gaugeCx = (W - gs - gs*0.02) + gs / 2;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = `bold ${H * 0.044}px Consolas,monospace`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    const kmL = state.instantLPer100km > 0 ? (100 / state.instantLPer100km).toFixed(1) : '—';
+    ctx.fillText(kmL + ' km/L', gaugeCx, H * 0.955);
+  }
+
+  /* ── Draw ── */
+  function draw() {
+    const dpr=window.devicePixelRatio||1;
+    const W=canvas.width/dpr, H=canvas.height/dpr;
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='#020202'; ctx.fillRect(0,0,W,H);
+
+    const gs = H*0.84, gy = H*0.05;
+    const cw = W*0.36, cx = (W-cw)/2;
+    const gc = `rgb(${state.glowR},${state.glowG},${state.glowB})`;
+
+    // Centre glow
+    const gr=ctx.createRadialGradient(W/2,H*0.5,0,W/2,H*0.5,H*0.72);
+    gr.addColorStop(0,`rgba(${state.glowR},${state.glowG},${state.glowB},0.32)`);
+    gr.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=gr;
+    ctx.beginPath(); ctx.roundRect(cx,H*0.05,cw,H*0.92,24); ctx.fill();
+
+    // Header
+    ctx.fillStyle='#00AEEF';
+    ctx.beginPath(); ctx.roundRect(cx,H*0.04,cw,H*0.115,[4,4,0,0]); ctx.fill();
+    ctx.fillStyle='#FFFFFF';
+    ctx.font=`bold ${H*0.052}px Arial,sans-serif`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('STELLANTIS', W/2, H*0.098);
+
+    // Separator
+    ctx.strokeStyle='rgba(255,255,255,0.12)'; ctx.lineWidth=0.5;
+    ctx.beginPath();
+    ctx.moveTo(cx+cw*0.15, H*0.57); ctx.lineTo(cx+cw*0.85, H*0.57); ctx.stroke();
+
+    // Live consumption label
+    ctx.fillStyle='rgba(200,200,200,0.7)';
+    ctx.font=`bold ${H*0.036}px Arial,sans-serif`;
+    ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+    ctx.fillText('LIVE CONSUMPTION', W/2, H*0.285);
+
+    // Big cost number
+    ctx.fillStyle='#FFFFFF';
+    ctx.font=`bold ${H*0.225}px Consolas,monospace`;
+    ctx.textBaseline='middle';
+    ctx.fillText(state.instantEurKm.toFixed(2), W/2, H*0.425);
+
+    // Unit
+    ctx.fillStyle='rgba(200,200,200,0.6)';
+    ctx.font=`bold ${H*0.036}px Arial,sans-serif`;
+    ctx.textBaseline='alphabetic';
+    ctx.fillText('EURO / KM', W/2, H*0.55);
+
+    // Distance + consumed litres (two rows, like BEV)
+    const brows = [
+      ['DISTANCE', `${state.tripKm.toFixed(2)} KM`],
+      ['CONSUMED', `${state.tripFuelLiters.toFixed(2)} L`],
+    ];
+    const bsy = H*0.615, blh = H*0.095;
+    brows.forEach(([l, v], i) => {
+      ctx.fillStyle='rgba(200,200,200,0.55)';
+      ctx.font=`bold ${H*0.036}px Arial,sans-serif`;
+      ctx.textAlign='right'; ctx.textBaseline='alphabetic';
+      ctx.fillText(l, cx+cw*0.44, bsy + i*blh);
+      ctx.fillStyle='#FFFFFF';
+      ctx.font=`bold ${H*0.060}px Consolas,monospace`;
+      ctx.textAlign='left';
+      ctx.fillText(v, cx+cw*0.50, bsy + i*blh);
+    });
+
+    // Total
+    ctx.fillStyle='rgba(200,200,200,0.55)';
+    ctx.font=`bold ${H*0.037}px Arial,sans-serif`;
+    ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+    ctx.fillText('TOTAL TRIP COST', W/2, H*0.840);
+    ctx.fillStyle='#FFFFFF';
+    ctx.font=`bold ${H*0.125}px Consolas,monospace`;
+    ctx.textBaseline='middle';
+    ctx.fillText(`EUR ${state.tripFuelCost.toFixed(2)}`, W/2, H*0.940);
+    // Reset button — right of total
+    const iceResetW = cw*0.28, iceResetH = H*0.062;
+    const iceResetX = W/2 + iceResetW * 1.5;
+    const iceResetY = H*0.940 - iceResetH * 0.2;
+    const iceResetR = iceResetH/2;
+    ctx.fillStyle = state._iceResetHover ? 'rgba(240,165,0,0.25)' : 'rgba(30,20,5,0.7)';
+    ctx.strokeStyle = state._iceResetHover ? '#F0A500' : '#3a2a00';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.roundRect(iceResetX, iceResetY - iceResetH/2, iceResetW, iceResetH, iceResetR); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = state._iceResetHover ? '#F0A500' : '#888';
+    ctx.font = `bold ${H*0.028}px Arial,sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('\u21BA RESET', iceResetX + iceResetW/2, iceResetY);
+    state._iceResetBounds = {x: iceResetX, y: iceResetY - iceResetH/2, w: iceResetW, h: iceResetH};
+
+    // Gauges
+    drawGauge(gs*0.02,            gy, gs, state.currentRpm,   8000, 'RPM', false);
+    drawGauge(W-gs-gs*0.02,       gy, gs, state.currentSpeed, 280,  'km/h', true);
+    drawLitersLabel(W, H, gs);
+  }
+
+  state._iceResetHover = false; state._iceResetBounds = null;
+  canvas.addEventListener('mousemove', function(e) {
+    var r = canvas.getBoundingClientRect();
+    var sx = (e.clientX - r.left) * (canvas.width / r.width) / (window.devicePixelRatio||1);
+    var sy = (e.clientY - r.top)  * (canvas.height / r.height) / (window.devicePixelRatio||1);
+    var b = state._iceResetBounds;
+    state._iceResetHover = !!(b && sx>=b.x && sx<=b.x+b.w && sy>=b.y && sy<=b.y+b.h);
+    canvas.style.cursor = state._iceResetHover ? 'pointer' : 'default';
+  });
+  canvas.addEventListener('click', function(e) {
+    var r = canvas.getBoundingClientRect();
+    var sx = (e.clientX - r.left) * (canvas.width / r.width) / (window.devicePixelRatio||1);
+    var sy = (e.clientY - r.top)  * (canvas.height / r.height) / (window.devicePixelRatio||1);
+    var b = state._iceResetBounds;
+    if (b && sx>=b.x && sx<=b.x+b.w && sy>=b.y && sy<=b.y+b.h) document.getElementById('ice-reset-btn').click();
+  });
+  function loop(){ updatePhysics(); draw(); requestAnimationFrame(loop); }
+  loop();
+})();
+</script>
+    </div>
+    <div class="tc-panel">
+      <div id="bev-page">
+
+  <!-- COCKPIT -->
+  <div id="bev-cockpit">
+    <canvas id="bev-mainCanvas"></canvas>
+
+    <!-- Stop-only zone -->
+    <div style="background:#0d1520;border-top:2px solid #00AEEF;">
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#6090b0;padding:6px 0 4px;font-family:Arial,sans-serif;border-bottom:1px solid #152030;"><span style="color:#00AEEF;font-size:11px;">&#x2193;</span><span>Visible at vehicle stop only</span><span style="color:#00AEEF;font-size:11px;">&#x2193;</span></div>
+    <!-- Trip history -->
+    <div id="bev-trip-history">
+      <div id="bev-trip-history-header">
+        <span class="th-label">Last Trips</span>
+        <div class="th-line"></div>
+      </div>
+      <div id="bev-trip-cards"><!-- populated by JS --></div>
+    </div>
+
+    <!-- Energy bar -->
+    <div id="bev-energy-bar">
+      <div class="e-cell">
+        <span class="e-cell-label">Energy Type</span>
+        <span class="e-cell-value" style="color:#aabbcc;font-size:13px;">&#x26A1; Electric</span>
+        <span class="e-cell-sub">BEV</span>
+      </div>
+      <div class="e-cell">
+        <span class="e-cell-label">Home Charging</span>
+        <div id="bev-home-price-wrap">
+          <input type="number" id="bev-homePriceInput" min="0.10" max="1.00" step="0.01" value="0.25">
+          <span class="e-unit">€/kWh</span>
+        </div>
+        <span class="e-cell-sub">Set once — used for cost calc</span>
+      </div>
+      <div class="e-cell">
+        <span class="e-cell-label">Nearest Fast Charger</span>
+        <span class="e-cell-value" id="bev-fastChargerPrice">€ 0.59/kWh</span>
+        <span class="e-cell-sub" id="bev-fastChargerHint"><span class="dot-fast"></span>Free2Move · 2.1 km</span>
+      </div>
+      <div class="e-cell">
+        <span class="e-cell-label">Cost Difference</span>
+        <span class="e-cell-value" id="bev-chargeDelta" style="color:#FF7744;">—</span>
+        <span class="e-cell-sub" id="bev-chargeDeltaHint">home vs fast</span>
+      </div>
+    </div><!-- /bev-energy-bar -->
+    </div><!-- /stop-only zone -->
+
+    <button id="bev-help-btn" style="display:none">?</button>
+  </div>
+
+  <!-- CONTROLS -->
+  <div id="bev-controls-section">
+    <div class="controls-title">Simulator Controls</div>
+
+
+    <div class="slider-row" style="flex-wrap:wrap;gap:8px;">
+      <span class="control-label">Power</span>
+      <div style="flex:1;display:flex;flex-direction:column;gap:4px;min-width:0;">
+        <input type="range" id="bev-powerSlider" min="-40" max="150" value="40" step="1" style="width:100%;">
+        <div style="display:flex;align-items:center;position:relative;height:14px;">
+          <!-- regen zone marker -->
+          <div style="position:absolute;left:0;width:21%;height:100%;display:flex;align-items:center;">
+            <div style="width:100%;height:2px;background:linear-gradient(to right,#1D9E75,rgba(29,158,117,0.2));border-radius:1px;"></div>
+          </div>
+          <!-- zero marker -->
+          <div style="position:absolute;left:21%;display:flex;flex-direction:column;align-items:center;transform:translateX(-50%);">
+            <div style="width:1px;height:8px;background:#555;"></div>
+            <span style="font-size:9px;color:#555;font-family:Consolas,monospace;letter-spacing:0;margin-top:1px;">0</span>
+          </div>
+          <!-- regen label -->
+          <span style="position:absolute;left:2%;font-size:8px;color:#1D9E75;font-family:Consolas,monospace;letter-spacing:1px;text-transform:uppercase;">&#x21BA; regen</span>
+          <!-- drive label -->
+          <span style="position:absolute;right:2%;font-size:8px;color:#00AEEF;font-family:Consolas,monospace;letter-spacing:1px;text-transform:uppercase;">drive &#x2192;</span>
+        </div>
+      </div>
+      <span class="slider-val power-val" id="bev-powerVal">40 kW</span>
+    </div>
+
+    <div class="slider-row">
+      <span class="control-label">Time Warp</span>
+      <input type="range" id="bev-timeSlider" min="1" max="20" value="1" step="1">
+      <span class="slider-val time-val" id="bev-timeVal">1×</span>
+    </div>
+
+    <button id="bev-reset-btn" style="display:none">&#x21BA; Reset Trip</button>
+  </div>
+
+  <div id="bev-signature">Star*Up 2026 &nbsp;·&nbsp; True Cost BEV &nbsp;·&nbsp; Stellantis</div>
+</div>
+
+<!-- HELP -->
+<div id="bev-help-overlay">
+  <div id="bev-help-card">
+    <button id="bev-help-close">×</button>
+    <div style="font-size:10px;letter-spacing:2px;color:#00AEEF;font-weight:bold;text-transform:uppercase;margin-bottom:8px;">Star*Up · Stellantis · BEV</div>
+    <h2>What if your BEV told you exactly what each kilometre <span>costs?</span></h2>
+    <p style="font-size:11px;color:#445566;line-height:1.5;margin-bottom:14px;">
+      The <strong style="color:#fff">True Cost BEV view</strong> — real-time energy cost per km in euros, calculated on your home charging tariff. The nearest fast charger price is always visible for comparison.<br>
+      Selected for <strong style="color:#00AEEF">Star*Up 2026</strong>.
+    </p>
+
+    <!-- Row 1: controls -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;">
+      <div class="help-section" style="border-left-color:#00AEEF;padding:8px 10px;">
+        <div class="help-section-title" style="color:#00AEEF;">Power Slider</div>
+        <p><strong>Right of zero</strong> — motor draws energy, cost rises.<br>
+        <strong style="color:#1D9E75;">Left of zero</strong> — regenerative braking: the motor becomes a generator, energy flows <em>back</em> to the battery. Cost per km goes <strong style="color:#1D9E75;">negative</strong> and SoC recovers.<br>
+        The green zone on the slider marks the regen range.</p>
+      </div>
+      <div class="help-section" style="border-left-color:#1D9E75;padding:8px 10px;">
+        <div class="help-section-title" style="color:#1D9E75;">Regen Mode</div>
+        <div class="pill-row" style="margin:4px 0;">
+          <span class="pill off">OFF — no recovery</span>
+          <span class="pill low">LOW 55% efficiency</span>
+          <span class="pill high">HIGH 72% efficiency</span>
+        </div>
+        <p>Sets how much of the braking energy is captured. <strong>HIGH</strong> enables one-pedal driving — lift off and the car decelerates, recovering up to 72% of kinetic energy back as charge. With <strong>OFF</strong>, dragging left simply coasts with no recovery.</p>
+      </div>
+      <div class="help-section" style="border-left-color:#00AEEF;padding:8px 10px;">
+        <div class="help-section-title" style="color:#00AEEF;">Time Warp</div>
+        <p>Up to <strong>20×</strong> speed. Watch SoC drain and costs accumulate over a full journey in seconds. Press Reset to save.</p>
+      </div>
+    </div>
+
+    <!-- Row 2: data -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+      <div class="help-section" style="border-left-color:#F0A500;background:rgba(240,165,0,0.04);border-radius:0 6px 6px 0;padding:9px 11px;">
+        <div class="help-section-title" style="color:#F0A500;">&#x25CF; Trip History</div>
+        <p>Last 6 trips — date, km, kWh consumed and energy cost. Oldest fade left. Press <strong style="color:#fff">Reset Trip</strong> to save the current run.<br>
+        In production: logged automatically by Connected Services.</p>
+      </div>
+      <div class="help-section" style="border-left-color:#1D9E75;background:rgba(29,158,117,0.05);border-radius:0 6px 6px 0;padding:9px 11px;">
+        <div class="help-section-title" style="color:#1D9E75;">&#x25CF; Energy Price Feed</div>
+        <p><strong style="color:#fff">Home Charging</strong> — your tariff, set once, drives all calculations.<br>
+        <strong style="color:#F0A500">Fast Charger</strong> — nearest DC fast charger (simulated Free2Move). Delta shows the real cost of charging away from home.<br>
+        In production: via <strong style="color:#fff">Connected Services</strong> + TomTom EV Charging API.</p>
+      </div>
+    </div>
+
+    <button id="bev-help-close-btn">Got it — let me drive &#x2192;</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  const canvas = document.getElementById('bev-mainCanvas');
+  const ctx    = canvas.getContext('2d');
+
+  /* ── State ── */
+  const state = {
+    targetPowerKw: 40, currentPowerKw: 40,
+    currentSpeed: 80,
+    driftAngle: 0, timeMultiplier: 1,
+    regenMode: 'low',
+    regenModifiers: { off: 1.0, low: 0.92, high: 0.82 },
+    regenHints: {
+      off:  'No regen — drag slider left to simulate braking',
+      low:  'Low regen — drag left to recover energy while braking',
+      high: 'High regen — one-pedal driving, drag left for max recovery'
+    },
+    homePriceKwh: 0.25,
+    fastChargerKwh: 0.59,
+    socPct: 78,           // starts at 78%
+    tripKm: 0,
+    tripKwh: 0,
+    tripEnergyCost: 0,
+    instantEurKm: 0,
+    instantKwhKm: 0,
+    glowR: 0, glowG: 160, glowB: 239
+  };
+
+  /* ── Resize ── */
+  function resize() {
+    const dpr = window.devicePixelRatio || 1;
+    const w   = canvas.parentElement.clientWidth || 900;
+    const h   = Math.round(w * 0.46);
+    canvas.width  = w * dpr; canvas.height = h * dpr;
+    canvas.style.width  = w + 'px'; canvas.style.height = h + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  /* ── Regen buttons ── */
+  const regenHintEl = document.getElementById('bev-regen-hint-text');
+  document.querySelectorAll('.regen-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.regenMode = btn.dataset.regen;
+      document.querySelectorAll('.regen-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      regenHintEl.textContent = state.regenHints[state.regenMode];
+    });
+  });
+
+  /* ── Power slider ── */
+  const powerSlider = document.getElementById('bev-powerSlider');
+  const powerValEl  = document.getElementById('bev-powerVal');
+  powerSlider.addEventListener('input', () => {
+    state.targetPowerKw = parseFloat(powerSlider.value);
+    const v = parseFloat(powerSlider.value);
+    if (v < 0) {
+      powerValEl.textContent = v + ' kW  ↺ REGEN';
+      powerValEl.style.color = '#1D9E75';
+    } else {
+      powerValEl.textContent = v + ' kW';
+      powerValEl.style.color = '#00AEEF';
+    }
+  });
+
+  /* ── Time slider ── */
+  const timeSlider = document.getElementById('bev-timeSlider');
+  const timeValEl  = document.getElementById('bev-timeVal');
+  timeSlider.addEventListener('input', () => {
+    state.timeMultiplier = parseInt(timeSlider.value);
+    timeValEl.textContent = timeSlider.value + '×';
+  });
+
+  /* ── Home price input ── */
+  document.getElementById('bev-homePriceInput').addEventListener('input', function() {
+    const v = parseFloat(this.value);
+    if (!isNaN(v) && v > 0.05 && v < 2) {
+      state.homePriceKwh = v;
+      updateChargeDelta();
+    }
+  });
+
+  function updateChargeDelta() {
+    const delta = state.fastChargerKwh - state.homePriceKwh;
+    const pct   = ((delta / state.homePriceKwh) * 100).toFixed(0);
+    const el    = document.getElementById('bev-chargeDelta');
+    const hint  = document.getElementById('bev-chargeDeltaHint');
+    el.textContent  = '+€' + delta.toFixed(2) + '/kWh';
+    el.style.color  = '#FF7744';
+    hint.textContent = 'fast charger ' + pct + '% more';
+  }
+  updateChargeDelta();
+
+  /* ── Trip history ── */
+  const tripLog = [
+    { date: '25 Apr', km: 187, kwh: 29.2, cost: 7.30 },
+    { date: '28 Apr', km:  62, kwh:  9.7, cost: 2.43 },
+    { date: '02 May', km: 134, kwh: 20.9, cost: 5.23 },
+    { date: '06 May', km:  38, kwh:  6.0, cost: 1.50 },
+    { date: '10 May', km: 211, kwh: 33.0, cost: 8.25 },
+    { date: '13 May', km:  74, kwh: 11.6, cost: 2.90 },
+  ];
+  const MAX_TRIPS = 6;
+  const OPACITIES = [0.18, 0.32, 0.46, 0.62, 0.78, 1.0];
+
+  function buildTripHistory(newEntry) {
+    const container = document.getElementById('bev-trip-cards');
+    container.innerHTML = '';
+    const visible = tripLog.slice(-MAX_TRIPS);
+    visible.forEach((t, i) => {
+      const card = document.createElement('div');
+      const isNewest = (i === visible.length - 1);
+      card.className = 'trip-card' + (newEntry && isNewest ? ' new-entry' : '');
+      card.style.opacity = OPACITIES[i] ?? 1;
+      card.innerHTML = `
+        <span class="tc-date">${t.date}</span>
+        <span class="tc-km">${t.km} km</span>
+        <span class="tc-kwh">${t.kwh} kWh</span>
+        <span class="tc-cost">€${t.cost.toFixed(2)}</span>
+        <span class="tc-unit">energy cost</span>`;
+      container.appendChild(card);
+    });
+  }
+  buildTripHistory(false);
+
+  /* ── Reset ── */
+  document.getElementById('bev-reset-btn').addEventListener('click', () => {
+    if (state.tripKm > 0.5) {
+      const label = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+      tripLog.push({
+        date: label,
+        km:   Math.round(state.tripKm * 10) / 10,
+        kwh:  Math.round(state.tripKwh * 10) / 10,
+        cost: Math.round(state.tripEnergyCost * 100) / 100
+      });
+      buildTripHistory(true);
+    }
+    state.tripKm = 0; state.tripKwh = 0; state.tripEnergyCost = 0;
+    state.socPct = 78;
+  });
+
+  /* ── Help ── */
+  const overlay = document.getElementById('bev-help-overlay');
+  document.getElementById('bev-help-btn').addEventListener('click',      () => overlay.classList.add('open'));
+  document.getElementById('bev-help-close').addEventListener('click',    () => overlay.classList.remove('open'));
+  document.getElementById('bev-help-close-btn').addEventListener('click',() => overlay.classList.remove('open'));
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
+
+  /* ── Physics ── */
+  function lerp(a, b, t) { return a + (b - a) * t; }
+
+  function updatePhysics() {
+    state.driftAngle += 0.035;
+    const drift = Math.sin(state.driftAngle) * 4;
+    state.currentPowerKw += (state.targetPowerKw + drift - state.currentPowerKw) * 0.1;
+    const kw = state.currentPowerKw;  // allow negative for regen
+    const isRegen = kw < 0;
+
+    // speed: decelerates slowly in regen, accelerates with positive power
+    const targetSpeed = isRegen
+      ? Math.max(0, state.currentSpeed - 0.8 * state.timeMultiplier)
+      : Math.max(10, Math.min(160, Math.abs(kw) * 1.12 + 30));
+    state.currentSpeed += (targetSpeed - state.currentSpeed) * 0.06;
+
+    const spd = Math.max(1, state.currentSpeed);
+
+    let kwhKm, eurKm;
+    if (isRegen) {
+      // regen: energy flows back to battery
+      // recovery proportional to regen power and regen mode
+      const regenPower = Math.abs(kw);  // 0–40 kW
+      const regenEfficiency = state.regenMode === 'high' ? 0.72 : state.regenMode === 'low' ? 0.55 : 0.0;
+      kwhKm = -(regenPower * regenEfficiency / Math.max(10, spd)) * 0.5;  // negative = recovering
+      eurKm = kwhKm * state.homePriceKwh;
+    } else {
+      const baseKwhPer100 = 0.00055 * spd * spd + 0.030 * spd + 13.0; // calibrated on Jeep Avenger BEV 54kWh
+      const regenFactor = state.regenModifiers[state.regenMode];
+      kwhKm = (baseKwhPer100 / 100) * regenFactor;
+      eurKm = kwhKm * state.homePriceKwh;
+    }
+    state.instantKwhKm = kwhKm;
+    state.instantEurKm = eurKm;
+
+    // glow: cyan/green in regen, blue normal, warm at high consumption
+    if (isRegen) {
+      state.glowR = Math.round(lerp(state.glowR, 0,   0.05));
+      state.glowG = Math.round(lerp(state.glowG, 210, 0.05));
+      state.glowB = Math.round(lerp(state.glowB, 180, 0.05));
+    } else {
+      const t = Math.max(0, Math.min(1, (eurKm - 0.02) / 0.06));
+      state.glowR = Math.round(lerp(state.glowR, Math.round(0   + 255 * t * 0.6), 0.05));
+      state.glowG = Math.round(lerp(state.glowG, Math.round(160 - 100 * t),       0.05));
+      state.glowB = Math.round(lerp(state.glowB, Math.round(239 -  80 * t),       0.05));
+    }
+
+    const step = (spd / 3600) * 0.016 * state.timeMultiplier;
+    state.tripKm         += step;
+    state.tripKwh        += step * kwhKm * 100;          // negative in regen
+    state.tripEnergyCost += step * eurKm;                 // negative in regen
+
+    // SoC: drains when driving, recovers in regen
+    const socDelta = (step * kwhKm * 100 / 54) * 10;
+    state.socPct = Math.min(100, Math.max(0, state.socPct - socDelta));
+  }
+
+  function drawKwhLabel(W, H, gs, gRight) {
+    const gaugeCx = gRight + gs / 2;
+    const by = H * 0.86;
+    ctx.fillStyle = state.instantKwhKm < 0 ? '#1D9E75' : '#FFFFFF';
+    ctx.font = `bold ${H * 0.044}px Consolas,monospace`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    const kwhLabel = (state.instantKwhKm * 100).toFixed(1) + ' kWh/100km';
+    ctx.fillText(kwhLabel, gaugeCx, by - H * 0.007);
+  }
+
+  /* ── Gauge (left: power kW, right: speed km/h) ── */
+  function drawGauge(x, y, size, value, maxVal, unit, color, decimals) {
+    const cx = x + size/2, cy = y + size/2, r = size * 0.46;
+    const r2 = size * 0.33;  // inner ring
+    const start = 225 * Math.PI/180, sweep = 270 * Math.PI/180;
+    const color2 = color.replace('rgb(', 'rgba(').replace(')', ',0.35)');
+
+    // Outer track
+    ctx.beginPath(); ctx.arc(cx, cy, r, start, start + sweep);
+    ctx.strokeStyle = 'rgb(12,18,28)'; ctx.lineWidth = size * 0.05; ctx.lineCap = 'round'; ctx.stroke();
+    // Inner track
+    ctx.beginPath(); ctx.arc(cx, cy, r2, start, start + sweep);
+    ctx.strokeStyle = 'rgb(8,14,22)'; ctx.lineWidth = size * 0.025; ctx.stroke();
+
+    const pct = Math.min(Math.max(0, value), maxVal) / maxVal;
+    // Outer arc
+    ctx.beginPath(); ctx.arc(cx, cy, r, start, start + sweep * pct);
+    ctx.strokeStyle = color; ctx.lineWidth = size * 0.034; ctx.stroke();
+    // Inner arc — same pct, dimmer
+    ctx.beginPath(); ctx.arc(cx, cy, r2, start, start + sweep * pct);
+    ctx.strokeStyle = color2; ctx.lineWidth = size * 0.018; ctx.stroke();
+
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = `bold ${size * 0.17}px Consolas,monospace`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(decimals ? value.toFixed(1) : Math.round(value).toString(), cx, cy - size * 0.06);
+    ctx.fillStyle = 'rgba(180,200,220,0.7)';
+    ctx.font = `bold ${size * 0.044}px Arial,sans-serif`;
+    ctx.fillText(unit, cx, cy + size * 0.13);
+  }
+
+  /* ── SoC bar ── */
+  function drawSoC(W, H, gs, gLeft) {
+    // SoC bar: centred horizontally inside the left gauge circle
+    // gauge circle centre-x = gLeft + gs/2, radius ≈ gs*0.46
+    const gaugeCx = gLeft + gs / 2;
+    const gaugeR  = gs * 0.38;          // slightly inside the arc
+    const bw = gaugeR * 1.1;            // fits within circle
+    const bh = H * 0.026;
+    const bx = gaugeCx - bw / 2;
+    const by = H * 0.86;
+    const soc = state.socPct / 100;
+    const socColor = soc > 0.4 ? '#1D9E75' : soc > 0.2 ? '#F0A500' : '#FF4444';
+
+    // label
+    ctx.fillStyle = 'rgba(100,150,190,0.75)';
+    ctx.font = `bold ${H * 0.022}px Arial,sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    ctx.fillText('SOC  ' + Math.round(state.socPct) + '%', gaugeCx, by - H * 0.007);
+
+    // frame
+    ctx.strokeStyle = 'rgba(0,174,239,0.18)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, 2); ctx.stroke();
+    // fill
+    ctx.fillStyle = socColor;
+    ctx.beginPath(); ctx.roundRect(bx + 1, by + 1, Math.max(0, (bw - 2) * soc), bh - 2, 1); ctx.fill();
+    // nub
+    ctx.fillStyle = 'rgba(0,174,239,0.2)';
+    ctx.beginPath(); ctx.roundRect(bx + bw + 1, by + bh * 0.2, 3, bh * 0.6, 1); ctx.fill();
+  }
+
+  /* ── Draw ── */
+  function draw() {
+    const dpr = window.devicePixelRatio || 1;
+    const W = canvas.width / dpr, H = canvas.height / dpr;
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#030408'; ctx.fillRect(0, 0, W, H);
+
+    // gauges sized so they stay in outer thirds, centre panel is clear
+    const gs = H * 0.70;   // gauge size — smaller to avoid overlap
+    const gy = H * 0.06;
+    const gLeft  = 0;                  // left gauge x
+    const gRight = W - gs;             // right gauge x
+    const cw = W * 0.38, cx = (W - cw) / 2;
+    const gc = `rgb(${state.glowR},${state.glowG},${state.glowB})`;
+
+    // centre glow
+    const gr = ctx.createRadialGradient(W/2, H*0.45, 0, W/2, H*0.45, H*0.65);
+    gr.addColorStop(0, `rgba(${state.glowR},${state.glowG},${state.glowB},0.26)`);
+    gr.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = gr;
+    ctx.beginPath(); ctx.roundRect(cx, H*0.04, cw, H*0.94, 24); ctx.fill();
+
+    // header
+    ctx.fillStyle = '#00AEEF';
+    ctx.beginPath(); ctx.roundRect(cx, H*0.04, cw, H*0.115, [4,4,0,0]); ctx.fill();
+    ctx.fillStyle = '#030408';
+    ctx.font = `bold ${H*0.052}px Arial,sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('STELLANTIS', W/2, H*0.098);
+
+    // separator
+    ctx.strokeStyle = 'rgba(0,174,239,0.15)'; ctx.lineWidth = 0.5;
+    ctx.beginPath(); ctx.moveTo(cx+cw*0.12, H*0.57); ctx.lineTo(cx+cw*0.88, H*0.57); ctx.stroke();
+
+    // live label
+    ctx.fillStyle = 'rgba(150,190,220,0.7)';
+    ctx.font = `bold ${H*0.034}px Arial,sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    ctx.fillText('LIVE CONSUMPTION', W/2, H*0.280);
+
+    // big cost number — green in regen
+    ctx.fillStyle = state.instantEurKm < 0 ? '#1D9E75' : '#FFFFFF';
+    ctx.font = `bold ${H*0.215}px Consolas,monospace`;
+    ctx.textBaseline = 'middle';
+    ctx.fillText(state.instantEurKm.toFixed(2), W/2, H*0.410);
+
+    // unit
+    ctx.fillStyle = 'rgba(150,190,220,0.6)';
+    ctx.font = `bold ${H*0.032}px Arial,sans-serif`;
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText('EURO / KM', W/2, H*0.542);
+
+
+
+    // Distance + consumed
+    const brows = [
+      ['DISTANCE', `${state.tripKm.toFixed(2)} KM`],
+      ['CONSUMED', `${state.tripKwh.toFixed(1)} kWh`],
+    ];
+    const bsy = H*0.615, blh = H*0.095;
+    brows.forEach(([l, v], i) => {
+      ctx.fillStyle = 'rgba(150,190,220,0.55)';
+      ctx.font = `bold ${H*0.036}px Arial,sans-serif`;
+      ctx.textAlign = 'right'; ctx.textBaseline = 'alphabetic';
+      ctx.fillText(l, cx + cw*0.44, bsy + i*blh);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = `bold ${H*0.058}px Consolas,monospace`;
+      ctx.textAlign = 'left';
+      ctx.fillText(v, cx + cw*0.50, bsy + i*blh);
+    });
+
+    // total
+    ctx.fillStyle = 'rgba(150,190,220,0.5)';
+    ctx.font = `bold ${H*0.030}px Arial,sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    ctx.fillText('TOTAL TRIP COST', W/2, H*0.845);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = `bold ${H*0.115}px Consolas,monospace`;
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`EUR ${state.tripEnergyCost.toFixed(2)}`, W/2, H*0.940);
+    // Reset button — right of total
+    const bevResetW = cw*0.28, bevResetH = H*0.062;
+    const bevResetX = W/2 + bevResetW * 1.5;
+    const bevResetY = H*0.940 - bevResetH * 0.2;
+    const bevResetR = bevResetH/2;
+    ctx.fillStyle = state._bevResetHover ? 'rgba(0,174,239,0.2)' : 'rgba(2,10,20,0.7)';
+    ctx.strokeStyle = state._bevResetHover ? '#00AEEF' : '#00304a';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.roundRect(bevResetX, bevResetY - bevResetH/2, bevResetW, bevResetH, bevResetR); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = state._bevResetHover ? '#00AEEF' : '#448';
+    ctx.font = `bold ${H*0.028}px Arial,sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('\u21BA RESET', bevResetX + bevResetW/2, bevResetY);
+    state._bevResetBounds = {x: bevResetX, y: bevResetY - bevResetH/2, w: bevResetW, h: bevResetH};
+
+    // SoC bar — inside left gauge
+    drawSoC(W, H, gs, gLeft);
+    // kWh/100km — symmetric, inside right gauge
+    drawKwhLabel(W, H, gs, gRight);
+
+    // gauges
+    drawGauge(gLeft,  gy, gs, state.currentPowerKw, 150, 'kW',   gc, false);
+    drawGauge(gRight, gy, gs, state.currentSpeed,   160, 'km/h', gc, true);
+  }
+
+  state._bevResetHover = false; state._bevResetBounds = null;
+  canvas.addEventListener('mousemove', e => {
+    const r = canvas.getBoundingClientRect();
+    const sx = (e.clientX - r.left) * (canvas.width / r.width) / (window.devicePixelRatio||1);
+    const sy = (e.clientY - r.top)  * (canvas.height / r.height) / (window.devicePixelRatio||1);
+    const b = state._bevResetBounds;
+    state._bevResetHover = b && sx>=b.x && sx<=b.x+b.w && sy>=b.y && sy<=b.y+b.h;
+    canvas.style.cursor = state._bevResetHover ? 'pointer' : 'default';
+  });
+  canvas.addEventListener('click', e => {
+    const r = canvas.getBoundingClientRect();
+    const sx = (e.clientX - r.left) * (canvas.width / r.width) / (window.devicePixelRatio||1);
+    const sy = (e.clientY - r.top)  * (canvas.height / r.height) / (window.devicePixelRatio||1);
+    const b = state._bevResetBounds;
+    if (b && sx>=b.x && sx<=b.x+b.w && sy>=b.y && sy<=b.y+b.h) document.getElementById('bev-reset-btn').click();
+  });
+  function loop() { updatePhysics(); draw(); requestAnimationFrame(loop); }
+  loop();
+})();
+</script>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const panels = document.getElementById('tc-panels');
+  const btnBev = document.getElementById('btn-to-bev');
+  const btnIce = document.getElementById('btn-to-ice');
+  function switchTo(mode) {
+    if (mode === 'bev') {
+      panels.classList.add('show-bev');
+      btnBev.style.opacity = '0.35'; btnBev.style.pointerEvents = 'none';
+      btnIce.style.opacity = '1';    btnIce.style.pointerEvents = 'auto';
+    } else {
+      panels.classList.remove('show-bev');
+      btnIce.style.opacity = '0.35'; btnIce.style.pointerEvents = 'none';
+      btnBev.style.opacity = '1';    btnBev.style.pointerEvents = 'auto';
+    }
+    setTimeout(() => window.dispatchEvent(new Event('resize')), 460);
+  }
+
+  btnBev.addEventListener('click', () => switchTo('bev'));
+  btnIce.addEventListener('click', () => switchTo('ice'));
+  switchTo('ice');
+})();
+</script>
+
+</body>
+</html>
