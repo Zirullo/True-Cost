@@ -193,7 +193,10 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
    and they mirror the arrow keys (hold, don't tap). */
 #shell{position:relative;width:100%;max-width:1147px}
 #pedals{
-  position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);
+  /* bottom: one pedal height (~50px: 26px key + 2x11 padding + borders)
+     above where they used to sit, so they clear the seam instead of
+     hanging off it */
+  position:absolute;left:50%;bottom:28px;transform:translateX(-50%);
   z-index:12;display:flex;gap:14px;
 }
 .pedal{
