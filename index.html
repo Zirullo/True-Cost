@@ -11,6 +11,11 @@
   --blue:#00AEEF;
   --green:#3ddc84;
   --amber:#F0A500;
+  /* the cockpit is sized so the WHOLE windshield fits the viewport:
+     it is as wide as 1147px, or as wide as the height left over once
+     the slim control bar has taken its 74px, whichever is smaller. */
+  --deckh:74px;
+  --stagew:min(1147px, calc((100dvh - var(--deckh)) * 1147 / 641));
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{
@@ -19,13 +24,13 @@ html,body{
   font-family:"Segoe UI",Roboto,Arial,sans-serif;
   color:var(--ink);
 }
-body{display:flex;flex-direction:column;align-items:center;padding-bottom:40px}
+body{display:flex;flex-direction:column;align-items:center;min-height:100dvh;padding-bottom:0}
 
 /* ══════════ COCKPIT STAGE ══════════ */
 #stage{
   position:relative;
   width:100%;
-  max-width:1147px;
+  max-width:var(--stagew);
   aspect-ratio:1147/641;
   overflow:hidden;
   background:#000;
@@ -84,13 +89,16 @@ body{display:flex;flex-direction:column;align-items:center;padding-bottom:40px}
 
 /* ══════════ CONTROL DECK ══════════ */
 #deck{
-  width:100%;max-width:1147px;
+  width:100%;max-width:var(--stagew);
   background:#080a0d;
   border:1px solid #16202b;
   border-top:none;
   border-radius:0 0 14px 14px;
-  padding:16px 22px 18px;
+  padding:26px 22px 10px;      /* the top padding clears the overhanging pedals */
 }
+/* the speed slider still exists — the pedals and the arrow keys write to it —
+   but it no longer costs the windshield any vertical room */
+#hidden-controls{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .deck-title{
   font-size:9px;letter-spacing:2.6px;text-transform:uppercase;
   color:#3d5266;font-weight:700;margin-bottom:14px;
@@ -108,8 +116,8 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
 }
 .slider-val em{color:#62798c;font-style:normal}
 #deck-foot{
-  display:flex;align-items:center;justify-content:flex-end;gap:16px;
-  margin-top:14px;padding-top:13px;border-top:1px solid #131c25;flex-wrap:wrap;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  flex-wrap:wrap;
 }
 .price-live{font-size:11px;color:#5d7488;letter-spacing:.4px}
 .price-live b{color:var(--green);font-weight:600}
@@ -120,15 +128,15 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .btn{
   background:transparent;border:1px solid #23313f;color:#7b93a7;
-  border-radius:7px;padding:7px 16px;font-size:10px;letter-spacing:1.4px;
+  border-radius:7px;padding:6px 14px;font-size:10px;letter-spacing:1.4px;
   text-transform:uppercase;font-weight:700;cursor:pointer;
   transition:border-color .2s,color .2s;font-family:inherit;
 }
 .btn:hover{border-color:var(--blue);color:var(--blue)}
 
 #signature{
-  font-size:10px;letter-spacing:1.6px;text-transform:uppercase;
-  color:rgba(120,140,160,.45);padding:16px 0 0;text-align:center;
+  font-size:9px;letter-spacing:1.5px;text-transform:uppercase;
+  color:rgba(120,140,160,.45);
 }
 #signature a{color:var(--blue);text-decoration:none}
 
@@ -137,7 +145,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
    Two pedals straddling the seam between the cockpit and the deck:
    they overlap the photo just enough to read as part of the car,
    and they mirror the arrow keys (hold, don't tap). */
-#shell{position:relative;width:100%;max-width:1147px}
+#shell{position:relative;width:100%;max-width:var(--stagew)}
 #pedals{
   position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);
   z-index:12;display:flex;gap:14px;
@@ -416,25 +424,22 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
      CONTROL DECK
      ═══════════════════════════════════════════════════════════ -->
 <div id="deck">
-  <div class="deck-title">Simulator Controls</div>
 
-  <div class="slider-row">
-    <span class="control-label">Speed</span>
+  <div id="hidden-controls">
     <input type="range" id="rpmSlider" min="0" max="240" value="128" step="1">
-    <span class="slider-val" id="rpmVal">128 km/h <em>· 2250 rpm</em></span>
+    <span id="rpmVal">128 km/h <em>· 2250 rpm</em></span>
   </div>
 
   <div id="deck-foot">
+    <div id="signature">
+      Star*Up 2026 &nbsp;·&nbsp; True Cost Project &nbsp;·&nbsp; Stellantis &nbsp;·&nbsp;
+      <a href="https://forms.office.com/e/jJ7Sgw7WkD" target="_blank" rel="noopener">✍ Give feedback</a>
+    </div>
     <div style="display:flex;gap:10px">
       <button class="btn" id="helpBtn">? Info</button>
       <button class="btn" id="resetBtn">↺ Reset trip</button>
     </div>
   </div>
-</div>
-
-<div id="signature">
-  Star*Up 2026 &nbsp;·&nbsp; True Cost Project &nbsp;·&nbsp; Stellantis &nbsp;·&nbsp;
-  <a href="https://forms.office.com/e/jJ7Sgw7WkD" target="_blank" rel="noopener">✍ Give feedback</a>
 </div>
 
 <!-- ═══════════════ HELP ═══════════════ -->
@@ -980,6 +985,78 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     }
 
 
+    /* ── STELLANTIS billboards ────────────────────────────────
+       One at every kilometre stone, on the LEFT, just beyond the opposite
+       carriageway (which ends at -17.9 m): the right-hand verge already
+       carries the green motorway signs and the fuel stations, and a km mark
+       lands on a station slot every other time, so the two would fight.
+
+       The panel spans 1.4 to 4.2 m, the same compromise the price totem
+       makes: tall enough to read, low enough to stay inside the strip of
+       glass the dashboard leaves. The wordmark stays legible from ~300 m
+       down to ~50 m — the whole approach — before the board leaves through
+       the top of the frame.
+
+       Corporate palette, the same one the cluster badge wears: the navy
+       gradient #1d2c68 -> #0c1638, a white wordmark, the cyan accent bar. */
+    const KM_EVERY = 1000;                    // m between billboards
+    const KM_X = -19.6;                       // left verge, past the far carriageway
+    const KM_LO = 1.4, KM_HI = 4.2, KM_HALF = 4.0;
+
+    function kmSigns() {
+      const start = Math.ceil((travel + 26) / KM_EVERY) * KM_EVERY;
+      for (let s = start; s < travel + Z_FAR; s += KM_EVERY) {
+        const z = s - travel;
+        if (z > 340) continue;
+
+        const yTop = syOf(KM_HI, z), yBot = syOf(KM_LO, z);
+        const xc = sxOf(KM_X, z), w = 2 * KM_HALF * F / z, h = yBot - yTop;
+        if (yTop > YMAX || xc + w / 2 < -260) continue;   // below the dash, or gone left
+
+        ctx.globalAlpha = Math.min(1, (340 - z) / 110);
+
+        /* two legs down to the grass */
+        const lw = Math.max(0.6, 0.18 * F / z);
+        ctx.fillStyle = '#5b6670';
+        ctx.fillRect(sxOf(KM_X - KM_HALF * 0.5, z) - lw / 2, yBot, lw, Math.max(0, syOf(0, z) - yBot));
+        ctx.fillRect(sxOf(KM_X + KM_HALF * 0.5, z) - lw / 2, yBot, lw, Math.max(0, syOf(0, z) - yBot));
+
+        /* the panel */
+        const g = ctx.createLinearGradient(0, yTop, 0, yBot);
+        g.addColorStop(0, '#1d2c68');
+        g.addColorStop(0.55, '#16234f');
+        g.addColorStop(1, '#0c1638');
+        ctx.fillStyle = g;
+        ctx.fillRect(xc - w / 2, yTop, w, h);
+        ctx.strokeStyle = 'rgba(200,220,236,.7)';
+        ctx.lineWidth = Math.max(0.4, 0.05 * F / z);
+        ctx.strokeRect(xc - w / 2, yTop, w, h);
+
+        /* the cyan accent along the foot of the board */
+        ctx.fillStyle = '#00AEEF';
+        ctx.fillRect(xc - w / 2, yBot - h * 0.15, w, h * 0.15);
+
+        /* the wordmark, squeezed to the board rather than clipped by it */
+        if (h > 7) {
+          const fs = Math.min(h * 0.40, w * 0.15);
+          ctx.font = '700 ' + fs.toFixed(1) + 'px "Segoe UI",Arial,sans-serif';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          const tw = ctx.measureText('STELLANTIS').width || 1;
+          const k = Math.min(1, (w * 0.84) / tw);
+          ctx.fillStyle = '#ffffff';
+          ctx.save();
+          ctx.translate(xc, yTop + h * 0.40);
+          ctx.scale(k, 1);
+          ctx.fillText('STELLANTIS', 0, 0);
+          ctx.restore();
+          ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+        }
+        ctx.globalAlpha = 1;
+      }
+      ctx.globalAlpha = 1;
+    }
+
+
     /* ── fuel stations ────────────────────────────────────────
        One every ST_EVERY metres, on the right past the guardrail: an apron,
        a canopy on four pillars with two pumps under it, a shop, and the totem
@@ -1349,6 +1426,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       backdrop();
       ground();
       trees();            // behind the barriers: they must occlude the trunks
+      kmSigns();          // the km billboards stand out on the left verge
       medianWall();
       guardrail();
       signs();
