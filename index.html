@@ -3,1547 +3,1469 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Star*Up True Cost — Stellantis</title>
+<title>True Cost — Stellantis Cockpit Simulator</title>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html, body {
-  background: #060606; width: 100%; min-height: 100%;
-  font-family: Arial, sans-serif; overflow-x: hidden;
+:root{
+  --ink:#e8f0f7;
+  --dim:#8fa6ba;
+  --blue:#00AEEF;
+  --green:#3ddc84;
+  --amber:#F0A500;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  background:#050607;
+  min-height:100%;
+  font-family:"Segoe UI",Roboto,Arial,sans-serif;
+  color:var(--ink);
+}
+body{display:flex;flex-direction:column;align-items:center;padding-bottom:40px}
+
+/* ══════════ COCKPIT STAGE ══════════ */
+#stage{
+  position:relative;
+  width:100%;
+  max-width:1147px;
+  aspect-ratio:1147/641;
+  overflow:hidden;
+  background:#000;
 }
 
-/* ── Carousel ── */
-#tc-switcher { width: 100%; overflow: hidden; position: relative; }
-#tc-panels {
-  display: flex; width: 200%;
-  transition: transform 0.45s cubic-bezier(0.77,0,0.175,1);
+/* the windshield view — the procedural road lives in here */
+#windshield{
+  position:absolute;
+  inset:0;
+  z-index:1;
+  overflow:hidden;
+  background:#0b0d10;
 }
-#tc-panels.show-bev { transform: translateX(-50%); }
-.tc-panel { width: 50%; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
-
-/* ── Side switch tabs — fixed, full height, outside content ── */
-.tc-side-tab {
-  position: fixed; top: 0; bottom: 0;
-  width: calc((100vw - 900px) / 2);
-  min-width: 60px;
-  z-index: 200;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  cursor: pointer; border: none;
-  font-family: Arial, sans-serif;
-  transition: filter 0.2s, opacity 0.2s;
-  gap: 12px;
-}
-#btn-to-bev {
-  left: 0;
-  background: linear-gradient(to right, #007fb0, #00AEEF);
-  color: #fff;
-  box-shadow: 6px 0 32px rgba(0,174,239,0.4);
-}
-#btn-to-bev:hover { filter: brightness(1.12); }
-#btn-to-ice {
-  right: 0;
-  background: linear-gradient(to left, #a06d00, #F0A500);
-  color: #fff;
-  box-shadow: -6px 0 32px rgba(240,165,0,0.4);
-}
-#btn-to-ice:hover { filter: brightness(1.12); }
-
-/* big arrow circle */
-.tab-circle {
-  width: 54px; height: 54px; border-radius: 50%;
-  background: rgba(255,255,255,0.2);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 28px; font-weight: 900;
-  border: 2px solid rgba(255,255,255,0.5);
-  flex-shrink: 0;
-}
-.tab-title {
-  font-size: 12px; font-weight: 900; letter-spacing: 1.5px;
-  text-transform: uppercase; text-align: center;
-  line-height: 1.4;
-}
-.tab-sub {
-  font-size: 10px; opacity: 0.75; text-align: center;
-  font-weight: bold; letter-spacing: 1px; text-transform: uppercase;
-  line-height: 1.5;
+#road{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  display:block;
 }
 
-/* Page top padding for nav */
+/* the interior photo, with the windshield glass punched out */
+#interior{
+  position:absolute;
+  inset:0;
+  z-index:2;
+  background:url("True-Cost project picture.jpg") center/100% 100% no-repeat;
+  -webkit-mask-image:var(--wsmask);
+          mask-image:var(--wsmask);
+  -webkit-mask-size:100% 100%;
+          mask-size:100% 100%;
+  -webkit-mask-repeat:no-repeat;
+          mask-repeat:no-repeat;
+}
+
+/* the live instrument cluster drawn over the photo's display */
+#cluster{
+  position:absolute;
+  inset:0;
+  z-index:3;
+  width:100%;height:100%;
+  display:block;
+}
+
+/* cluster typography */
+#cluster text{font-family:"Segoe UI",Roboto,Arial,sans-serif;fill:#fff}
+.lbl{font-size:17px;letter-spacing:.6px;fill:#cfe0ee}
+.lbl-sm{font-size:14px;letter-spacing:.4px;fill:#bcd2e2}
+.val{font-weight:600}
+.hit{cursor:pointer}
+.hit:hover text{fill:#fff}
+#tick-group line.on{stroke:#eaf6ff;opacity:.95}
+#tick-group line.off{stroke:#40607d;opacity:.75}
+#num-group text.on{fill:#eaf6ff}
+#num-group text.off{fill:#7f9ab2}
+
+/* ══════════ CONTROL DECK ══════════ */
+#deck{
+  width:100%;max-width:1147px;
+  background:#080a0d;
+  border:1px solid #16202b;
+  border-top:none;
+  border-radius:0 0 14px 14px;
+  padding:16px 22px 18px;
+}
+.deck-title{
+  font-size:9px;letter-spacing:2.6px;text-transform:uppercase;
+  color:#3d5266;font-weight:700;margin-bottom:14px;
+  padding-bottom:9px;border-bottom:1px solid #131c25;
+}
+.slider-row{display:flex;align-items:center;gap:14px;margin-bottom:13px}
+.control-label{
+  font-size:10px;letter-spacing:1.4px;text-transform:uppercase;
+  font-weight:700;color:#61798d;min-width:92px;
+}
+input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-color:var(--blue)}
+.slider-val{
+  font-size:12px;font-weight:700;font-family:Consolas,monospace;
+  min-width:140px;text-align:right;color:#cfe0ee;
+}
+.slider-val em{color:#62798c;font-style:normal}
+#deck-foot{
+  display:flex;align-items:center;justify-content:flex-end;gap:16px;
+  margin-top:14px;padding-top:13px;border-top:1px solid #131c25;flex-wrap:wrap;
+}
+.price-live{font-size:11px;color:#5d7488;letter-spacing:.4px}
+.price-live b{color:var(--green);font-weight:600}
+.dot-live{
+  display:inline-block;width:6px;height:6px;background:var(--green);
+  border-radius:50%;margin-right:5px;vertical-align:middle;animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.btn{
+  background:transparent;border:1px solid #23313f;color:#7b93a7;
+  border-radius:7px;padding:7px 16px;font-size:10px;letter-spacing:1.4px;
+  text-transform:uppercase;font-weight:700;cursor:pointer;
+  transition:border-color .2s,color .2s;font-family:inherit;
+}
+.btn:hover{border-color:var(--blue);color:var(--blue)}
+
+#signature{
+  font-size:10px;letter-spacing:1.6px;text-transform:uppercase;
+  color:rgba(120,140,160,.45);padding:16px 0 0;text-align:center;
+}
+#signature a{color:var(--blue);text-decoration:none}
 
 
+/* PEDALS
+   Two pedals straddling the seam between the cockpit and the deck:
+   they overlap the photo just enough to read as part of the car,
+   and they mirror the arrow keys (hold, don't tap). */
+#shell{position:relative;width:100%;max-width:1147px}
+#pedals{
+  position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);
+  z-index:12;display:flex;gap:14px;
+}
+.pedal{
+  display:flex;align-items:center;gap:10px;
+  background:linear-gradient(180deg,rgba(19,27,35,.96),rgba(8,11,15,.96));
+  border:1px solid #2a3947;border-radius:13px;
+  padding:11px 18px 11px 13px;
+  color:#93aabd;font-family:inherit;font-size:10px;font-weight:700;
+  letter-spacing:1.7px;text-transform:uppercase;
+  cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:none;
+  backdrop-filter:blur(3px);
+  box-shadow:0 10px 26px rgba(0,0,0,.6);
+  transition:border-color .15s,color .15s,box-shadow .15s,transform .08s;
+}
+.pedal .key{
+  display:grid;place-items:center;width:26px;height:26px;flex:none;
+  border:1px solid #2b3b4a;border-radius:7px;
+  font-size:14px;line-height:1;color:#cfe0ee;background:rgba(255,255,255,.03);
+}
+.pedal:hover{border-color:#3b5163;color:#cfe0ee}
+.pedal.active{transform:translateY(2px)}
+#pedal-gas.active{border-color:var(--green);color:#fff;box-shadow:0 0 26px rgba(61,220,132,.4)}
+#pedal-gas.active .key{border-color:var(--green);color:var(--green)}
+#pedal-brake.active{border-color:#ff5f4d;color:#fff;box-shadow:0 0 26px rgba(255,95,77,.35)}
+#pedal-brake.active .key{border-color:#ff5f4d;color:#ff5f4d}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body {
-    background: #080808; width: 100%; min-height: 100%;
-    display: flex; flex-direction: column; align-items: center;
-    font-family: Arial, sans-serif;
-  }
+/* the nudge: the pedals breathe until the driver holds one for the first time */
+#pedals.untouched .pedal{animation:pedalCall 2.2s ease-in-out infinite}
+#pedals.untouched #pedal-brake{animation-delay:.35s}
+@keyframes pedalCall{
+  0%,100%{box-shadow:0 10px 26px rgba(0,0,0,.6)}
+  50%    {box-shadow:0 10px 26px rgba(0,0,0,.6),0 0 0 4px rgba(0,174,239,.18)}
+}
+#pedal-hint{
+  position:absolute;left:50%;bottom:100%;transform:translateX(-50%);
+  margin-bottom:9px;white-space:nowrap;
+  font-size:10px;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;
+  color:var(--blue);text-shadow:0 2px 10px #000;
+  transition:opacity .5s;pointer-events:none;
+}
+#pedals:not(.untouched) #pedal-hint{opacity:0}
+@media(max-width:520px){
+  .pedal .txt{display:none}
+  .pedal{padding:10px 12px}
+}
 
-  /* ── Page layout ── */
-  #ice-page { width: 100%; max-width: 900px; padding: 0 0 32px; }
-
-
-
-  #ice-trip-history {
-    padding: 0;
-    background: #030303;
-    border-top: 1px solid #222;
-    overflow: hidden;
-  }
-  #ice-trip-history-header {
-    display: flex; align-items: center; gap: 10px;
-    padding: 8px 16px 5px;
-  }
-  .th-label {
-    font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase;
-    color: #777; font-weight: bold; white-space: nowrap;
-  }
-  .th-line {
-    flex: 1; height: 1px;
-    background: linear-gradient(to right, #333, transparent);
-  }
-  #ice-trip-cards {
-    display: flex; align-items: stretch;
-    gap: 0; padding: 0 0 14px 0;
-    overflow: hidden;
-  }
-  .trip-card {
-    flex: 1;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    padding: 8px 6px 6px;
-    border-right: 1px solid #1a1a1a;
-    min-width: 0;
-    transition: opacity 0.4s;
-    cursor: default;
-  }
-  .trip-card:last-child { border-right: none; }
-  .trip-card:hover { background: rgba(255,255,255,0.03); }
-  .tc-date {
-    font-size: 9px; letter-spacing: 1px; text-transform: uppercase;
-    font-family: Arial, sans-serif; font-weight: bold;
-    color: #999; margin-bottom: 3px;
-  }
-  .tc-km {
-    font-size: 10px; font-family: 'Consolas', monospace;
-    color: #777; margin-bottom: 6px;
-  }
-  .tc-cost {
-    font-size: 20px; font-weight: bold;
-    font-family: 'Consolas', monospace;
-    color: #ddd; line-height: 1;
-  }
-  .tc-unit {
-    font-size: 9px; color: #555; font-family: Arial, sans-serif;
-    margin-top: 3px;
-  }
-  /* most recent card highlight */
-  .trip-card:last-child .tc-cost { color: #F0A500; }
-  .trip-card:last-child .tc-date { color: #bbb; }
-  .trip-card:last-child .tc-km   { color: #999; }
-  @keyframes slideIn { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
-  .trip-card.new-entry { animation: slideIn 0.4s ease; }
-
-
-  /* ══════════════════════════════════════
-     COCKPIT UI  (dark glass panel)
-  ══════════════════════════════════════ */
-  #ice-cockpit {
-    background: #020202;
-    border-radius: 0 0 20px 20px;
-    overflow: hidden;
-    position: relative;
-  }
-  canvas#mainCanvas { display: block; width: 100%; }
-
-  /* fuel info bar under canvas */
-  #ice-fuel-bar {
-    display: flex; align-items: stretch;
-    border-top: 1px solid #1a1a1a;
-    background: #050505;
-  }
-  .fuel-cell {
-    flex: 1; padding: 10px 16px;
-    display: flex; flex-direction: column; gap: 3px;
-    border-right: 1px solid #111;
-  }
-  .fuel-cell:last-child { border-right: none; }
-  .fuel-cell-label {
-    font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
-    color: #444; font-weight: bold;
-  }
-  .fuel-cell-value {
-    font-size: 17px; font-weight: bold;
-    font-family: 'Consolas', monospace; color: #F0A500;
-  }
-  .fuel-cell-sub {
-    font-size: 10px; color: #555; line-height: 1.4;
-  }
-  .fuel-cell-sub.live { color: #1D9E75; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
-  .dot-live {
-    display: inline-block; width: 6px; height: 6px;
-    background: #1D9E75; border-radius: 50%;
-    margin-right: 4px; vertical-align: middle;
-    animation: pulse 2s infinite;
-  }
-
-  /* ══════════════════════════════════════
-     CONTROLS  (separated, lighter panel)
-  ══════════════════════════════════════ */
-  #ice-controls-section {
-    margin: 16px 12px 0;
-    background: #0e0e0e;
-    border: 1px solid #1c1c1c;
-    border-radius: 14px;
-    padding: 18px 24px 20px;
-  }
-  .controls-title {
-    font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase;
-    color: #333; font-weight: bold; margin-bottom: 16px;
-    padding-bottom: 10px; border-bottom: 1px solid #181818;
-  }
-
-  /* DNA row */
-  .dna-row {
-    display: flex; align-items: center; gap: 10px; margin-bottom: 18px;
-  }
-  .control-label {
-    font-size: 10px; color: #555; font-weight: bold;
-    letter-spacing: 1px; text-transform: uppercase;
-    min-width: 80px; font-family: 'Consolas', monospace;
-  }
-  .dna-btn {
-    width: 46px; height: 46px; border-radius: 50%;
-    background: #0a0a0a; border: 1.5px solid #2a2a2a;
-    font-size: 17px; font-weight: bold; cursor: pointer;
-    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-    font-family: 'Consolas', monospace;
-  }
-  .dna-btn .mode-name {
-    display: block; font-size: 8px; letter-spacing: 1px;
-    font-family: Arial, sans-serif; font-weight: normal; opacity: 0.6;
-  }
-  .dna-btn.A { color: #00FF00; }
-  .dna-btn.N { color: #FFFFFF; }
-  .dna-btn.D { color: #FF4444; }
-  .dna-btn.A.active { border-color: #00FF00; background: #071407; box-shadow: 0 0 12px rgba(0,255,0,0.2); }
-  .dna-btn.N.active { border-color: #FFFFFF; background: #141414; box-shadow: 0 0 12px rgba(255,255,255,0.1); }
-  .dna-btn.D.active { border-color: #FF4444; background: #160707; box-shadow: 0 0 12px rgba(255,68,68,0.2); }
-  .dna-hint { font-size: 11px; color: #333; margin-left: 6px; font-style: italic; }
-
-  /* Sliders */
-  .slider-row {
-    display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
-  }
-  .slider-row:last-child { margin-bottom: 0; }
-  input[type=range] { flex: 1; height: 4px; cursor: pointer; border-radius: 2px; }
-  input#rpmSlider  { accent-color: #FFFFFF; height: 5px; }
-  input#timeSlider { accent-color: #00AEEF; }
-  .slider-val {
-    font-size: 12px; font-weight: bold;
-    font-family: 'Consolas', monospace; min-width: 46px; text-align: right;
-  }
-  .slider-val.rpm-val  { color: #FFFFFF; }
-  .slider-val.time-val { color: #00AEEF; }
-
-  /* Reset button */
-  #ice-reset-btn {
-    margin-top: 16px; padding: 8px 20px;
-    background: transparent; border: 1px solid #2a2a2a;
-    color: #555; border-radius: 6px; font-size: 11px;
-    letter-spacing: 1px; text-transform: uppercase;
-    font-family: 'Consolas', monospace; cursor: pointer;
-    transition: border-color 0.2s, color 0.2s;
-  }
-  #ice-reset-btn:hover { border-color: #555; color: #aaa; }
-
-  /* ══════════════════════════════════════
-     HELP POPUP
-  ══════════════════════════════════════ */
-  #ice-help-btn {
-    position: absolute; right: 14px; top: 14px;
-    width: 34px; height: 34px; border-radius: 50%;
-    background: #00AEEF; border: none;
-    color: #020202; font-size: 16px; font-weight: bold;
-    cursor: pointer; z-index: 10;
-    box-shadow: 0 0 12px rgba(0,174,239,0.4);
-    transition: background 0.2s;
-  }
-  #ice-help-btn:hover { background: #33C3FF; }
-  #ice-help-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.82); z-index: 100;
-    align-items: flex-start; justify-content: center;
-    overflow-y: auto; padding: 16px 12px 32px;
-  }
-  #ice-help-overlay.open { display: flex; }
-  #ice-help-card {
-    background: #0c0c0c; border: 1px solid #222;
-    border-radius: 14px; padding: 18px 22px 18px;
-    max-width: 720px; width: 98%; position: relative;
-    color: #FFFFFF;
-    box-shadow: 0 0 60px rgba(0,174,239,0.12);
-  }
-  #ice-help-card h2 { font-size: 16px; font-weight: bold; margin-bottom: 10px; line-height: 1.3; }
-  #ice-help-card h2 span { color: #00AEEF; }
-  .help-section { margin-bottom: 0; padding-left: 10px; border-left: 2px solid #1e1e1e; }
-  .help-section.blue { border-left-color: #00AEEF; }
-  .help-section.gold { border-left-color: #F0A500; }
-  .help-section.green { border-left-color: #1D9E75; }
-  .help-section-title { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; font-weight: bold; margin-bottom: 5px; }
-  .help-section-title.blue { color: #00AEEF; }
-  .help-section-title.gold { color: #F0A500; }
-  .help-section-title.green { color: #1D9E75; }
-  .help-section p { font-size: 11px; line-height: 1.55; color: #BBBBBB; }
-  .help-section p strong { color: #FFFFFF; }
-  .pill-row { display: flex; gap: 6px; flex-wrap: wrap; margin: 5px 0; }
-  .pill { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; font-family: 'Consolas', monospace; border: 1px solid; }
-  .pill.A { color: #00FF00; border-color: #00FF00; background: rgba(0,255,0,0.05); }
-  .pill.N { color: #FFFFFF; border-color: #555;    background: rgba(255,255,255,0.03); }
-  .pill.D { color: #FF4444; border-color: #FF4444; background: rgba(255,68,68,0.05); }
-  #ice-help-close { position: absolute; top: 12px; right: 14px; background: none; border: none; color: #444; font-size: 22px; cursor: pointer; }
-  #ice-help-close:hover { color: #fff; }
-  #ice-help-close-btn {
-    display: block; width: 100%; margin-top: 18px;
-    background: #00AEEF; border: none; border-radius: 8px;
-    color: #020202; font-family: Arial, sans-serif; font-weight: bold;
-    font-size: 13px; letter-spacing: 1px; padding: 11px;
-    cursor: pointer; text-transform: uppercase;
-  }
-  #ice-help-close-btn:hover { background: #33C3FF; }
-
-  /* ── Signature ── */
-  #ice-signature {
-    text-align: center; font-size: 10px; letter-spacing: 1.5px;
-    color: rgba(100,100,100,0.5); padding: 14px 0 0;
-    text-transform: uppercase;
-  }
-
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body {
-    background: #060810; width: 100%; min-height: 100%;
-    display: flex; flex-direction: column; align-items: center;
-    font-family: Arial, sans-serif;
-  }
-  #bev-page { width: 100%; max-width: 900px; padding: 0 0 32px; }
-
-  /* ── Trip History ── */
-  #bev-trip-history {
-    padding: 0; background: #040508;
-    border-top: 1px solid #1a2030; overflow: hidden;
-  }
-  #bev-trip-history-header {
-    display: flex; align-items: center; gap: 10px; padding: 8px 16px 5px;
-  }
-  .th-label {
-    font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase;
-    color: #4a6080; font-weight: bold; white-space: nowrap;
-  }
-  .th-line { flex: 1; height: 1px; background: linear-gradient(to right, #1a2a3a, transparent); }
-  #bev-trip-cards { display: flex; align-items: stretch; padding: 0 0 14px 0; overflow: hidden; }
-  .trip-card {
-    flex: 1; display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    padding: 8px 6px 6px; border-right: 1px solid #0f1520;
-    min-width: 0; transition: opacity 0.4s; cursor: default;
-  }
-  .trip-card:last-child { border-right: none; }
-  .trip-card:hover { background: rgba(0,174,239,0.03); }
-  .tc-date { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; font-family: Arial, sans-serif; font-weight: bold; color: #556880; margin-bottom: 3px; }
-  .tc-km   { font-size: 10px; font-family: 'Consolas', monospace; color: #445566; margin-bottom: 4px; }
-  .tc-kwh  { font-size: 10px; font-family: 'Consolas', monospace; color: #334455; margin-bottom: 5px; }
-  .tc-cost { font-size: 20px; font-weight: bold; font-family: 'Consolas', monospace; color: #aabbcc; line-height: 1; }
-  .tc-unit { font-size: 9px; color: #334455; font-family: Arial, sans-serif; margin-top: 3px; }
-  .trip-card:last-child .tc-cost { color: #00AEEF; }
-  .trip-card:last-child .tc-date { color: #88aacc; }
-  .trip-card:last-child .tc-km   { color: #667788; }
-  .trip-card:last-child .tc-kwh  { color: #556677; }
-  @keyframes slideIn { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
-  .trip-card.new-entry { animation: slideIn 0.4s ease; }
-
-  /* ── Cockpit ── */
-  #bev-cockpit {
-    background: #030408; border-radius: 0 0 20px 20px;
-    overflow: hidden; position: relative;
-  }
-  canvas#mainCanvas { display: block; width: 100%; }
-
-  /* ── Energy bar ── */
-  #bev-energy-bar {
-    display: flex; align-items: stretch;
-    border-top: 1px solid #0d1520; background: #040508;
-  }
-  .e-cell {
-    flex: 1; padding: 10px 14px;
-    display: flex; flex-direction: column; gap: 3px;
-    border-right: 1px solid #0a0f18;
-  }
-  .e-cell:last-child { border-right: none; }
-  .e-cell-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: #5a7898; font-weight: bold; }
-  .e-cell-value { font-size: 16px; font-weight: bold; font-family: 'Consolas', monospace; color: #00AEEF; }
-  .e-cell-sub   { font-size: 10px; color: #6688aa; line-height: 1.4; }
-  .e-cell-sub.live { color: #1D9E75; }
-
-  /* home price input */
-  #bev-home-price-wrap {
-    display: flex; align-items: center; gap: 5px; margin-top: 2px;
-  }
-  #bev-homePriceInput {
-    background: #0a1020; border: 1px solid #1a2a40; color: #00AEEF;
-    font-family: 'Consolas', monospace; font-size: 15px; font-weight: bold;
-    width: 72px; padding: 2px 5px; border-radius: 4px;
-    text-align: right;
-  }
-  #bev-homePriceInput:focus { outline: none; border-color: #00AEEF; }
-  .e-unit { font-size: 12px; color: #446688; font-family: 'Consolas', monospace; }
-
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
-  .dot-live { display: inline-block; width: 6px; height: 6px; background: #1D9E75; border-radius: 50%; margin-right: 4px; vertical-align: middle; animation: pulse 2s infinite; }
-  .dot-fast { display: inline-block; width: 6px; height: 6px; background: #F0A500; border-radius: 50%; margin-right: 4px; vertical-align: middle; animation: pulse 2.4s infinite; }
-
-  /* ── Controls ── */
-  #bev-controls-section {
-    margin: 16px 12px 0; background: #070a10;
-    border: 1px solid #0f1828; border-radius: 14px; padding: 18px 24px 20px;
-  }
-  .controls-title { font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; color: #1a2a40; font-weight: bold; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid #0d1520; }
-  .regen-row { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
-  .control-label { font-size: 10px; color: #334455; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; min-width: 80px; font-family: 'Consolas', monospace; }
-  .regen-btn {
-    width: 46px; height: 46px; border-radius: 50%;
-    background: #070a10; border: 1.5px solid #1a2a3a;
-    font-size: 11px; font-weight: bold; cursor: pointer;
-    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-    font-family: Arial, sans-serif; color: #445566;
-    display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2;
-  }
-  .regen-btn .r-icon { font-size: 15px; }
-  .regen-btn .r-label { font-size: 7px; letter-spacing: 0.5px; opacity: 0.7; }
-  .regen-btn.regen-off.active  { border-color: #888; background: #141414; box-shadow: 0 0 10px rgba(255,255,255,0.08); color: #ccc; }
-  .regen-btn.regen-low.active  { border-color: #00AEEF; background: #04101a; box-shadow: 0 0 12px rgba(0,174,239,0.2); color: #00AEEF; }
-  .regen-btn.regen-high.active { border-color: #1D9E75; background: #04140e; box-shadow: 0 0 12px rgba(29,158,117,0.25); color: #1D9E75; }
-  .regen-hint { font-size: 11px; color: #1a2a3a; margin-left: 6px; font-style: italic; }
-
-  .slider-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
-  .slider-row:last-child { margin-bottom: 0; }
-  input[type=range] { flex: 1; height: 4px; cursor: pointer; border-radius: 2px; }
-  input#powerSlider { accent-color: #00AEEF; height: 5px; }
-  input#timeSlider  { accent-color: #1D9E75; }
-  .slider-val { font-size: 12px; font-weight: bold; font-family: 'Consolas', monospace; min-width: 52px; text-align: right; }
-  .slider-val.power-val { color: #00AEEF; }
-  .slider-val.time-val  { color: #1D9E75; }
-
-  #bev-reset-btn {
-    margin-top: 16px; padding: 8px 20px;
-    background: transparent; border: 1px solid #1a2a3a; color: #2a3a50;
-    border-radius: 6px; font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
-    font-family: 'Consolas', monospace; cursor: pointer; transition: border-color 0.2s, color 0.2s;
-  }
-  #bev-reset-btn:hover { border-color: #00AEEF; color: #00AEEF; }
-
-  /* ── Help ── */
-  #bev-help-btn {
-    position: absolute; right: 14px; top: 14px; width: 34px; height: 34px;
-    border-radius: 50%; background: #00AEEF; border: none;
-    color: #030408; font-size: 16px; font-weight: bold;
-    cursor: pointer; z-index: 10; box-shadow: 0 0 14px rgba(0,174,239,0.5);
-    transition: background 0.2s;
-  }
-  #bev-help-btn:hover { background: #33C3FF; }
-  #bev-help-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.88); z-index: 100;
-    align-items: flex-start; justify-content: center;
-    overflow-y: auto; padding: 16px 12px 32px;
-  }
-  #bev-help-overlay.open { display: flex; }
-  #bev-help-card {
-    background: #070a10; border: 1px solid #1a2a3a;
-    border-radius: 14px; padding: 18px 22px 18px;
-    max-width: 720px; width: 98%; position: relative; color: #FFFFFF;
-    box-shadow: 0 0 60px rgba(0,174,239,0.1);
-  }
-  #bev-help-card h2 { font-size: 16px; font-weight: bold; margin-bottom: 10px; line-height: 1.3; }
-  #bev-help-card h2 span { color: #00AEEF; }
-  .help-section { margin-bottom: 0; padding-left: 10px; border-left: 2px solid #1a2a3a; }
-  .help-section p { font-size: 11px; line-height: 1.55; color: #7a9abb; }
-  .help-section p strong { color: #FFFFFF; }
-  .help-section-title { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; font-weight: bold; margin-bottom: 5px; }
-  .pill-row { display: flex; gap: 6px; flex-wrap: wrap; margin: 5px 0; }
-  .pill { padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: bold; border: 1px solid; }
-  .pill.off  { color: #aaa;    border-color: #555;    background: rgba(255,255,255,0.03); }
-  .pill.low  { color: #00AEEF; border-color: #00AEEF; background: rgba(0,174,239,0.06); }
-  .pill.high { color: #1D9E75; border-color: #1D9E75; background: rgba(29,158,117,0.06); }
-  #bev-help-close { position: absolute; top: 12px; right: 14px; background: none; border: none; color: #2a3a50; font-size: 22px; cursor: pointer; }
-  #bev-help-close:hover { color: #fff; }
-  #bev-help-close-btn {
-    display: block; width: 100%; margin-top: 14px;
-    background: #00AEEF; border: none; border-radius: 8px;
-    color: #030408; font-family: Arial, sans-serif; font-weight: bold;
-    font-size: 13px; letter-spacing: 1px; padding: 11px;
-    cursor: pointer; text-transform: uppercase;
-  }
-  #bev-help-close-btn:hover { background: #33C3FF; }
-
-  #bev-signature { text-align: center; font-size: 10px; letter-spacing: 1.5px; color: rgba(0,100,160,0.35); padding: 14px 0 0; text-transform: uppercase; }
-
-
-#ice-page { width: 100%; max-width: 900px; padding-bottom: 32px; margin: 0 auto; }
-#bev-page { width: 100%; max-width: 900px; padding-bottom: 32px; margin: 0 auto; }
-
-  /* ── Cockpit reset buttons ── */
-  .cockpit-reset {
-    position: absolute; bottom: 12px; right: 12px;
-    background: rgba(10,10,14,0.85); border: 1px solid #333;
-    color: #666; border-radius: 20px; padding: 5px 14px;
-    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
-    font-weight: bold; cursor: pointer; font-family: Arial, sans-serif;
-    transition: border-color 0.2s, color 0.2s;
-    z-index: 10;
-  }
-  .cockpit-reset:hover { border-color: #F0A500; color: #F0A500; }
-  #bev-cockpit-reset:hover { border-color: #00AEEF; color: #00AEEF; }
-  #ice-cockpit .cockpit-reset { bottom: 12px; }
-  #bev-cockpit .cockpit-reset { bottom: 12px; }
+/* ══════════ HELP ══════════ */
+#help-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.86);z-index:100;
+  align-items:flex-start;justify-content:center;overflow-y:auto;padding:20px 12px 40px;
+}
+#help-overlay.open{display:flex}
+#help-card{
+  background:#0a0e13;border:1px solid #1b2836;border-radius:16px;
+  padding:20px 24px;max-width:760px;width:100%;position:relative;
+  box-shadow:0 0 70px rgba(0,174,239,.12);
+}
+#help-card h2{font-size:17px;margin-bottom:10px;line-height:1.35;font-weight:600}
+#help-card h2 span{color:var(--blue)}
+#help-card>p{font-size:11.5px;color:#6f8798;line-height:1.6;margin-bottom:16px}
+.help-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.help-section{padding:11px 13px;border-left:2px solid #1e2b39;border-radius:0 7px 7px 0;background:rgba(255,255,255,.02)}
+.help-section-title{font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:6px}
+.help-section p{font-size:11px;line-height:1.6;color:#8ba2b4}
+.help-section p strong{color:#fff}
+#help-close{position:absolute;top:12px;right:16px;background:none;border:none;color:#3d5266;font-size:24px;cursor:pointer}
+#help-close:hover{color:#fff}
+#help-cta{
+  display:block;width:100%;margin-top:6px;background:var(--blue);border:none;border-radius:9px;
+  color:#04121a;font-weight:700;font-size:13px;letter-spacing:1px;padding:12px;
+  cursor:pointer;text-transform:uppercase;font-family:inherit;
+}
+#help-cta:hover{background:#33c3ff}
+@media(max-width:640px){.help-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
-<!-- SIDE TABS -->
-<button id="btn-to-bev" class="tc-side-tab">
-  <span class="tab-circle">&#x2192;</span>
-  <span class="tab-title">&#x26A1; Electric<br>BEV</span>
-  <span class="tab-sub">Click here<br>to switch</span>
-<a href="https://forms.office.com/e/jJ7Sgw7WkD" target="_blank" style="display:block;margin-top:20px;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:900;color:#fff;text-decoration:none;text-align:center;background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.5);border-radius:10px;padding:10px 10px;line-height:1.5;">&#x270D;<br>Give<br>Feedback</a>
-</button>
-<button id="btn-to-ice" class="tc-side-tab">
-  <span class="tab-circle">&#x2190;</span>
-  <span class="tab-title">&#x26FD; Gasoline<br>ICE</span>
-  <span class="tab-sub">Click here<br>to switch</span>
-<a href="https://forms.office.com/e/jJ7Sgw7WkD" target="_blank" style="display:block;margin-top:20px;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:900;color:#fff;text-decoration:none;text-align:center;background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.5);border-radius:10px;padding:10px 10px;line-height:1.5;">&#x270D;<br>Give<br>Feedback</a>
-</button>
+<!-- ═══════════════════════════════════════════════════════════
+     COCKPIT STAGE
+     ═══════════════════════════════════════════════════════════ -->
+<div id="shell">
 
-<!-- PANELS -->
-<div id="tc-switcher">
-  <div id="tc-panels">
-    <div class="tc-panel">
-      <div id="ice-page">
+<div id="stage">
 
-  <!-- COCKPIT UI -->
-  <div id="ice-cockpit">
-    <canvas id="ice-mainCanvas"></canvas>
-    <!-- Stop-only zone -->
-    <div style="background:#181818;border-top:2px solid #F0A500;">
-      <div style="display:flex;align-items:center;justify-content:center;gap:8px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#888;padding:6px 0 4px;font-family:Arial,sans-serif;border-bottom:1px solid #222;"><span style="color:#F0A500;font-size:11px;">&#x2193;</span><span>Visible at vehicle stop only</span><span style="color:#F0A500;font-size:11px;">&#x2193;</span></div>
-    <div id="ice-trip-history">
-      <div id="ice-trip-history-header">
-        <span class="th-label">Last Trips</span>
-        <div class="th-line"></div>
-      </div>
-      <div id="ice-trip-cards"><!-- populated by JS --></div>
-    </div>
-    <div id="ice-fuel-bar">
-      <div class="fuel-cell">
-        <span class="fuel-cell-label">Fuel Type</span>
-        <span class="fuel-cell-value" style="color:#aaa;font-size:14px;">⛽ Gasoline</span>
-        <span class="fuel-cell-sub">Self service</span>
-      </div>
-      <div class="fuel-cell">
-        <span class="fuel-cell-label">Last Refuel</span>
-        <span class="fuel-cell-value" id="ice-refuelPrice">— €/L</span>
-        <span class="fuel-cell-sub" id="ice-refuelDate">5 days ago</span>
-      </div>
-      <div class="fuel-cell">
-        <span class="fuel-cell-label">Today's Price</span>
-        <span class="fuel-cell-value" id="ice-todayPrice" style="color:#1D9E75;">—</span>
-        <span class="fuel-cell-sub live" id="ice-todayHint"><span class="dot-live"></span>Fetching...</span>
-      </div>
-      <div class="fuel-cell">
-        <span class="fuel-cell-label">Price Change</span>
-        <span class="fuel-cell-value" id="ice-priceDelta" style="color:#888;">—</span>
-        <span class="fuel-cell-sub" id="ice-deltaHint">vs last refuel</span>
-      </div>
-    </div><!-- /ice-fuel-bar -->
-    </div><!-- /stop-only zone -->
-    <button id="ice-help-btn">?</button>
+  <!-- ▼▼ THE WINDSHIELD VIEW.
+          A canvas with a procedural road, drawn on the photo's own
+          vanishing point and scrolling at the car's real speed.
+          The mask on #interior crops it to the glass. ▼▼ -->
+  <div id="windshield"><canvas id="road"></canvas></div>
+  <!-- ▲▲ ─────────────────────────────────────────────────── ▲▲ -->
+
+  <div id="interior"></div>
+
+  <svg id="cluster" viewBox="0 0 1147 641" preserveAspectRatio="xMidYMid meet">
+    <defs>
+      <radialGradient id="glassG" cx="42%" cy="45%" r="72%">
+        <stop offset="0%"   stop-color="#0f2b41"/>
+        <stop offset="55%"  stop-color="#08192a"/>
+        <stop offset="100%" stop-color="#03080e"/>
+      </radialGradient>
+      <linearGradient id="headerG" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%"   stop-color="#1d2c68"/>
+        <stop offset="55%"  stop-color="#16234f"/>
+        <stop offset="100%" stop-color="#0c1638"/>
+      </linearGradient>
+      <radialGradient id="greenG" cx="50%" cy="50%" r="50%">
+        <stop offset="0%"   stop-color="rgba(40,220,140,.03)"/>
+        <stop offset="72%"  stop-color="rgba(40,220,140,.07)"/>
+        <stop offset="94%"  stop-color="rgba(70,255,170,.30)"/>
+        <stop offset="100%" stop-color="rgba(40,220,140,0)"/>
+      </radialGradient>
+      <radialGradient id="dialG" cx="50%" cy="38%" r="62%">
+        <stop offset="0%"   stop-color="#1d4166"/>
+        <stop offset="70%"  stop-color="#0d2138"/>
+        <stop offset="100%" stop-color="#07131f"/>
+      </radialGradient>
+      <radialGradient id="hubG" cx="45%" cy="35%" r="70%">
+        <stop offset="0%"   stop-color="#2a4f74"/>
+        <stop offset="60%"  stop-color="#12283d"/>
+        <stop offset="100%" stop-color="#0a1622"/>
+      </radialGradient>
+      <linearGradient id="sweepG" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%"   stop-color="rgba(255,255,255,.8)"/>
+        <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+      </linearGradient>
+      <linearGradient id="fuelG" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%"   stop-color="#5fe39b"/>
+        <stop offset="100%" stop-color="#2fd07f"/>
+      </linearGradient>
+      <filter id="soft" x="-60%" y="-60%" width="220%" height="220%">
+        <feGaussianBlur stdDeviation="7"/>
+      </filter>
+      <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+        <feGaussianBlur stdDeviation="3" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <clipPath id="screenClip">
+        <path d="M214,300 C216,262 250,232 300,214 C360,192 430,172 520,166
+                 L800,163 C880,166 940,180 990,206 C1035,230 1050,265 1048,296
+                 C1046,330 1030,360 990,382 C940,410 870,428 780,436
+                 L560,441 C460,437 380,424 310,400 C250,378 216,340 214,300 Z"/>
+      </clipPath>
+    </defs>
+
+    <!-- ── SCREEN ─────────────────────────────────────────── -->
+    <g clip-path="url(#screenClip)">
+      <rect x="200" y="150" width="870" height="300" fill="url(#glassG)"/>
+      <g stroke="#2f7fa8" fill="none" opacity=".2">
+        <path d="M470,441 C520,380 545,330 552,250 L560,150" stroke-width="1.2"/>
+        <path d="M700,441 C680,380 662,330 656,250 L650,150" stroke-width="1.2"/>
+        <path d="M300,441 C380,400 460,360 520,300"/>
+        <path d="M240,330 C330,320 420,300 500,262"/>
+        <path d="M980,200 C900,240 840,300 820,380"/>
+      </g>
+      <g stroke="#2aa6c8" fill="none" opacity=".13">
+        <path d="M560,150 C520,230 500,320 505,441"/>
+        <path d="M650,150 C690,230 706,320 700,441"/>
+        <ellipse cx="600" cy="300" rx="150" ry="118" stroke-width=".8"/>
+      </g>
+      <ellipse cx="300" cy="425" rx="180" ry="70" fill="rgba(45,190,130,.12)" filter="url(#soft)"/>
+    </g>
+
+    <!-- ── HEADER BAR ─────────────────────────────────────── -->
+    <g>
+      <path d="M215,204 C267,178 327,164 407,161
+               L800,161 C880,164 940,178 992,204"
+            fill="none" stroke="#6fd8b4" stroke-width="1.6" opacity=".45"/>
+      <rect x="430" y="164" width="326" height="42" rx="7" fill="url(#headerG)"/>
+      <rect x="430" y="164" width="326" height="42" rx="7" fill="none" stroke="#8ecfe6" stroke-width="1.1" opacity=".45"/>
+      <g opacity=".22" stroke="#cfe6f5" fill="none" stroke-width=".8" stroke-dasharray="2 3">
+        <ellipse cx="596" cy="185" rx="26" ry="11"/>
+        <ellipse cx="596" cy="185" rx="26" ry="11" transform="rotate(45 596 185)"/>
+        <ellipse cx="596" cy="185" rx="26" ry="11" transform="rotate(90 596 185)"/>
+        <ellipse cx="596" cy="185" rx="26" ry="11" transform="rotate(135 596 185)"/>
+      </g>
+      <text x="596" y="194" text-anchor="middle" font-size="23" letter-spacing="4.2"
+            font-weight="400" fill="#eef5ff">STELLANTIS</text>
+    </g>
+
+    <!-- ── TRUE COST title + help ─────────────────────────── -->
+    <text x="603" y="241" text-anchor="middle" font-size="19" letter-spacing="1.6" fill="#dfeaf4">TRUE COST</text>
+
+    <!-- ── SPEEDOMETER ────────────────────────────────────── -->
+    <g id="dial">
+      <circle cx="345" cy="305" r="106" fill="none" stroke="#1d2b38" stroke-width="7" opacity=".9"/>
+      <circle cx="345" cy="305" r="99"  fill="url(#dialG)"/>
+      <g id="tick-group" stroke-linecap="round"></g>
+      <g id="num-group"></g>
+      <circle cx="345" cy="305" r="56" fill="url(#hubG)"/>
+      <g opacity=".28" fill="none" stroke="#4d7ea6" stroke-width=".9">
+        <polygon points="345,253 390,282 373,335 317,335 300,282"/>
+        <polygon points="345,268 377,290 365,327 325,327 313,290"/>
+      </g>
+      <!-- faceted highlight on the hub, as in the reference cluster -->
+      <path d="M345,251 A54,54 0 0 1 393,282 L345,305 Z" fill="url(#sweepG)" opacity=".5"/>
+      <text id="spd" x="345" y="316" text-anchor="middle" font-size="52" font-weight="600">128</text>
+      <text x="345" y="341" text-anchor="middle" font-size="17" fill="#c3d6e6">km/h</text>
+      <text id="rpmTxt" x="330" y="404" text-anchor="middle" font-size="32" font-weight="600">2250</text>
+      <text x="330" y="422" text-anchor="middle" font-size="14" letter-spacing="1.2" fill="#c3d6e6">RPM</text>
+      <text id="gearTxt" x="412" y="404" text-anchor="middle" font-size="26" font-weight="600" fill="#dfeaf4">6</text>
+      <text x="412" y="422" text-anchor="middle" font-size="14" letter-spacing="1.2" fill="#c3d6e6">GEAR</text>
+    </g>
+
+    <!-- ── LIVE CONSUMPTION ───────────────────────────────── -->
+    <text x="533" y="268" text-anchor="middle" class="lbl">LIVE CONSUMPTION</text>
+    <text id="eurKm" x="533" y="316" text-anchor="middle" font-size="56" font-weight="600">0.14</text>
+    <text x="533" y="338" text-anchor="middle" class="lbl-sm">EURO / KM</text>
+
+    <!-- ── DISTANCE / CONSUMED ────────────────────────────── -->
+    <text x="675" y="269" text-anchor="middle" class="lbl">DISTANCE</text>
+    <text x="675" y="295" text-anchor="middle" font-size="27" class="val">
+      <tspan id="dist">48.09</tspan><tspan font-size="18" fill="#d2e2ef"> KM</tspan>
+    </text>
+    <text x="675" y="321" text-anchor="middle" class="lbl">CONSUMED</text>
+    <text x="675" y="347" text-anchor="middle" font-size="27" class="val">
+      <tspan id="cons">5.02</tspan><tspan font-size="18" fill="#d2e2ef"> L</tspan>
+    </text>
+
+    <!-- ── TOTAL TRIP COST ────────────────────────────────── -->
+    <rect x="487" y="357" width="248" height="62" rx="9" fill="rgba(10,22,34,.3)" stroke="#9db4c6" stroke-width="1.1"/>
+    <text x="611" y="379" text-anchor="middle" class="lbl-sm" letter-spacing="1.2">TOTAL TRIP COST</text>
+    <text id="total" x="611" y="411" text-anchor="middle" font-size="34" font-weight="600">EUR 9.55</text>
+    <g id="reset-hit" class="hit">
+      <rect x="742" y="391" width="62" height="24" rx="6" fill="transparent"/>
+      <text x="773" y="409" text-anchor="middle" font-size="17" letter-spacing="1" fill="#dbe8f2">RESET</text>
+    </g>
+
+    <!-- ── VEHICLE STATUS ─────────────────────────────────── -->
+    <g>
+      <ellipse cx="864" cy="303" rx="104" ry="112" fill="url(#greenG)"/>
+      <ellipse cx="864" cy="303" rx="100" ry="108" fill="none"
+               stroke="rgba(90,255,180,.42)" stroke-width="5" filter="url(#soft)"/>
+      <text x="864" y="240" text-anchor="middle" font-size="18" letter-spacing="1.1" fill="#e4f1ea">VEHICLE STATUS</text>
+      <text x="864" y="266" text-anchor="middle" font-size="16" fill="#cfe4d9">Last Refuel Price:</text>
+      <text id="refuel" x="864" y="292" text-anchor="middle" font-size="25" font-weight="600">1.91 €/L</text>
+      <line x1="797" y1="302" x2="931" y2="302" stroke="#7fd6ae" stroke-width=".8" opacity=".35"/>
+      <text x="864" y="319" text-anchor="middle" font-size="16" fill="#cfe4d9">Local Price:</text>
+      <text x="864" y="344" text-anchor="middle" font-size="25" font-weight="600"><tspan id="local">1.92 €</tspan><tspan id="localDist" dx="7" font-size="13" font-weight="400" fill="#8fd3b4">· 2.0 km</tspan></text>
+      <line x1="797" y1="354" x2="931" y2="354" stroke="#7fd6ae" stroke-width=".8" opacity=".35"/>
+      <text x="864" y="364" text-anchor="middle" font-size="16" fill="#cfe4d9">Fuel Level</text>
+      <rect x="806" y="370" width="116" height="11" rx="2.5" fill="#0c1a17" stroke="#3f6a5c" stroke-width=".9"/>
+      <rect x="808" y="372" width="13" height="7" rx="1.5" fill="#c4433c"/>
+      <rect id="fuelbar" x="821" y="372" width="60" height="7" rx="1.5" fill="url(#fuelG)"/>
+      <g stroke="#0c1a17" stroke-width="1.6">
+        <line x1="850" y1="372" x2="850" y2="379"/>
+        <line x1="878" y1="372" x2="878" y2="379"/>
+        <line x1="899" y1="372" x2="899" y2="379"/>
+      </g>
+      <text x="812" y="392" text-anchor="middle" font-size="14" fill="#dcece4">E</text>
+      <text x="916" y="392" text-anchor="middle" font-size="14" fill="#dcece4">F</text>
+      <g filter="url(#glow)" transform="translate(852,398)">
+        <path d="M4,2 h13 a2,2 0 0 1 2,2 v16 h-17 v-16 a2,2 0 0 1 2,-2 z" fill="#39e08a"/>
+        <path d="M21,7 l4,3 v9 a2.6,2.6 0 0 1 -5.2,0 v-4" fill="none" stroke="#39e08a" stroke-width="2.2" stroke-linecap="round"/>
+        <path d="M0,10 l-4,3 4,3 z" fill="#39e08a"/>
+      </g>
+    </g>
+  </svg>
+</div>
+  <!-- PEDALS: they sit on the seam between the cockpit and the deck -->
+  <div id="pedals" class="untouched">
+    <div id="pedal-hint">Hold a pedal &mdash; or the &#8593; &#8595; arrow keys</div>
+    <button class="pedal" id="pedal-brake" type="button" aria-label="Brake: hold, or hold the down arrow key">
+      <span class="key">&#8595;</span><span class="txt">Brake</span>
+    </button>
+    <button class="pedal" id="pedal-gas" type="button" aria-label="Accelerate: hold, or hold the up arrow key">
+      <span class="key">&#8593;</span><span class="txt">Accelerate</span>
+    </button>
   </div>
 
-  <!-- CONTROLS (separated) -->
-  <div id="ice-controls-section">
-    <div class="controls-title">Simulator Controls</div>
+</div><!-- /#shell -->
 
+<!-- ═══════════════════════════════════════════════════════════
+     CONTROL DECK
+     ═══════════════════════════════════════════════════════════ -->
+<div id="deck">
+  <div class="deck-title">Simulator Controls</div>
 
-    <div class="slider-row">
-      <span class="control-label">Throttle</span>
-      <input type="range" id="ice-rpmSlider" min="865" max="4844" value="2250" step="1">
-      <span class="slider-val rpm-val" id="ice-rpmVal">2250 rpm</span>
-    </div>
-
-    <div class="slider-row">
-      <span class="control-label">Time Warp</span>
-      <input type="range" id="ice-timeSlider" min="1" max="20" value="1" step="1">
-      <span class="slider-val time-val" id="ice-timeVal">1×</span>
-    </div>
-
-    <button id="ice-reset-btn" style="display:none">↺ Reset Trip</button>
+  <div class="slider-row">
+    <span class="control-label">Speed</span>
+    <input type="range" id="rpmSlider" min="0" max="240" value="128" step="1">
+    <span class="slider-val" id="rpmVal">128 km/h <em>· 2250 rpm</em></span>
   </div>
 
-  <div id="ice-signature">Star*Up 2026 &nbsp;·&nbsp; True Cost Project &nbsp;·&nbsp; Stellantis</div>
+  <div id="deck-foot">
+    <div style="display:flex;gap:10px">
+      <button class="btn" id="helpBtn">? Info</button>
+      <button class="btn" id="resetBtn">↺ Reset trip</button>
+    </div>
+  </div>
 </div>
 
-<!-- HELP POPUP -->
-<div id="ice-help-overlay">
-  <div id="ice-help-card">
-    <button id="ice-help-close">×</button>
-    <div style="font-size:10px;letter-spacing:2px;color:#00AEEF;font-weight:bold;text-transform:uppercase;margin-bottom:8px;">Star*Up 2026 &middot; Stellantis</div>
+<div id="signature">
+  Star*Up 2026 &nbsp;·&nbsp; True Cost Project &nbsp;·&nbsp; Stellantis &nbsp;·&nbsp;
+  <a href="https://forms.office.com/e/jJ7Sgw7WkD" target="_blank" rel="noopener">✍ Give feedback</a>
+</div>
+
+<!-- ═══════════════ HELP ═══════════════ -->
+<div id="help-overlay">
+  <div id="help-card">
+    <button id="help-close">×</button>
+    <div style="font-size:10px;letter-spacing:2px;color:var(--blue);font-weight:700;text-transform:uppercase;margin-bottom:8px">Star*Up 2026 · Stellantis</div>
     <h2>True Cost: what if your car told you exactly what each km <span>costs?</span></h2>
-    <p style="font-size:11px;color:#666;line-height:1.5;margin-bottom:14px;">
-      Drivers think in money, not in litres or kWh. Yet no cockpit shows the real cost of mobility in real time.<br>
-      This project — selected for <strong style="color:#00AEEF">Star*Up 2026</strong> — proves it's already possible using <strong style="color:#fff">Stellantis Connected Services</strong> and live price data.
-    </p>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
-      <div class="help-section" style="border-left-color:#F0A500;background:rgba(240,165,0,0.04);border-radius:0 6px 6px 0;padding:10px 12px;">
-        <div class="help-section-title" style="color:#F0A500;">&#x26FD; Gasoline · ICE</div>
-        <p>Cost per km = <strong style="color:#fff">consumption &times; pump price</strong>.<br>
-        Live price fetched automatically from stations within 50 km (MIMIT open data).<br>
-        Last refuel price vs today's price — always visible, no manual input.</p>
+    <p>Drivers think in money, not in litres. Yet no cockpit shows the real cost of mobility in real time.
+       This project proves it is already possible using <strong style="color:#fff">Stellantis Connected Services</strong> and live price data.</p>
+    <div class="help-grid">
+      <div class="help-section" style="border-left-color:var(--amber)">
+        <div class="help-section-title" style="color:var(--amber)">⛽ Live consumption</div>
+        <p>Cost per km = <strong>consumption × pump price</strong>. Consumption follows speed on a real fuel-map curve — <strong>hold</strong> the &#8593; <strong>Accelerate</strong> / &#8595; <strong>Brake</strong> pedals (or the arrow keys) and watch the € / km move.</p>
       </div>
-      <div class="help-section" style="border-left-color:#00AEEF;background:rgba(0,174,239,0.04);border-radius:0 6px 6px 0;padding:10px 12px;">
-        <div class="help-section-title" style="color:#00AEEF;">&#x26A1; Electric · BEV</div>
-        <p>Cost per km = <strong style="color:#fff">kWh &times; home tariff</strong>.<br>
-        Nearest fast charger price shown for comparison.<br>
-        Drag the power slider left to simulate regenerative braking — cost goes <strong style="color:#1D9E75">negative</strong>.</p>
+      <div class="help-section" style="border-left-color:var(--blue)">
+        <div class="help-section-title" style="color:var(--blue)">● Live prices</div>
+        <p><strong>Local Price</strong> is the price on the totem of the <strong>next station ahead</strong>, with the distance to it counting down — watch for it on the right of the road. Stations scatter ± 15 cents around the live local average (MIMIT open data, stations within 50 km). <strong>Last Refuel Price</strong> is what the fuel in the tank actually cost — and the trip cost is computed on that.</p>
       </div>
-      <div class="help-section" style="border-left-color:#F0A500;background:rgba(240,165,0,0.04);border-radius:0 6px 6px 0;padding:10px 12px;">
-        <div class="help-section-title" style="color:#F0A500;">&#x25CF; Trip History</div>
-        <p>Last 6 trips logged automatically — date, km, cost. Press <strong style="color:#fff">Reset Trip</strong> to save the current run. In production: via Connected Services, no app needed.</p>
-      </div>
-      <div class="help-section" style="border-left-color:#1D9E75;background:rgba(29,158,117,0.04);border-radius:0 6px 6px 0;padding:10px 12px;">
-        <div class="help-section-title" style="color:#1D9E75;">&#x25CF; Live Data</div>
-        <p>Fuel prices: real Italian pump data, updated every 10 min via <strong style="color:#fff">TomTom Fuel Prices API</strong> (Stellantis ecosystem).<br>
-        Stellantis Connect Fleet has confirmed interest in integration.</p>
+      <div class="help-section" style="border-left-color:var(--green);grid-column:1/-1">
+        <div class="help-section-title" style="color:var(--green)">● Trip &amp; tank</div>
+        <p>Distance, litres burned and total euro accumulate live; the fuel level bar drains with them.
+           Press <strong>RESET</strong> — on the cluster or on the deck — to start a new trip from zero.</p>
       </div>
     </div>
-
-    <div style="text-align:center;margin-bottom:14px;">
-      <a href="https://forms.office.com/e/jJ7Sgw7WkD" target="_blank" style="display:inline-block;background:rgba(0,174,239,0.15);border:1px solid #00AEEF;color:#00AEEF;border-radius:8px;padding:9px 20px;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;font-weight:bold;text-decoration:none;">&#x270D; Share your feedback &rarr;</a>
-    </div>
-
-    <button id="ice-help-close-btn">Got it — let me explore &rarr;</button>
+    <button id="help-cta">Got it — hold &#8593; to drive →</button>
   </div>
 </div>
 
 <script>
+/* ══════════════════════════════════════════════════════════
+   Windshield mask — punches the glass area out of the photo
+   so #windshield (left empty on purpose) shows through,
+   ready for the speed effect. Traced from the source picture.
+   ══════════════════════════════════════════════════════════ */
 (function () {
-  const canvas = document.getElementById('ice-mainCanvas');
-  const ctx    = canvas.getContext('2d');
+  const edge = [
+    [1147,108],[1080,107],[1000,106],[940,106],[920,106],[900,113],[880,120],
+    [860,127],[840,133],[820,131],[800,130],[780,128],[760,126],[740,125],
+    [720,125],[700,124],[680,123],[660,123],[640,122],[620,121],[600,122],
+    [580,122],[560,122],[540,123],[520,123],[500,125],[480,126],[460,127],
+    [440,128],[420,129],[400,130],[380,132],[360,134],[340,137],[320,140],
+    [300,144],[280,147],[260,149],[245,149],[232,138],[210,136],[180,134],
+    [150,132],[130,128],[110,125],[100,121],[90,117],[80,111],[70,103],
+    [60,93],[50,78],[40,60],[30,43],[20,32],[10,16],[0,0]
+  ];
+  const hole = 'M0,0 L1147,0 ' + edge.map(p => 'L' + p[0] + ',' + p[1]).join(' ') + ' Z';
+  const svg =
+    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1147 641' preserveAspectRatio='none'>" +
+    "<path fill='%23ffffff' fill-rule='evenodd' d='M0,0 H1147 V641 H0 Z " + hole + "'/></svg>";
+  document.getElementById('stage').style
+    .setProperty('--wsmask', 'url("data:image/svg+xml;utf8,' + svg + '")');
+})();
+
+/* ══════════════════════════════════════════════════════════
+   Cluster simulation — consumption is driven by speed
+   ══════════════════════════════════════════════════════════ */
+(function () {
+  const SVGNS = 'http://www.w3.org/2000/svg';
+  const CX = 345, CY = 305, VMAX = 240;
+  const RPM_IDLE = 800;
+  const ACC_MAX = 13, DEC_COAST = 4;         // km/h per second: full throttle at rest / lift-off
+
+  /* 6-speed gearbox, ratios expressed as engine rpm per km/h.
+     6th is calibrated on the reference cluster: 128 km/h -> 2250 rpm. */
+  const GEARS = [100, 58, 40, 30, 22.6, 17.58];
+  const UPSHIFT = 2600, DOWNSHIFT = 1250;    // rpm; the gap between them is the hysteresis
+  const SHIFT_LOCK = 0.6;                    // s before another shift is allowed
 
   const state = {
-    minSpeed: 30, maxSpeed: 280,
-    targetRpm: 2250, currentRpm: 2250, currentSpeed: 130,
-    driftAngle: 0, timeMultiplier: 1,
-    dnaMode: 'N',
-    dnaModifiers: { A: 0.85, N: 1.0, D: 1.20 },
-    dnaHints: { A: 'Advanced efficiency — fuel saving active', N: 'Natural — standard driving', D: 'Dynamic — performance mode' },
-    refuelPrice: null,   // price 5 days ago (live + 0.12)
-    todayPrice:  null,   // live price
-    fuelPrice:   1.95,   // used for calculation = refuelPrice
-    tripKm: 0, tripFuelCost: 0, tripFuelLiters: 0,
-    instantEurKm: 0, instantLPer100km: 0,
-    glowR: 0, glowG: 200, glowB: 80
+    targetSpeed: 128, currentSpeed: 128, currentRpm: 2250,
+    gear: 5, shiftLock: 0,
+    driftAngle: 0,
+    refuelPrice: 1.91,        // price of the fuel actually in the tank
+    marketPrice: 1.85,        // live average around the vehicle: the centre the
+                              // stations along the road scatter around
+    tankCapacity: 45, tankLiters: 27.5,
+    tripKm: 48.09, tripLiters: 5.02, tripCost: 9.55,
+    instantEurKm: 0.14, instantL100: 7.14
   };
 
-  /* ── Resize ── */
-  function resize() {
-    const dpr = window.devicePixelRatio || 1;
-    const w   = canvas.parentElement.clientWidth || 900;
-    const h   = Math.round(w * 0.42);
-    canvas.width  = w * dpr; canvas.height = h * dpr;
-    canvas.style.width  = w + 'px'; canvas.style.height = h + 'px';
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  }
-  resize();
-  window.addEventListener('resize', resize);
+  const $ = id => document.getElementById(id);
+  const el = {
+    spd: $('spd'), rpm: $('rpmTxt'), eurKm: $('eurKm'), dist: $('dist'),
+    cons: $('cons'), total: $('total'), refuel: $('refuel'), local: $('local'),
+    localDist: $('localDist'), fuelbar: $('fuelbar'), gear: $('gearTxt')
+  };
 
-  /* ── DNA buttons ── */
-  const dnaHintEl = document.getElementById('ice-dna-hint-text');
-  document.querySelectorAll('.dna-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      state.dnaMode = btn.dataset.mode;
-      document.querySelectorAll('.dna-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      dnaHintEl.textContent = state.dnaHints[state.dnaMode];
-    });
-  });
+  /* ── dial ticks & numbers ───────────────────────────── */
+  const angleOf = v => (-150 + (v / VMAX) * 300) * Math.PI / 180;
+  const pt = (v, r) => [CX + r * Math.sin(angleOf(v)), CY - r * Math.cos(angleOf(v))];
 
-  /* ── Sliders ── */
-  const rpmSlider = document.getElementById('ice-rpmSlider');
-  const rpmValEl  = document.getElementById('ice-rpmVal');
-  rpmSlider.addEventListener('input', () => {
-    state.targetRpm = parseFloat(rpmSlider.value);
-    rpmValEl.textContent = Math.round(rpmSlider.value) + ' rpm';
-  });
-  const timeSlider = document.getElementById('ice-timeSlider');
-  const timeValEl  = document.getElementById('ice-timeVal');
-  timeSlider.addEventListener('input', () => {
-    state.timeMultiplier = parseInt(timeSlider.value);
-    timeValEl.textContent = timeSlider.value + '×';
-  });
+  const tickG = $('tick-group'), numG = $('num-group'), ticks = [], nums = [];
+  for (let v = 0; v <= VMAX; v += 10) {
+    const major = v % 20 === 0;
+    const a = pt(v, major ? 83 : 89), b = pt(v, 97);
+    const l = document.createElementNS(SVGNS, 'line');
+    l.setAttribute('x1', a[0].toFixed(1)); l.setAttribute('y1', a[1].toFixed(1));
+    l.setAttribute('x2', b[0].toFixed(1)); l.setAttribute('y2', b[1].toFixed(1));
+    l.setAttribute('stroke-width', major ? 2.6 : 1.3);
+    l.dataset.v = v;
+    tickG.appendChild(l); ticks.push(l);
 
-  /* ── Trip history ── */
-  const tripLog = [
-    { date: '25 Apr', km: 312, cost: 41.20 },
-    { date: '28 Apr', km: 87,  cost: 11.80 },
-    { date: '02 May', km: 195, cost: 26.40 },
-    { date: '06 May', km: 44,  cost:  6.10 },
-    { date: '10 May', km: 228, cost: 30.90 },
-    { date: '13 May', km: 71,  cost:  9.70 },
-  ];
-  const MAX_TRIPS = 6;
-
-  const OPACITIES = [0.18, 0.32, 0.46, 0.62, 0.78, 1.0];
-
-  function buildTripHistory(newEntry) {
-    const container = document.getElementById('ice-trip-cards');
-    container.innerHTML = '';
-    const visible = tripLog.slice(-MAX_TRIPS);
-    visible.forEach((t, i) => {
-      const card = document.createElement('div');
-      const isNewest = (i === visible.length - 1);
-      card.className = 'trip-card' + (newEntry && isNewest ? ' new-entry' : '');
-      card.style.opacity = OPACITIES[i] ?? 1;
-      card.innerHTML = `
-        <span class="tc-date">${t.date}</span>
-        <span class="tc-km">${t.km} km</span>
-        <span class="tc-cost">€${t.cost.toFixed(2)}</span>
-        <span class="tc-unit">fuel cost</span>`;
-      container.appendChild(card);
-    });
-  }
-  buildTripHistory(false);
-
-  /* ── Reset — saves current trip to log ── */
-  document.getElementById('ice-reset-btn').addEventListener('click', () => {
-    if (state.tripKm > 0.5) {
-      const now = new Date();
-      const label = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
-      tripLog.push({
-        date: label,
-        km:   Math.round(state.tripKm * 10) / 10,
-        cost: Math.round(state.tripFuelCost * 100) / 100
-      });
-      buildTripHistory(true);
+    if (major) {
+      const p = pt(v, 71);
+      const t = document.createElementNS(SVGNS, 'text');
+      t.setAttribute('x', p[0].toFixed(1)); t.setAttribute('y', (p[1] + 5.5).toFixed(1));
+      t.setAttribute('text-anchor', 'middle');
+      t.setAttribute('font-size', '15');
+      t.textContent = v; t.dataset.v = v;
+      numG.appendChild(t); nums.push(t);
     }
-    state.tripKm = 0; state.tripFuelCost = 0; state.tripFuelLiters = 0;
-  });
+  }
 
-  /* ── Live price fetch ── */
-  async function fetchPrice() {
-    const API = 'https://prezzi-carburante.onrender.com/api/distributori?latitude=41.9028&longitude=12.4964&distance=50&fuel=benzina&results=100';
+  function paintDial(speed) {
+    ticks.forEach(l => l.setAttribute('class', +l.dataset.v <= speed ? 'on' : 'off'));
+    nums.forEach(t => t.setAttribute('class', +t.dataset.v <= speed ? 'on' : 'off'));
+  }
+
+  function resetTrip() {
+    state.tripKm = 0; state.tripLiters = 0; state.tripCost = 0;
+  }
+  $('reset-hit').addEventListener('click', resetTrip);
+  $('resetBtn').addEventListener('click', resetTrip);
+
+  /* ── controls ───────────────────────────────────────── */
+  const rpmSlider = $('rpmSlider'), rpmVal = $('rpmVal');
+  rpmSlider.addEventListener('input', () => { state.targetSpeed = parseFloat(rpmSlider.value); });
+
+  /* -- pedals: hold to accelerate / brake ---------------
+     The pedals and the arrow keys drive the same thing the slider does, the
+     requested speed: holding one ramps it, releasing leaves it where it got to
+     (a lift-off, not a cruise cut). The slider follows, so the deck always
+     shows what the pedals asked for. */
+  const PEDAL_UP = 55, PEDAL_DOWN = 95;      // km/h of *requested* speed per second
+  const pedals = $('pedals'), gasBtn = $('pedal-gas'), brakeBtn = $('pedal-brake');
+  const held = { gas: false, brake: false };
+
+  function setPedal(which, on) {
+    if (held[which] === on) return;
+    held[which] = on;
+    (which === 'gas' ? gasBtn : brakeBtn).classList.toggle('active', on);
+    if (on) pedals.classList.remove('untouched');    // the hint has done its job
+  }
+
+  function bindPedal(btn, which) {
+    const down = e => { e.preventDefault(); setPedal(which, true); };
+    const up   = () => setPedal(which, false);
+    btn.addEventListener('pointerdown', e => {
+      down(e);
+      if (btn.setPointerCapture) btn.setPointerCapture(e.pointerId);
+    });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => btn.addEventListener(ev, up));
+    btn.addEventListener('contextmenu', e => e.preventDefault());
+    /* focused with the keyboard: space / enter hold it down too */
+    btn.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') down(e); });
+    btn.addEventListener('keyup',   e => { if (e.key === ' ' || e.key === 'Enter') up(); });
+    btn.addEventListener('blur', up);
+  }
+  bindPedal(gasBtn, 'gas');
+  bindPedal(brakeBtn, 'brake');
+
+  const arrowOf = e => e.key === 'ArrowUp' ? 'gas' : e.key === 'ArrowDown' ? 'brake' : null;
+  window.addEventListener('keydown', e => {
+    const which = arrowOf(e);
+    if (!which) return;
+    e.preventDefault();            // no page scroll, and the slider cannot steal the key
+    if (!e.repeat) setPedal(which, true);
+  });
+  window.addEventListener('keyup', e => {
+    const which = arrowOf(e);
+    if (which) { e.preventDefault(); setPedal(which, false); }
+  });
+  /* switching tab or window must not leave a pedal stuck down */
+  window.addEventListener('blur', () => { setPedal('gas', false); setPedal('brake', false); });
+
+  function applyPedals(dt) {
+    if (!held.gas && !held.brake) return;
+    let t = state.targetSpeed;
+    if (held.gas)   t += PEDAL_UP * dt;
+    if (held.brake) t -= PEDAL_DOWN * dt;
+    state.targetSpeed = Math.max(0, Math.min(VMAX, t));
+    rpmSlider.value = state.targetSpeed;
+  }
+
+  /* ── help ───────────────────────────────────────────── */
+  const overlay = $('help-overlay');
+  const open  = () => overlay.classList.add('open');
+  const close = () => overlay.classList.remove('open');
+  $('helpBtn').addEventListener('click', open);
+  $('help-close').addEventListener('click', close);
+  $('help-cta').addEventListener('click', close);
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+  open();
+
+  /* ── live pump price ────────────────────────────────── */
+  (async function fetchPrice() {
+    const API = 'https://prezzi-carburante.onrender.com/api/distributori' +
+                '?latitude=41.9028&longitude=12.4964&distance=50&fuel=benzina&results=100';
     try {
-      const res  = await fetch(API, { signal: AbortSignal.timeout(12000) });
+      const res = await fetch(API, { signal: AbortSignal.timeout(12000) });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json();
       const list = data.map(d => d.prezzo).filter(p => p > 0.8 && p < 4);
-      if (list.length < 3) throw new Error('No data');
-      const avg = list.reduce((a,b)=>a+b,0) / list.length;
+      if (list.length < 3) throw new Error('no data');
+      const avg = list.reduce((a, b) => a + b, 0) / list.length;
 
-      state.todayPrice  = avg;
-      state.refuelPrice = avg + 0.12;   // simulated: 5 days ago was higher
-      state.fuelPrice   = state.refuelPrice;
-
-      const now = new Date().toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit'});
-      const refuelDate = (() => {
-        const d = new Date(); d.setDate(d.getDate() - 5);
-        return d.toLocaleDateString('it-IT', {day:'2-digit',month:'short'});
-      })();
-      const delta = (state.todayPrice - state.refuelPrice).toFixed(3);
-      const sign  = delta > 0 ? '+' : '';
-
-      document.getElementById('ice-refuelPrice').textContent  = '€ ' + state.refuelPrice.toFixed(3) + '/L';
-      document.getElementById('ice-refuelDate').textContent   = refuelDate + ' (5 days ago)';
-      document.getElementById('ice-todayPrice').textContent   = '€ ' + state.todayPrice.toFixed(3) + '/L';
-      document.getElementById('ice-todayHint').innerHTML      = '<span class="dot-live"></span>Avg within 50 km &mdash; ' + now + ' &mdash; ' + list.length + ' stations';
-      document.getElementById('ice-priceDelta').textContent   = sign + delta + ' €/L';
-      document.getElementById('ice-priceDelta').style.color   = parseFloat(delta) <= 0 ? '#1D9E75' : '#FF7744';
-      document.getElementById('ice-deltaHint').textContent    = parseFloat(delta) <= 0 ? 'cheaper today' : 'pricier today';
-
-    } catch(e) {
-      document.getElementById('ice-todayHint').innerHTML = 'Unavailable';
-      document.getElementById('ice-todayHint').style.color = '#555';
+      state.marketPrice = avg;
+      state.refuelPrice = avg - 0.19;    // tank filled some days ago, cheaper
+    } catch (e) {
+      /* keep the demo prices already in state */
     }
-  }
-  fetchPrice();
+  })();
 
-  /* ── Help popup ── */
-  const overlay = document.getElementById('ice-help-overlay');
-  overlay.classList.add('open');
-  document.getElementById('ice-help-btn').addEventListener('click',     () => overlay.classList.add('open'));
-  document.getElementById('ice-help-close').addEventListener('click',   () => overlay.classList.remove('open'));
-  document.getElementById('ice-help-close-btn').addEventListener('click',() => overlay.classList.remove('open'));
-  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
+  /* ══════════════════════════════════════════════════════════
+     WINDSHIELD — procedural road
+     ──────────────────────────────────────────────────────────
+     Ground plane in perspective drawn on a <canvas> inside
+     #windshield. It uses the photo's own vanishing point
+     (575,60) and the same 1147x641 coordinate system as the
+     cluster, so it lines up with the interior shot.
 
-  /* ── Physics ── */
-  function lerp(a,b,t){ return a + (b-a)*t; }
+     Everything below y ~ 176 is covered by the dashboard, so
+     only that top strip is ever painted.
 
-  function updatePhysics() {
-    state.driftAngle += 0.04;
-    const drift = Math.sin(state.driftAngle) * 12;
-    state.currentRpm   += (state.targetRpm + drift - state.currentRpm) * 0.1;
-    state.currentSpeed  = Math.max(state.minSpeed, Math.min(state.maxSpeed, state.currentRpm / 17.3));
+     Perspective: a point (X lateral, Y height, z ahead), in
+     metres, lands at
+         sx = VPX + (X + curve(z) - sway) * F / z
+         sy = HZ  + (CAMH - Y)          * F / z
+     with F the focal length in px and CAMH the eye height.
+     The scroll is metric: travel += (km/h) / 3.6 * dt, so the
+     road speeds up exactly as fast as the car does.
+     ══════════════════════════════════════════════════════════ */
+  const road = (function () {
+    const cv = $('road');
+    if (!cv) return { frame() {}, station: () => ({ idx: 0, dist: 0, price: state.marketPrice }) };
+    const ctx = cv.getContext('2d');
 
-    state.instantLPer100km =
-      (0.000282 * state.currentSpeed**2 - 0.0163 * state.currentSpeed + 4.61)
-      * state.dnaModifiers[state.dnaMode];
-    state.instantEurKm = (state.instantLPer100km / 100.0) * state.fuelPrice;
+    /* ── the camera, and why these numbers ─────────────────
+       The eye reads speed off the FASTEST thing on screen, and that is the
+       nearest visible tarmac. Its scroll rate at a screen row is
 
-    const t = Math.max(0, Math.min(1, (state.instantEurKm - 0.09) / 0.14));
-    state.glowR = Math.round(lerp(state.glowR, Math.round(255*t),       0.05));
-    state.glowG = Math.round(lerp(state.glowG, Math.round(200-180*t),   0.05));
-    state.glowB = Math.round(lerp(state.glowB, Math.round(80 - 80*t),   0.05));
+           dy/dt = v * dy2 / (F * CAMH)      dy = row - HZ
 
-    const step = (state.currentSpeed / 3600) * 0.016 * state.timeMultiplier;
-    state.tripKm         += step;
-    state.tripFuelCost   += step * state.instantEurKm;
-    state.tripFuelLiters += step * (state.instantLPer100km / 100.0);
-  }
+       so the whole sensation is set by F*CAMH and by how far below the
+       horizon the dashboard cuts the view. The mask crops the glass at
+       y ~ 122 in the middle: with the old 1500/1.2 that row was 29 m ahead
+       and swept 2.9 deg/s, where a real bonnet cuts at 8-10 m and 24-38.
+       Pulling F*CAMH down to 1080 and dropping the horizon to y 38 puts the
+       cut at 12.9 m and 15 deg/s: a 65 deg lens, which is what an interior
+       shot is taken with anyway. NOTHING about the physics changed - travel
+       is still metric, the dashes are still 12 m apart. */
+    const VPX = 575, HZ = 38, YMAX = 176;   // vanishing point · last visible row
+    const F = 900, CAMH = 1.2;              // focal (px) · eye height (m)
+    const K = F * CAMH;                     // a ground row sits at y = HZ + K/z
+    const LANE = 3.6, HALF = LANE * 1.5;    // 3 lanes, we sit in the middle one
+    const SHOULDER = 2.4;
+    const DASH = 12, DASH_ON = 4.5;         // lane marking period / painted part
+    const Z_NEAR = K / (YMAX - HZ), Z_FAR = 420;
 
-  /* ── Gauge ── */
-  function drawGauge(x, y, size, value, maxVal, unit, decimals) {
-    const cx = x + size/2, cy = y + size/2, r = size * 0.46;
-    const r2 = size * 0.33;  // inner ring
-    const start = 225 * Math.PI/180, sweep = 270 * Math.PI/180;
-    const gc = `rgb(${state.glowR},${state.glowG},${state.glowB})`;
-    const gc2 = `rgba(${state.glowR},${state.glowG},${state.glowB},0.35)`;
+    const MED = -(HALF + 1.1);              // median wall, on our left
+    const RAIL = HALF + SHOULDER;           // guardrail, past the right shoulder
 
-    // Outer track
-    ctx.beginPath(); ctx.arc(cx,cy,r,start,start+sweep);
-    ctx.strokeStyle='rgb(22,22,22)'; ctx.lineWidth=size*0.05; ctx.lineCap='round'; ctx.stroke();
-    // Inner track
-    ctx.beginPath(); ctx.arc(cx,cy,r2,start,start+sweep);
-    ctx.strokeStyle='rgb(16,16,16)'; ctx.lineWidth=size*0.025; ctx.stroke();
+    /* ── palette: every material is stated twice, near and far ──
+       each ground row is mixed between the two, so contrast falls off with
+       distance the way it really does instead of being a flat fill. */
+    const P = {
+      skyTop: [72, 118, 168], skyMid: [138, 174, 202], skyLow: [206, 219, 224],
+      hillFar: [132, 152, 172], hillNear: [88, 110, 108], trees: [58, 76, 62],
+      grassN: [64, 74, 50], grassF: [96, 108, 88],
+      asphN: [38, 40, 44], asphF: [84, 90, 97],
+      oppN: [46, 50, 56], oppF: [86, 92, 99],
+      vergeN: [70, 71, 62], vergeF: [100, 104, 100],
+      paintN: [238, 240, 234], paintF: [198, 206, 210]
+    };
+    const mix = (a, b, t) => 'rgb(' +
+      ((a[0] + (b[0] - a[0]) * t) | 0) + ',' +
+      ((a[1] + (b[1] - a[1]) * t) | 0) + ',' +
+      ((a[2] + (b[2] - a[2]) * t) | 0) + ')';
 
-    const pct = Math.min(Math.max(0,value),maxVal)/maxVal;
-    // Outer arc
-    ctx.beginPath(); ctx.arc(cx,cy,r,start,start+sweep*pct);
-    ctx.strokeStyle=gc; ctx.lineWidth=size*0.034; ctx.stroke();
-    // Inner arc — same pct, dimmer
-    ctx.beginPath(); ctx.arc(cx,cy,r2,start,start+sweep*pct);
-    ctx.strokeStyle=gc2; ctx.lineWidth=size*0.018; ctx.stroke();
+    let scale = 1, travel = 0, sway = 0, bob = 0, clock = 0, sized = false;
 
-    ctx.fillStyle='#FFFFFF';
-    ctx.font=`bold ${size*0.17}px Consolas,monospace`;
-    ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText(decimals ? value.toFixed(1) : Math.round(value).toString(), cx, cy-size*0.06);
-    ctx.fillStyle='rgb(180,180,180)';
-    ctx.font=`bold ${size*0.044}px Arial,sans-serif`;
-    ctx.fillText(unit, cx, cy+size*0.13);
-  }
+    /* ── road centre line: two very long, very gentle bends ── */
+    const curveC = s => 25 * Math.sin(s / 420) + 6 * Math.sin(s / 173);
+    const curveD = s => (25 / 420) * Math.cos(s / 420) + (6 / 173) * Math.cos(s / 173);
+    // where the centre of the road is at distance z, seen from a car that is
+    // aligned with the road here and now: the linear term is our heading,
+    // what is left grows like z² and reads as a bend
+    let c0 = 0, d0 = 0;
+    const curveAt = z => curveC(travel + z) - c0 - z * d0;
 
-  /* ── km/L label — right gauge bottom, below arc, same style as BEV kWh/100km ── */
-  function drawLitersLabel(W, H, gs) {
-    // ICE gauge: starts at gy=H*0.05, size=H*0.84 → bottom edge at H*0.89
-    // Place label just below, at H*0.955
-    const gaugeCx = (W - gs - gs*0.02) + gs / 2;
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = `bold ${H * 0.044}px Consolas,monospace`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
-    const kmL = state.instantLPer100km > 0 ? (100 / state.instantLPer100km).toFixed(1) : '—';
-    ctx.fillText(kmL + ' km/L', gaugeCx, H * 0.955);
-  }
+    const sxOf = (X, z) => VPX + (X + curveAt(z) - sway) * F / z;
+    const syOf = (Y, z) => HZ + (CAMH - Y) * F / z;
 
-  /* ── Draw ── */
-  function draw() {
-    const dpr=window.devicePixelRatio||1;
-    const W=canvas.width/dpr, H=canvas.height/dpr;
-    ctx.clearRect(0,0,W,H);
-    ctx.fillStyle='#020202'; ctx.fillRect(0,0,W,H);
-
-    const gs = H*0.84, gy = H*0.05;
-    const cw = W*0.36, cx = (W-cw)/2;
-    const gc = `rgb(${state.glowR},${state.glowG},${state.glowB})`;
-
-    // Centre glow
-    const gr=ctx.createRadialGradient(W/2,H*0.5,0,W/2,H*0.5,H*0.72);
-    gr.addColorStop(0,`rgba(${state.glowR},${state.glowG},${state.glowB},0.32)`);
-    gr.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=gr;
-    ctx.beginPath(); ctx.roundRect(cx,H*0.05,cw,H*0.92,24); ctx.fill();
-
-    // Header
-    ctx.fillStyle='#00AEEF';
-    ctx.beginPath(); ctx.roundRect(cx,H*0.04,cw,H*0.115,[4,4,0,0]); ctx.fill();
-    ctx.fillStyle='#FFFFFF';
-    ctx.font=`bold ${H*0.052}px Arial,sans-serif`;
-    ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText('STELLANTIS', W/2, H*0.098);
-
-    // Separator
-    ctx.strokeStyle='rgba(255,255,255,0.12)'; ctx.lineWidth=0.5;
-    ctx.beginPath();
-    ctx.moveTo(cx+cw*0.15, H*0.57); ctx.lineTo(cx+cw*0.85, H*0.57); ctx.stroke();
-
-    // Live consumption label
-    ctx.fillStyle='rgba(200,200,200,0.7)';
-    ctx.font=`bold ${H*0.036}px Arial,sans-serif`;
-    ctx.textAlign='center'; ctx.textBaseline='alphabetic';
-    ctx.fillText('LIVE CONSUMPTION', W/2, H*0.285);
-
-    // Big cost number
-    ctx.fillStyle='#FFFFFF';
-    ctx.font=`bold ${H*0.225}px Consolas,monospace`;
-    ctx.textBaseline='middle';
-    ctx.fillText(state.instantEurKm.toFixed(2), W/2, H*0.425);
-
-    // Unit
-    ctx.fillStyle='rgba(200,200,200,0.6)';
-    ctx.font=`bold ${H*0.036}px Arial,sans-serif`;
-    ctx.textBaseline='alphabetic';
-    ctx.fillText('EURO / KM', W/2, H*0.55);
-
-    // Distance + consumed litres (two rows, like BEV)
-    const brows = [
-      ['DISTANCE', `${state.tripKm.toFixed(2)} KM`],
-      ['CONSUMED', `${state.tripFuelLiters.toFixed(2)} L`],
-    ];
-    const bsy = H*0.615, blh = H*0.095;
-    brows.forEach(([l, v], i) => {
-      ctx.fillStyle='rgba(200,200,200,0.55)';
-      ctx.font=`bold ${H*0.036}px Arial,sans-serif`;
-      ctx.textAlign='right'; ctx.textBaseline='alphabetic';
-      ctx.fillText(l, cx+cw*0.44, bsy + i*blh);
-      ctx.fillStyle='#FFFFFF';
-      ctx.font=`bold ${H*0.060}px Consolas,monospace`;
-      ctx.textAlign='left';
-      ctx.fillText(v, cx+cw*0.50, bsy + i*blh);
-    });
-
-    // Total
-    ctx.fillStyle='rgba(200,200,200,0.55)';
-    ctx.font=`bold ${H*0.037}px Arial,sans-serif`;
-    ctx.textAlign='center'; ctx.textBaseline='alphabetic';
-    ctx.fillText('TOTAL TRIP COST', W/2, H*0.840);
-    ctx.fillStyle='#FFFFFF';
-    ctx.font=`bold ${H*0.125}px Consolas,monospace`;
-    ctx.textBaseline='middle';
-    ctx.fillText(`EUR ${state.tripFuelCost.toFixed(2)}`, W/2, H*0.940);
-    // Reset button — right of total
-    const iceResetW = cw*0.28, iceResetH = H*0.062;
-    const iceResetX = W/2 + iceResetW * 1.5;
-    const iceResetY = H*0.940 - iceResetH * 0.2;
-    const iceResetR = iceResetH/2;
-    ctx.fillStyle = state._iceResetHover ? 'rgba(240,165,0,0.25)' : 'rgba(30,20,5,0.7)';
-    ctx.strokeStyle = state._iceResetHover ? '#F0A500' : '#3a2a00';
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.roundRect(iceResetX, iceResetY - iceResetH/2, iceResetW, iceResetH, iceResetR); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = state._iceResetHover ? '#F0A500' : '#888';
-    ctx.font = `bold ${H*0.028}px Arial,sans-serif`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('\u21BA RESET', iceResetX + iceResetW/2, iceResetY);
-    state._iceResetBounds = {x: iceResetX, y: iceResetY - iceResetH/2, w: iceResetW, h: iceResetH};
-
-    // Gauges
-    drawGauge(gs*0.02,            gy, gs, state.currentRpm,   8000, 'RPM', false);
-    drawGauge(W-gs-gs*0.02,       gy, gs, state.currentSpeed, 280,  'km/h', true);
-    drawLitersLabel(W, H, gs);
-  }
-
-  state._iceResetHover = false; state._iceResetBounds = null;
-  canvas.addEventListener('mousemove', function(e) {
-    var r = canvas.getBoundingClientRect();
-    var sx = (e.clientX - r.left) * (canvas.width / r.width) / (window.devicePixelRatio||1);
-    var sy = (e.clientY - r.top)  * (canvas.height / r.height) / (window.devicePixelRatio||1);
-    var b = state._iceResetBounds;
-    state._iceResetHover = !!(b && sx>=b.x && sx<=b.x+b.w && sy>=b.y && sy<=b.y+b.h);
-    canvas.style.cursor = state._iceResetHover ? 'pointer' : 'default';
-  });
-  canvas.addEventListener('click', function(e) {
-    var r = canvas.getBoundingClientRect();
-    var sx = (e.clientX - r.left) * (canvas.width / r.width) / (window.devicePixelRatio||1);
-    var sy = (e.clientY - r.top)  * (canvas.height / r.height) / (window.devicePixelRatio||1);
-    var b = state._iceResetBounds;
-    if (b && sx>=b.x && sx<=b.x+b.w && sy>=b.y && sy<=b.y+b.h) document.getElementById('ice-reset-btn').click();
-  });
-  function loop(){ updatePhysics(); draw(); requestAnimationFrame(loop); }
-  loop();
-})();
-</script>
-    </div>
-    <div class="tc-panel">
-      <div id="bev-page">
-
-  <!-- COCKPIT -->
-  <div id="bev-cockpit">
-    <canvas id="bev-mainCanvas"></canvas>
-
-    <!-- Stop-only zone -->
-    <div style="background:#0d1520;border-top:2px solid #00AEEF;">
-      <div style="display:flex;align-items:center;justify-content:center;gap:8px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#6090b0;padding:6px 0 4px;font-family:Arial,sans-serif;border-bottom:1px solid #152030;"><span style="color:#00AEEF;font-size:11px;">&#x2193;</span><span>Visible at vehicle stop only</span><span style="color:#00AEEF;font-size:11px;">&#x2193;</span></div>
-    <!-- Trip history -->
-    <div id="bev-trip-history">
-      <div id="bev-trip-history-header">
-        <span class="th-label">Last Trips</span>
-        <div class="th-line"></div>
-      </div>
-      <div id="bev-trip-cards"><!-- populated by JS --></div>
-    </div>
-
-    <!-- Energy bar -->
-    <div id="bev-energy-bar">
-      <div class="e-cell">
-        <span class="e-cell-label">Energy Type</span>
-        <span class="e-cell-value" style="color:#aabbcc;font-size:13px;">&#x26A1; Electric</span>
-        <span class="e-cell-sub">BEV</span>
-      </div>
-      <div class="e-cell">
-        <span class="e-cell-label">Home Charging</span>
-        <div id="bev-home-price-wrap">
-          <input type="number" id="bev-homePriceInput" min="0.10" max="1.00" step="0.01" value="0.25">
-          <span class="e-unit">€/kWh</span>
-        </div>
-        <span class="e-cell-sub">Set once — used for cost calc</span>
-      </div>
-      <div class="e-cell">
-        <span class="e-cell-label">Nearest Fast Charger</span>
-        <span class="e-cell-value" id="bev-fastChargerPrice">€ 0.59/kWh</span>
-        <span class="e-cell-sub" id="bev-fastChargerHint"><span class="dot-fast"></span>Free2Move · 2.1 km</span>
-      </div>
-      <div class="e-cell">
-        <span class="e-cell-label">Cost Difference</span>
-        <span class="e-cell-value" id="bev-chargeDelta" style="color:#FF7744;">—</span>
-        <span class="e-cell-sub" id="bev-chargeDeltaHint">home vs fast</span>
-      </div>
-    </div><!-- /bev-energy-bar -->
-    </div><!-- /stop-only zone -->
-
-    <button id="bev-help-btn" style="display:none">?</button>
-  </div>
-
-  <!-- CONTROLS -->
-  <div id="bev-controls-section">
-    <div class="controls-title">Simulator Controls</div>
-
-
-    <div class="slider-row" style="flex-wrap:wrap;gap:8px;">
-      <span class="control-label">Power</span>
-      <div style="flex:1;display:flex;flex-direction:column;gap:4px;min-width:0;">
-        <input type="range" id="bev-powerSlider" min="-40" max="150" value="40" step="1" style="width:100%;">
-        <div style="display:flex;align-items:center;position:relative;height:14px;">
-          <!-- regen zone marker -->
-          <div style="position:absolute;left:0;width:21%;height:100%;display:flex;align-items:center;">
-            <div style="width:100%;height:2px;background:linear-gradient(to right,#1D9E75,rgba(29,158,117,0.2));border-radius:1px;"></div>
-          </div>
-          <!-- zero marker -->
-          <div style="position:absolute;left:21%;display:flex;flex-direction:column;align-items:center;transform:translateX(-50%);">
-            <div style="width:1px;height:8px;background:#555;"></div>
-            <span style="font-size:9px;color:#555;font-family:Consolas,monospace;letter-spacing:0;margin-top:1px;">0</span>
-          </div>
-          <!-- regen label -->
-          <span style="position:absolute;left:2%;font-size:8px;color:#1D9E75;font-family:Consolas,monospace;letter-spacing:1px;text-transform:uppercase;">&#x21BA; regen</span>
-          <!-- drive label -->
-          <span style="position:absolute;right:2%;font-size:8px;color:#00AEEF;font-family:Consolas,monospace;letter-spacing:1px;text-transform:uppercase;">drive &#x2192;</span>
-        </div>
-      </div>
-      <span class="slider-val power-val" id="bev-powerVal">40 kW</span>
-    </div>
-
-    <div class="slider-row">
-      <span class="control-label">Time Warp</span>
-      <input type="range" id="bev-timeSlider" min="1" max="20" value="1" step="1">
-      <span class="slider-val time-val" id="bev-timeVal">1×</span>
-    </div>
-
-    <button id="bev-reset-btn" style="display:none">&#x21BA; Reset Trip</button>
-  </div>
-
-  <div id="bev-signature">Star*Up 2026 &nbsp;·&nbsp; True Cost BEV &nbsp;·&nbsp; Stellantis</div>
-</div>
-
-<!-- HELP -->
-<div id="bev-help-overlay">
-  <div id="bev-help-card">
-    <button id="bev-help-close">×</button>
-    <div style="font-size:10px;letter-spacing:2px;color:#00AEEF;font-weight:bold;text-transform:uppercase;margin-bottom:8px;">Star*Up · Stellantis · BEV</div>
-    <h2>What if your BEV told you exactly what each kilometre <span>costs?</span></h2>
-    <p style="font-size:11px;color:#445566;line-height:1.5;margin-bottom:14px;">
-      The <strong style="color:#fff">True Cost BEV view</strong> — real-time energy cost per km in euros, calculated on your home charging tariff. The nearest fast charger price is always visible for comparison.<br>
-      Selected for <strong style="color:#00AEEF">Star*Up 2026</strong>.
-    </p>
-
-    <!-- Row 1: controls -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;">
-      <div class="help-section" style="border-left-color:#00AEEF;padding:8px 10px;">
-        <div class="help-section-title" style="color:#00AEEF;">Power Slider</div>
-        <p><strong>Right of zero</strong> — motor draws energy, cost rises.<br>
-        <strong style="color:#1D9E75;">Left of zero</strong> — regenerative braking: the motor becomes a generator, energy flows <em>back</em> to the battery. Cost per km goes <strong style="color:#1D9E75;">negative</strong> and SoC recovers.<br>
-        The green zone on the slider marks the regen range.</p>
-      </div>
-      <div class="help-section" style="border-left-color:#1D9E75;padding:8px 10px;">
-        <div class="help-section-title" style="color:#1D9E75;">Regen Mode</div>
-        <div class="pill-row" style="margin:4px 0;">
-          <span class="pill off">OFF — no recovery</span>
-          <span class="pill low">LOW 55% efficiency</span>
-          <span class="pill high">HIGH 72% efficiency</span>
-        </div>
-        <p>Sets how much of the braking energy is captured. <strong>HIGH</strong> enables one-pedal driving — lift off and the car decelerates, recovering up to 72% of kinetic energy back as charge. With <strong>OFF</strong>, dragging left simply coasts with no recovery.</p>
-      </div>
-      <div class="help-section" style="border-left-color:#00AEEF;padding:8px 10px;">
-        <div class="help-section-title" style="color:#00AEEF;">Time Warp</div>
-        <p>Up to <strong>20×</strong> speed. Watch SoC drain and costs accumulate over a full journey in seconds. Press Reset to save.</p>
-      </div>
-    </div>
-
-    <!-- Row 2: data -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
-      <div class="help-section" style="border-left-color:#F0A500;background:rgba(240,165,0,0.04);border-radius:0 6px 6px 0;padding:9px 11px;">
-        <div class="help-section-title" style="color:#F0A500;">&#x25CF; Trip History</div>
-        <p>Last 6 trips — date, km, kWh consumed and energy cost. Oldest fade left. Press <strong style="color:#fff">Reset Trip</strong> to save the current run.<br>
-        In production: logged automatically by Connected Services.</p>
-      </div>
-      <div class="help-section" style="border-left-color:#1D9E75;background:rgba(29,158,117,0.05);border-radius:0 6px 6px 0;padding:9px 11px;">
-        <div class="help-section-title" style="color:#1D9E75;">&#x25CF; Energy Price Feed</div>
-        <p><strong style="color:#fff">Home Charging</strong> — your tariff, set once, drives all calculations.<br>
-        <strong style="color:#F0A500">Fast Charger</strong> — nearest DC fast charger (simulated Free2Move). Delta shows the real cost of charging away from home.<br>
-        In production: via <strong style="color:#fff">Connected Services</strong> + TomTom EV Charging API.</p>
-      </div>
-    </div>
-
-    <button id="bev-help-close-btn">Got it — let me drive &#x2192;</button>
-  </div>
-</div>
-
-<script>
-(function () {
-  const canvas = document.getElementById('bev-mainCanvas');
-  const ctx    = canvas.getContext('2d');
-
-  /* ── State ── */
-  const state = {
-    targetPowerKw: 40, currentPowerKw: 40,
-    currentSpeed: 80,
-    driftAngle: 0, timeMultiplier: 1,
-    regenMode: 'low',
-    regenModifiers: { off: 1.0, low: 0.92, high: 0.82 },
-    regenHints: {
-      off:  'No regen — drag slider left to simulate braking',
-      low:  'Low regen — drag left to recover energy while braking',
-      high: 'High regen — one-pedal driving, drag left for max recovery'
-    },
-    homePriceKwh: 0.25,
-    fastChargerKwh: 0.59,
-    socPct: 78,           // starts at 78%
-    tripKm: 0,
-    tripKwh: 0,
-    tripEnergyCost: 0,
-    instantEurKm: 0,
-    instantKwhKm: 0,
-    glowR: 0, glowG: 160, glowB: 239
-  };
-
-  /* ── Resize ── */
-  function resize() {
-    const dpr = window.devicePixelRatio || 1;
-    const w   = canvas.parentElement.clientWidth || 900;
-    const h   = Math.round(w * 0.46);
-    canvas.width  = w * dpr; canvas.height = h * dpr;
-    canvas.style.width  = w + 'px'; canvas.style.height = h + 'px';
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  }
-  resize();
-  window.addEventListener('resize', resize);
-
-  /* ── Regen buttons ── */
-  const regenHintEl = document.getElementById('bev-regen-hint-text');
-  document.querySelectorAll('.regen-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      state.regenMode = btn.dataset.regen;
-      document.querySelectorAll('.regen-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      regenHintEl.textContent = state.regenHints[state.regenMode];
-    });
-  });
-
-  /* ── Power slider ── */
-  const powerSlider = document.getElementById('bev-powerSlider');
-  const powerValEl  = document.getElementById('bev-powerVal');
-  powerSlider.addEventListener('input', () => {
-    state.targetPowerKw = parseFloat(powerSlider.value);
-    const v = parseFloat(powerSlider.value);
-    if (v < 0) {
-      powerValEl.textContent = v + ' kW  ↺ REGEN';
-      powerValEl.style.color = '#1D9E75';
-    } else {
-      powerValEl.textContent = v + ' kW';
-      powerValEl.style.color = '#00AEEF';
-    }
-  });
-
-  /* ── Time slider ── */
-  const timeSlider = document.getElementById('bev-timeSlider');
-  const timeValEl  = document.getElementById('bev-timeVal');
-  timeSlider.addEventListener('input', () => {
-    state.timeMultiplier = parseInt(timeSlider.value);
-    timeValEl.textContent = timeSlider.value + '×';
-  });
-
-  /* ── Home price input ── */
-  document.getElementById('bev-homePriceInput').addEventListener('input', function() {
-    const v = parseFloat(this.value);
-    if (!isNaN(v) && v > 0.05 && v < 2) {
-      state.homePriceKwh = v;
-      updateChargeDelta();
-    }
-  });
-
-  function updateChargeDelta() {
-    const delta = state.fastChargerKwh - state.homePriceKwh;
-    const pct   = ((delta / state.homePriceKwh) * 100).toFixed(0);
-    const el    = document.getElementById('bev-chargeDelta');
-    const hint  = document.getElementById('bev-chargeDeltaHint');
-    el.textContent  = '+€' + delta.toFixed(2) + '/kWh';
-    el.style.color  = '#FF7744';
-    hint.textContent = 'fast charger ' + pct + '% more';
-  }
-  updateChargeDelta();
-
-  /* ── Trip history ── */
-  const tripLog = [
-    { date: '25 Apr', km: 187, kwh: 29.2, cost: 7.30 },
-    { date: '28 Apr', km:  62, kwh:  9.7, cost: 2.43 },
-    { date: '02 May', km: 134, kwh: 20.9, cost: 5.23 },
-    { date: '06 May', km:  38, kwh:  6.0, cost: 1.50 },
-    { date: '10 May', km: 211, kwh: 33.0, cost: 8.25 },
-    { date: '13 May', km:  74, kwh: 11.6, cost: 2.90 },
-  ];
-  const MAX_TRIPS = 6;
-  const OPACITIES = [0.18, 0.32, 0.46, 0.62, 0.78, 1.0];
-
-  function buildTripHistory(newEntry) {
-    const container = document.getElementById('bev-trip-cards');
-    container.innerHTML = '';
-    const visible = tripLog.slice(-MAX_TRIPS);
-    visible.forEach((t, i) => {
-      const card = document.createElement('div');
-      const isNewest = (i === visible.length - 1);
-      card.className = 'trip-card' + (newEntry && isNewest ? ' new-entry' : '');
-      card.style.opacity = OPACITIES[i] ?? 1;
-      card.innerHTML = `
-        <span class="tc-date">${t.date}</span>
-        <span class="tc-km">${t.km} km</span>
-        <span class="tc-kwh">${t.kwh} kWh</span>
-        <span class="tc-cost">€${t.cost.toFixed(2)}</span>
-        <span class="tc-unit">energy cost</span>`;
-      container.appendChild(card);
-    });
-  }
-  buildTripHistory(false);
-
-  /* ── Reset ── */
-  document.getElementById('bev-reset-btn').addEventListener('click', () => {
-    if (state.tripKm > 0.5) {
-      const label = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
-      tripLog.push({
-        date: label,
-        km:   Math.round(state.tripKm * 10) / 10,
-        kwh:  Math.round(state.tripKwh * 10) / 10,
-        cost: Math.round(state.tripEnergyCost * 100) / 100
+    /* ── the rows, precomputed once ─────────────────────────
+       a screen row is always the same depth, so its fog, its scale and all of
+       its colours are constants: the scanline loop only places rectangles. */
+    const rows = [];
+    for (let y = HZ + 1; y <= YMAX; y++) {
+      const z = K / (y - HZ);
+      const f = 1 - Math.exp(-z / 190);          // 0 at the bonnet, ~1 far away
+      rows.push({
+        y: y, z: z, s: F / z, f: f,
+        asph: mix(P.asphN, P.asphF, f),
+        opp: mix(P.oppN, P.oppF, f),
+        grass: mix(P.grassN, P.grassF, f),
+        verge: mix(P.vergeN, P.vergeF, f),
+        paint: mix(P.paintN, P.paintF, f),
+        fade: Math.min(1, (y - HZ) / 9)          // kills the shimmer at the horizon
       });
-      buildTripHistory(true);
-    }
-    state.tripKm = 0; state.tripKwh = 0; state.tripEnergyCost = 0;
-    state.socPct = 78;
-  });
-
-  /* ── Help ── */
-  const overlay = document.getElementById('bev-help-overlay');
-  document.getElementById('bev-help-btn').addEventListener('click',      () => overlay.classList.add('open'));
-  document.getElementById('bev-help-close').addEventListener('click',    () => overlay.classList.remove('open'));
-  document.getElementById('bev-help-close-btn').addEventListener('click',() => overlay.classList.remove('open'));
-  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
-
-  /* ── Physics ── */
-  function lerp(a, b, t) { return a + (b - a) * t; }
-
-  function updatePhysics() {
-    state.driftAngle += 0.035;
-    const drift = Math.sin(state.driftAngle) * 4;
-    state.currentPowerKw += (state.targetPowerKw + drift - state.currentPowerKw) * 0.1;
-    const kw = state.currentPowerKw;  // allow negative for regen
-    const isRegen = kw < 0;
-
-    // speed: decelerates slowly in regen, accelerates with positive power
-    const targetSpeed = isRegen
-      ? Math.max(0, state.currentSpeed - 0.8 * state.timeMultiplier)
-      : Math.max(10, Math.min(160, Math.abs(kw) * 1.12 + 30));
-    state.currentSpeed += (targetSpeed - state.currentSpeed) * 0.06;
-
-    const spd = Math.max(1, state.currentSpeed);
-
-    let kwhKm, eurKm;
-    if (isRegen) {
-      // regen: energy flows back to battery
-      // recovery proportional to regen power and regen mode
-      const regenPower = Math.abs(kw);  // 0–40 kW
-      const regenEfficiency = state.regenMode === 'high' ? 0.72 : state.regenMode === 'low' ? 0.55 : 0.0;
-      kwhKm = -(regenPower * regenEfficiency / Math.max(10, spd)) * 0.5;  // negative = recovering
-      eurKm = kwhKm * state.homePriceKwh;
-    } else {
-      const baseKwhPer100 = 0.00055 * spd * spd + 0.030 * spd + 13.0; // calibrated on Jeep Avenger BEV 54kWh
-      const regenFactor = state.regenModifiers[state.regenMode];
-      kwhKm = (baseKwhPer100 / 100) * regenFactor;
-      eurKm = kwhKm * state.homePriceKwh;
-    }
-    state.instantKwhKm = kwhKm;
-    state.instantEurKm = eurKm;
-
-    // glow: cyan/green in regen, blue normal, warm at high consumption
-    if (isRegen) {
-      state.glowR = Math.round(lerp(state.glowR, 0,   0.05));
-      state.glowG = Math.round(lerp(state.glowG, 210, 0.05));
-      state.glowB = Math.round(lerp(state.glowB, 180, 0.05));
-    } else {
-      const t = Math.max(0, Math.min(1, (eurKm - 0.02) / 0.06));
-      state.glowR = Math.round(lerp(state.glowR, Math.round(0   + 255 * t * 0.6), 0.05));
-      state.glowG = Math.round(lerp(state.glowG, Math.round(160 - 100 * t),       0.05));
-      state.glowB = Math.round(lerp(state.glowB, Math.round(239 -  80 * t),       0.05));
     }
 
-    const step = (spd / 3600) * 0.016 * state.timeMultiplier;
-    state.tripKm         += step;
-    state.tripKwh        += step * kwhKm * 100;          // negative in regen
-    state.tripEnergyCost += step * eurKm;                 // negative in regen
+    /* deterministic noise: the same metre of road always looks the same, so
+       the grain travels with the world instead of boiling in place */
+    function hash(n) {
+      n = (n ^ 61) ^ (n >>> 16); n = n + (n << 3); n ^= n >>> 4;
+      n = Math.imul(n, 0x27d4eb2d); n ^= n >>> 15;
+      return (n >>> 0) / 4294967296;
+    }
 
-    // SoC: drains when driving, recovers in regen
-    const socDelta = (step * kwhKm * 100 / 54) * 10;
-    state.socPct = Math.min(100, Math.max(0, state.socPct - socDelta));
-  }
+    /* ── canvas sizing: image coords in, device pixels out ─── */
+    function fit() {
+      const w = cv.clientWidth;
+      if (!w) return;
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      const px = Math.round(w * dpr);
+      /* assigning width WIPES the canvas, and the ResizeObserver fires on
+         every layout touch: resize only when the pixel size really changed,
+         or the road blinks out for a frame at random moments */
+      if (px === cv.width) { sized = true; return; }
+      cv.width = px;
+      cv.height = Math.round(px * 641 / 1147);
+      scale = px / 1147;
+      sized = true;
+    }
+    fit();
+    window.addEventListener('resize', fit);
+    if (window.ResizeObserver) new ResizeObserver(fit).observe(cv);
 
-  function drawKwhLabel(W, H, gs, gRight) {
-    const gaugeCx = gRight + gs / 2;
-    const by = H * 0.86;
-    ctx.fillStyle = state.instantKwhKm < 0 ? '#1D9E75' : '#FFFFFF';
-    ctx.font = `bold ${H * 0.044}px Consolas,monospace`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
-    const kwhLabel = (state.instantKwhKm * 100).toFixed(1) + ' kWh/100km';
-    ctx.fillText(kwhLabel, gaugeCx, by - H * 0.007);
-  }
+    /* ── traffic ────────────────────────────────────────────── */
+    const traffic = [];
+    const CAR_COLORS = ['#8d949c', '#4a5560', '#9b3f3a', '#2f3a4a', '#b3b7ba', '#3d5a52'];
 
-  /* ── Gauge (left: power kW, right: speed km/h) ── */
-  function drawGauge(x, y, size, value, maxVal, unit, color, decimals) {
-    const cx = x + size/2, cy = y + size/2, r = size * 0.46;
-    const r2 = size * 0.33;  // inner ring
-    const start = 225 * Math.PI/180, sweep = 270 * Math.PI/180;
-    const color2 = color.replace('rgb(', 'rgba(').replace(')', ',0.35)');
+    function spawn(ourV) {
+      // when we crawl, cars come up from behind; otherwise we catch them
+      const behind = ourV < 33 && Math.random() < 0.45;
+      const left = behind || Math.random() < 0.45;
+      const truck = !left && Math.random() < 0.45;
+      const v = behind ? ourV + 6 + Math.random() * 8
+        : left ? 34 + Math.random() * 8
+          : truck ? 22 + Math.random() * 3 : 27 + Math.random() * 5;
+      traffic.push({
+        x: (left ? -LANE : LANE) + (Math.random() - 0.5) * 0.5,
+        z: behind ? Z_NEAR + 2 : 90 + Math.random() * (Z_FAR - 90),
+        v: v, truck: truck,
+        w: truck ? 2.5 : 1.82,
+        h: truck ? 3.5 : 1.45,
+        color: truck ? '#7d8288' : CAR_COLORS[(Math.random() * CAR_COLORS.length) | 0]
+      });
+    }
 
-    // Outer track
-    ctx.beginPath(); ctx.arc(cx, cy, r, start, start + sweep);
-    ctx.strokeStyle = 'rgb(12,18,28)'; ctx.lineWidth = size * 0.05; ctx.lineCap = 'round'; ctx.stroke();
-    // Inner track
-    ctx.beginPath(); ctx.arc(cx, cy, r2, start, start + sweep);
-    ctx.strokeStyle = 'rgb(8,14,22)'; ctx.lineWidth = size * 0.025; ctx.stroke();
+    function moveTraffic(ourV, dt) {
+      for (let i = traffic.length - 1; i >= 0; i--) {
+        const c = traffic[i];
+        c.z += (c.v - ourV) * dt;
+        if (c.z < Z_NEAR - 6 || c.z > Z_FAR + 90) traffic.splice(i, 1);
+      }
+      if (traffic.length < 9 && Math.random() < 0.055) spawn(ourV);
+    }
 
-    const pct = Math.min(Math.max(0, value), maxVal) / maxVal;
-    // Outer arc
-    ctx.beginPath(); ctx.arc(cx, cy, r, start, start + sweep * pct);
-    ctx.strokeStyle = color; ctx.lineWidth = size * 0.034; ctx.stroke();
-    // Inner arc — same pct, dimmer
-    ctx.beginPath(); ctx.arc(cx, cy, r2, start, start + sweep * pct);
-    ctx.strokeStyle = color2; ctx.lineWidth = size * 0.018; ctx.stroke();
+    /* a vehicle is a silhouette, not a box: glasshouse, sill, wheels */
+    function drawVehicle(c) {
+      const s = F / c.z;
+      const xc = sxOf(c.x, c.z);
+      const yb = syOf(0, c.z), yt = syOf(c.h, c.z);
+      const w = c.w * s, h = yb - yt;
+      if (h < 0.6 || xc < -600 || xc > 1747) return;
 
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = `bold ${size * 0.17}px Consolas,monospace`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(decimals ? value.toFixed(1) : Math.round(value).toString(), cx, cy - size * 0.06);
-    ctx.fillStyle = 'rgba(180,200,220,0.7)';
-    ctx.font = `bold ${size * 0.044}px Arial,sans-serif`;
-    ctx.fillText(unit, cx, cy + size * 0.13);
-  }
+      const fog = 1 - Math.exp(-c.z / 190);
+      const x0 = xc - w / 2;
 
-  /* ── SoC bar ── */
-  function drawSoC(W, H, gs, gLeft) {
-    // SoC bar: centred horizontally inside the left gauge circle
-    // gauge circle centre-x = gLeft + gs/2, radius ≈ gs*0.46
-    const gaugeCx = gLeft + gs / 2;
-    const gaugeR  = gs * 0.38;          // slightly inside the arc
-    const bw = gaugeR * 1.1;            // fits within circle
-    const bh = H * 0.026;
-    const bx = gaugeCx - bw / 2;
-    const by = H * 0.86;
-    const soc = state.socPct / 100;
-    const socColor = soc > 0.4 ? '#1D9E75' : soc > 0.2 ? '#F0A500' : '#FF4444';
+      ctx.fillStyle = 'rgba(0,0,0,.34)';                        // contact shadow
+      ctx.fillRect(x0 - w * 0.10, yb - h * 0.04, w * 1.20, Math.max(0.7, h * 0.09));
 
-    // label
-    ctx.fillStyle = 'rgba(100,150,190,0.75)';
-    ctx.font = `bold ${H * 0.022}px Arial,sans-serif`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
-    ctx.fillText('SOC  ' + Math.round(state.socPct) + '%', gaugeCx, by - H * 0.007);
+      if (h < 4) {                                              // far away: a chip
+        ctx.fillStyle = c.color;
+        ctx.fillRect(x0, yt + h * 0.12, w, h * 0.88);
+      } else if (c.truck) {
+        ctx.fillStyle = c.color;                                // box body
+        ctx.fillRect(x0, yt, w, h * 0.88);
+        ctx.fillStyle = 'rgba(255,255,255,.10)';                // side sheen
+        ctx.fillRect(x0, yt + h * 0.08, w, h * 0.30);
+        ctx.fillStyle = 'rgba(20,26,32,.55)';                   // under-body shadow
+        ctx.fillRect(x0, yb - h * 0.20, w, h * 0.11);
+        ctx.fillStyle = '#1b2026';                              // wheels
+        ctx.fillRect(x0 + w * 0.06, yb - h * 0.13, w * 0.16, h * 0.13);
+        ctx.fillRect(x0 + w * 0.78, yb - h * 0.13, w * 0.16, h * 0.13);
+      } else {
+        const roof = yt + h * 0.02, belt = yt + h * 0.40, sill = yb - h * 0.16;
+        ctx.fillStyle = c.color;
+        ctx.beginPath();                                        // tapered glasshouse
+        ctx.moveTo(x0 + w * 0.20, roof);
+        ctx.lineTo(x0 + w * 0.80, roof);
+        ctx.lineTo(x0 + w, belt);
+        ctx.lineTo(x0 + w, sill);
+        ctx.lineTo(x0, sill);
+        ctx.lineTo(x0, belt);
+        ctx.closePath(); ctx.fill();
+        ctx.fillStyle = 'rgba(16,26,36,.62)';                   // rear glass
+        ctx.fillRect(x0 + w * 0.17, roof + h * 0.06, w * 0.66, h * 0.28);
+        ctx.fillStyle = '#181d23';                              // tyres
+        ctx.fillRect(x0 + w * 0.02, sill, w * 0.17, yb - sill);
+        ctx.fillRect(x0 + w * 0.81, sill, w * 0.17, yb - sill);
+      }
 
-    // frame
-    ctx.strokeStyle = 'rgba(0,174,239,0.18)'; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, 2); ctx.stroke();
-    // fill
-    ctx.fillStyle = socColor;
-    ctx.beginPath(); ctx.roundRect(bx + 1, by + 1, Math.max(0, (bw - 2) * soc), bh - 2, 1); ctx.fill();
-    // nub
-    ctx.fillStyle = 'rgba(0,174,239,0.2)';
-    ctx.beginPath(); ctx.roundRect(bx + bw + 1, by + bh * 0.2, 3, bh * 0.6, 1); ctx.fill();
-  }
+      if (h > 3.2) {                                            // tail lights
+        const lw = Math.max(0.8, w * 0.15), lh = Math.max(0.8, h * 0.09);
+        ctx.fillStyle = 'rgba(224,64,48,' + (0.9 - fog * 0.45).toFixed(2) + ')';
+        ctx.fillRect(x0 + w * 0.04, yb - h * (c.truck ? 0.30 : 0.42), lw, lh);
+        ctx.fillRect(x0 + w * 0.96 - lw, yb - h * (c.truck ? 0.30 : 0.42), lw, lh);
+      }
 
-  /* ── Draw ── */
-  function draw() {
-    const dpr = window.devicePixelRatio || 1;
-    const W = canvas.width / dpr, H = canvas.height / dpr;
-    ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = '#030408'; ctx.fillRect(0, 0, W, H);
+      // the air in between: without it a far truck reads as a cut-out
+      if (fog > 0.04) {
+        ctx.fillStyle = 'rgba(186,201,213,' + (fog * 0.62).toFixed(3) + ')';
+        ctx.fillRect(x0 - w * 0.12, yt - 0.5, w * 1.24, h + 1.5);
+      }
+    }
 
-    // gauges sized so they stay in outer thirds, centre panel is clear
-    const gs = H * 0.70;   // gauge size — smaller to avoid overlap
-    const gy = H * 0.06;
-    const gLeft  = 0;                  // left gauge x
-    const gRight = W - gs;             // right gauge x
-    const cw = W * 0.38, cx = (W - cw) / 2;
-    const gc = `rgb(${state.glowR},${state.glowG},${state.glowB})`;
+    /* ── roadside furniture ─────────────────────────────────── */
+    // a ribbon running along the road at a constant height band
+    function ribbon(X, yLo, yHi, fill) {
+      const zs = [];
+      for (let z = Z_NEAR; z < Z_FAR; z *= 1.05) zs.push(z);
+      zs.push(Z_FAR);
+      ctx.beginPath();
+      for (let i = 0; i < zs.length; i++) {
+        const z = zs[i], x = sxOf(X, z), y = syOf(yHi, z);
+        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      }
+      for (let i = zs.length - 1; i >= 0; i--) {
+        const z = zs[i];
+        ctx.lineTo(sxOf(X, z), syOf(yLo, z));
+      }
+      ctx.closePath();
+      ctx.fillStyle = fill;
+      ctx.fill();
+    }
 
-    // centre glow
-    const gr = ctx.createRadialGradient(W/2, H*0.45, 0, W/2, H*0.45, H*0.65);
-    gr.addColorStop(0, `rgba(${state.glowR},${state.glowG},${state.glowB},0.26)`);
-    gr.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = gr;
-    ctx.beginPath(); ctx.roundRect(cx, H*0.04, cw, H*0.94, 24); ctx.fill();
+    // evenly spaced uprights — the strongest speed cue we have
+    function posts(X, every, width, yLo, yHi, fill) {
+      ctx.fillStyle = fill;
+      const start = Math.ceil((travel + Z_NEAR) / every) * every;
+      for (let s = start; s < travel + Z_FAR; s += every) {
+        const z = s - travel;
+        const w = Math.max(0.45, width * F / z);
+        const y0 = syOf(yHi, z), y1 = syOf(yLo, z);
+        ctx.fillRect(sxOf(X, z) - w / 2, y0, w, Math.max(0.5, y1 - y0));
+      }
+    }
 
-    // header
-    ctx.fillStyle = '#00AEEF';
-    ctx.beginPath(); ctx.roundRect(cx, H*0.04, cw, H*0.115, [4,4,0,0]); ctx.fill();
-    ctx.fillStyle = '#030408';
-    ctx.font = `bold ${H*0.052}px Arial,sans-serif`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('STELLANTIS', W/2, H*0.098);
+    // small bright markers: they flick past and sell the speed at a glance
+    function studs(X, every, Y, size, near, far) {
+      const start = Math.ceil((travel + Z_NEAR) / every) * every;
+      for (let s = start; s < travel + 260; s += every) {
+        const z = s - travel;
+        const px = Math.max(0.6, size * F / z);
+        const a = Math.max(0, 1 - z / 260);
+        ctx.fillStyle = a > 0.55 ? near : far;
+        ctx.globalAlpha = 0.35 + a * 0.65;
+        ctx.fillRect(sxOf(X, z) - px / 2, syOf(Y, z) - px / 2, px, px);
+      }
+      ctx.globalAlpha = 1;
+    }
 
-    // separator
-    ctx.strokeStyle = 'rgba(0,174,239,0.15)'; ctx.lineWidth = 0.5;
-    ctx.beginPath(); ctx.moveTo(cx+cw*0.12, H*0.57); ctx.lineTo(cx+cw*0.88, H*0.57); ctx.stroke();
+    /* the concrete median: without joints and shading it is a dead slab
+       filling half the windshield, and it is the closest thing to the eye */
+    function medianWall() {
+      ribbon(MED, 0, 0.92, '#8b918b');                    // face
+      ribbon(MED, 0.62, 0.92, '#9aa09a');                 // upper, catching the light
+      ribbon(MED, 0.86, 0.92, '#b6bbb4');                 // top cap
+      ribbon(MED, 0, 0.26, 'rgba(46,50,44,.45)');         // road grime at the foot
+      posts(MED, 6, 0.06, 0, 0.92, 'rgba(30,34,30,.30)'); // expansion joints
+      blades();                                           // anti-glare screen
+      studs(MED, 12, 0.70, 0.10, '#ffffff', '#c9d2cf');   // reflectors
+    }
 
-    // live label
-    ctx.fillStyle = 'rgba(150,190,220,0.7)';
-    ctx.font = `bold ${H*0.034}px Arial,sans-serif`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
-    ctx.fillText('LIVE CONSUMPTION', W/2, H*0.280);
+    /* the anti-glare blades on top of the median: they beat past at 2.5 m
+       spacing and are, at speed, the loudest thing in the frame — so they fade
+       out with distance before they can start to strobe */
+    function blades() {
+      const start = Math.ceil((travel + Z_NEAR) / 2.5) * 2.5;
+      for (let m = start; m < travel + 150; m += 2.5) {
+        const z = m - travel;
+        const w = Math.max(0.5, 0.07 * F / z);
+        const y0 = syOf(1.62, z), y1 = syOf(0.9, z);
+        ctx.fillStyle = 'rgba(58,66,64,' +
+          (0.46 * Math.max(0, 1 - z / 150)).toFixed(3) + ')';
+        ctx.fillRect(sxOf(MED, z) - w / 2, y0, w, Math.max(0.6, y1 - y0));
+      }
+    }
 
-    // big cost number — green in regen
-    ctx.fillStyle = state.instantEurKm < 0 ? '#1D9E75' : '#FFFFFF';
-    ctx.font = `bold ${H*0.215}px Consolas,monospace`;
-    ctx.textBaseline = 'middle';
-    ctx.fillText(state.instantEurKm.toFixed(2), W/2, H*0.410);
+    /* the metal guardrail on the right, as a W-beam: two flanges and a groove */
+    function guardrail() {
+      posts(RAIL, 4, 0.12, 0, 0.78, '#4b5359');
+      ribbon(RAIL, 0.50, 0.86, '#8b959d');
+      ribbon(RAIL, 0.66, 0.72, 'rgba(60,68,74,.55)');     // the groove
+      ribbon(RAIL, 0.80, 0.86, '#bcc4ca');                // top flange highlight
+      studs(RAIL, 25, 0.90, 0.11, '#ffb43c', '#d9a05a');  // amber delineators
+    }
 
-    // unit
-    ctx.fillStyle = 'rgba(150,190,220,0.6)';
-    ctx.font = `bold ${H*0.032}px Arial,sans-serif`;
-    ctx.textBaseline = 'alphabetic';
-    ctx.fillText('EURO / KM', W/2, H*0.542);
+    /* a motorway sign every so often: it enters small, swells and leaves over
+       the roof in about a second — nothing reads as fast as that */
+    function signs() {
+      const EVERY = 500;
+      const start = Math.ceil((travel + 40) / EVERY) * EVERY;
+      for (let s = start; s < travel + Z_FAR; s += EVERY) {
+        const z = s - travel;
+        if (z > 320) continue;
+        if (s % ST_EVERY === 0) continue;   // that slot belongs to a fuel station
+        const X = RAIL + 2.2, w = 4.2 * F / z;
+        const xc = sxOf(X, z);
+        const yTop = syOf(5.6, z), yBot = syOf(3.4, z);
+        if (yBot < -40 || xc - w > 1300) continue;
+        ctx.globalAlpha = Math.min(1, (320 - z) / 90);
+        const lw = Math.max(0.6, 0.16 * F / z);
+        ctx.fillStyle = '#5e666b';                        // the two legs
+        ctx.fillRect(xc - w * 0.3, yBot, lw, syOf(0, z) - yBot);
+        ctx.fillRect(xc + w * 0.3, yBot, lw, syOf(0, z) - yBot);
+        ctx.fillStyle = '#1d6142';                        // the panel
+        ctx.fillRect(xc - w / 2, yTop, w, yBot - yTop);
+        ctx.strokeStyle = '#e7efe9';
+        ctx.lineWidth = Math.max(0.5, 0.06 * F / z);
+        ctx.strokeRect(xc - w / 2, yTop, w, yBot - yTop);
+        const h = yBot - yTop;
+        if (h > 6) {                                      // unreadable legend
+          ctx.fillStyle = 'rgba(232,240,234,.9)';
+          ctx.fillRect(xc - w * 0.34, yTop + h * 0.24, w * 0.52, h * 0.13);
+          ctx.fillRect(xc - w * 0.34, yTop + h * 0.55, w * 0.40, h * 0.13);
+        }
+        ctx.globalAlpha = 1;
+      }
+    }
 
 
+    /* ── fuel stations ────────────────────────────────────────
+       One every ST_EVERY metres, on the right past the guardrail: an apron,
+       a canopy on four pillars with two pumps under it, a shop, and the totem
+       that carries the price. The price comes from the station's *index*
+       through hash(), so it is decided once and does not shimmer while you
+       drive up to it; it scatters +/- ST_SPREAD around the live market
+       average (state.marketPrice), which is 1.85 until the API answers.
 
-    // Distance + consumed
-    const brows = [
-      ['DISTANCE', `${state.tripKm.toFixed(2)} KM`],
-      ['CONSUMED', `${state.tripKwh.toFixed(1)} kWh`],
+       Spacing is the one number worth touching: 2 km is ~55 s at 130 km/h,
+       which is often enough to be seen during a demo. The real motorway
+       figure would be 5 km - a station every two and a half minutes. */
+    const ST_EVERY = 2000;                    // m between stations
+    const ST_SPREAD = 0.15;                   // euro, either side of the market price
+    const ST_TOTEM = RAIL + 3.6;              // the sign, just past the guardrail
+    const ST_X = RAIL + 6;                    // near edge of the forecourt
+
+    const stationPrice = i => state.marketPrice + (hash(i * 97 + 13) * 2 - 1) * ST_SPREAD;
+
+    /* the next station ahead: what the cluster counts down to */
+    function station() {
+      const idx = Math.floor(travel / ST_EVERY) + 1;
+      return { idx: idx, dist: idx * ST_EVERY - travel, price: stationPrice(idx) };
+    }
+
+    /* a flat quad given its four world corners [X, Y, z] */
+    function quad(c, fill) {
+      ctx.fillStyle = fill;
+      ctx.beginPath();
+      for (let i = 0; i < c.length; i++) {
+        const x = sxOf(c[i][0], c[i][2]), y = syOf(c[i][1], c[i][2]);
+        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      }
+      ctx.closePath(); ctx.fill();
+    }
+
+    /* a vertical post standing on the ground at (X, z) */
+    function pillar(X, z, top, w, fill) {
+      quad([[X - w, 0, z], [X + w, 0, z], [X + w, top, z], [X - w, top, z]], fill);
+    }
+
+    function stations() {
+      const idx = Math.floor(travel / ST_EVERY) + 1;
+      const z0 = idx * ST_EVERY - travel;
+      if (z0 > Z_FAR || z0 < 4) return;       // nothing in sight, or already beside us
+
+      const price = stationPrice(idx);
+      const zN = Math.max(4, z0 - 11), zF = z0 + 11;   // the plot runs 22 m along the road
+      ctx.globalAlpha = Math.min(1, (Z_FAR - z0) / 120);
+
+      /* the apron: concrete, so the station does not float on the grass */
+      quad([[ST_X - 3, 0, zN], [ST_X + 24, 0, zN], [ST_X + 24, 0, zF], [ST_X - 3, 0, zF]], '#9fa6aa');
+
+      /* shop, set back behind the canopy */
+      quad([[ST_X + 16, 0, z0 + 4], [ST_X + 25, 0, z0 + 4], [ST_X + 25, 3.2, z0 + 4], [ST_X + 16, 3.2, z0 + 4]], '#e3e8ea');
+      quad([[ST_X + 17, 0.6, z0 + 4], [ST_X + 24, 0.6, z0 + 4], [ST_X + 24, 2.2, z0 + 4], [ST_X + 17, 2.2, z0 + 4]], '#38505e');
+
+      /* the canopy: four pillars, a white slab, a red fascia on the near edge.
+         A real one stands at 5 m, this one at 4.4: above that it leaves through
+         the top of the glass while you are still driving up to it. */
+      [[ST_X + 1, zN + 2], [ST_X + 13, zN + 2], [ST_X + 1, zF - 2], [ST_X + 13, zF - 2]]
+        .forEach(pl => pillar(pl[0], pl[1], 3.9, 0.22, '#ccd4d9'));
+      quad([[ST_X, 4.4, zN], [ST_X + 14, 4.4, zN], [ST_X + 14, 4.4, zF], [ST_X, 4.4, zF]], '#eef2f4');
+      quad([[ST_X, 3.9, zN], [ST_X + 14, 3.9, zN], [ST_X + 14, 4.4, zN], [ST_X, 4.4, zN]], '#d0d7dc');
+      quad([[ST_X, 3.9, zN], [ST_X + 14, 3.9, zN], [ST_X + 14, 4.15, zN], [ST_X, 4.15, zN]], '#c4362f');
+
+      /* two pumps under it */
+      pillar(ST_X + 4, z0, 1.9, 0.45, '#dfe4e7');
+      pillar(ST_X + 10, z0, 1.9, 0.45, '#dfe4e7');
+
+      /* ── the price board, the only thing that HAS to be readable ──
+         Its height is a compromise with the windshield, not with reality: the
+         glass shows a strip from the horizon down, so anything tall leaves
+         through the top of the frame exactly when it gets close enough to
+         read. A board from 1.4 to 4.4 m stays inside the glass from ~200 m
+         down to ~40 m, which is the whole approach. */
+      const zt = Math.max(4, z0 - 6);
+      const BRD_LO = 1.4, BRD_HI = 4.4;
+      const half = 1.9, yTop = syOf(BRD_HI, zt), yBot = syOf(BRD_LO, zt);
+      const xc = sxOf(ST_TOTEM, zt), w = 2 * half * F / zt, h = yBot - yTop;
+      pillar(ST_TOTEM - 1.2, zt, BRD_LO + 0.1, 0.16, '#b9c1c6');
+      pillar(ST_TOTEM + 1.2, zt, BRD_LO + 0.1, 0.16, '#b9c1c6');
+      quad([[ST_TOTEM - half, BRD_LO, zt], [ST_TOTEM + half, BRD_LO, zt],
+            [ST_TOTEM + half, BRD_HI, zt], [ST_TOTEM - half, BRD_HI, zt]], '#0e2f4f');
+      ctx.strokeStyle = '#dfe8ee';
+      ctx.lineWidth = Math.max(0.4, 0.05 * F / zt);
+      ctx.strokeRect(xc - w / 2, yTop, w, h);
+      ctx.fillStyle = '#3ddc84';                       // brand band across the top
+      ctx.fillRect(xc - w / 2, yTop, w, h * 0.22);
+
+      if (h > 12) {                                     // close enough to read the price
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.font = '700 ' + (h * 0.42).toFixed(1) + 'px "Segoe UI",Arial,sans-serif';
+        ctx.fillText(price.toFixed(2), xc, yTop + h * 0.58);
+        if (h > 22) {
+          ctx.font = '600 ' + (h * 0.13).toFixed(1) + 'px "Segoe UI",Arial,sans-serif';
+          ctx.fillText('EURO / L', xc, yTop + h * 0.86);
+        }
+        ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    /* ── roadside trees ───────────────────────────────────────
+       Nothing sells speed like something close to the camera going past, and
+       a tree is the cheapest close thing there is: the eye knows how big one
+       should be, so it reads the sweep as metres per second instead of as
+       pixels. They stand outside both carriageways, one slot every TREE_STEP
+       metres with a third of the slots deliberately empty, because a regular
+       colonnade reads as a metronome and a real verge never is.
+
+       Every tree is drawn from its OWN slot index through hash(): species,
+       height, width, how lumpy the canopy is, its green and how far off the
+       road it stands. Same metre of road, same tree — they never shimmer,
+       and no two in view are the same. */
+    const TREE_STEP = 11;                   // m between slots (some stay empty)
+    const TREE_GAP = 26;                    // m of clearance kept around a station
+    const TREE_FAR = 300;                   // past this the backdrop treeline does the job
+
+    /* the greens a verge actually holds: cypress dark, poplar bright, olive,
+       pine blue-green, scrub yellow-green */
+    const TREE_GREEN = [
+      [42, 62, 40], [58, 86, 48], [66, 82, 54], [46, 72, 60], [78, 92, 52]
     ];
-    const bsy = H*0.615, blh = H*0.095;
-    brows.forEach(([l, v], i) => {
-      ctx.fillStyle = 'rgba(150,190,220,0.55)';
-      ctx.font = `bold ${H*0.036}px Arial,sans-serif`;
-      ctx.textAlign = 'right'; ctx.textBaseline = 'alphabetic';
-      ctx.fillText(l, cx + cw*0.44, bsy + i*blh);
-      ctx.fillStyle = '#FFFFFF';
-      ctx.font = `bold ${H*0.058}px Consolas,monospace`;
-      ctx.textAlign = 'left';
-      ctx.fillText(v, cx + cw*0.50, bsy + i*blh);
-    });
+    const BARK = [62, 52, 44];
 
-    // total
-    ctx.fillStyle = 'rgba(150,190,220,0.5)';
-    ctx.font = `bold ${H*0.030}px Arial,sans-serif`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
-    ctx.fillText('TOTAL TRIP COST', W/2, H*0.845);
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = `bold ${H*0.115}px Consolas,monospace`;
-    ctx.textBaseline = 'middle';
-    ctx.fillText(`EUR ${state.tripEnergyCost.toFixed(2)}`, W/2, H*0.940);
-    // Reset button — right of total
-    const bevResetW = cw*0.28, bevResetH = H*0.062;
-    const bevResetX = W/2 + bevResetW * 1.5;
-    const bevResetY = H*0.940 - bevResetH * 0.2;
-    const bevResetR = bevResetH/2;
-    ctx.fillStyle = state._bevResetHover ? 'rgba(0,174,239,0.2)' : 'rgba(2,10,20,0.7)';
-    ctx.strokeStyle = state._bevResetHover ? '#00AEEF' : '#00304a';
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.roundRect(bevResetX, bevResetY - bevResetH/2, bevResetW, bevResetH, bevResetR); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = state._bevResetHover ? '#00AEEF' : '#448';
-    ctx.font = `bold ${H*0.028}px Arial,sans-serif`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('\u21BA RESET', bevResetX + bevResetW/2, bevResetY);
-    state._bevResetBounds = {x: bevResetX, y: bevResetY - bevResetH/2, w: bevResetW, h: bevResetH};
+    function drawTree(X, z, seed) {
+      const px = F / z;                                  // metres -> pixels here
+      const xc = sxOf(X, z);
+      if (xc < -400 || xc > 1560) return;                // long gone sideways
 
-    // SoC bar — inside left gauge
-    drawSoC(W, H, gs, gLeft);
-    // kWh/100km — symmetric, inside right gauge
-    drawKwhLabel(W, H, gs, gRight);
+      const f = 1 - Math.exp(-z / 190);                  // aerial perspective
+      const sp = hash(seed * 7 + 3);
+      const g = TREE_GREEN[(hash(seed * 29 + 5) * TREE_GREEN.length) | 0];
+      const lift = (hash(seed * 53 + 11) - 0.5) * 22;    // this tree's own shade
+      const leaf = mix([g[0] + lift, g[1] + lift, g[2] + lift], P.hillFar, f * 0.82);
+      const dark = mix([g[0] * 0.7 + lift, g[1] * 0.7 + lift, g[2] * 0.7 + lift], P.hillFar, f * 0.82);
+      const bark = mix(BARK, P.hillFar, f * 0.82);
+      const yGnd = syOf(0, z);
 
-    // gauges
-    drawGauge(gLeft,  gy, gs, state.currentPowerKw, 150, 'kW',   gc, false);
-    drawGauge(gRight, gy, gs, state.currentSpeed,   160, 'km/h', gc, true);
-  }
+      const blob = (X0, Y0, rx, ry, fill) => {           // one lump of foliage
+        ctx.fillStyle = fill;
+        ctx.beginPath();
+        ctx.ellipse(sxOf(X0, z), syOf(Y0, z), Math.max(0.35, rx * px), Math.max(0.35, ry * px), 0, 0, 6.2832);
+        ctx.fill();
+      };
+      const trunk = (top, w, taper) => {
+        ctx.fillStyle = bark;
+        ctx.beginPath();
+        ctx.moveTo(sxOf(X - w, z), yGnd);
+        ctx.lineTo(sxOf(X + w, z), yGnd);
+        ctx.lineTo(sxOf(X + w * taper, z), syOf(top, z));
+        ctx.lineTo(sxOf(X - w * taper, z), syOf(top, z));
+        ctx.closePath(); ctx.fill();
+      };
 
-  state._bevResetHover = false; state._bevResetBounds = null;
-  canvas.addEventListener('mousemove', e => {
-    const r = canvas.getBoundingClientRect();
-    const sx = (e.clientX - r.left) * (canvas.width / r.width) / (window.devicePixelRatio||1);
-    const sy = (e.clientY - r.top)  * (canvas.height / r.height) / (window.devicePixelRatio||1);
-    const b = state._bevResetBounds;
-    state._bevResetHover = b && sx>=b.x && sx<=b.x+b.w && sy>=b.y && sy<=b.y+b.h;
-    canvas.style.cursor = state._bevResetHover ? 'pointer' : 'default';
-  });
-  canvas.addEventListener('click', e => {
-    const r = canvas.getBoundingClientRect();
-    const sx = (e.clientX - r.left) * (canvas.width / r.width) / (window.devicePixelRatio||1);
-    const sy = (e.clientY - r.top)  * (canvas.height / r.height) / (window.devicePixelRatio||1);
-    const b = state._bevResetBounds;
-    if (b && sx>=b.x && sx<=b.x+b.w && sy>=b.y && sy<=b.y+b.h) document.getElementById('bev-reset-btn').click();
-  });
-  function loop() { updatePhysics(); draw(); requestAnimationFrame(loop); }
-  loop();
-})();
-</script>
-    </div>
-  </div>
-</div>
+      /* the shadow first: without it a tree floats a foot above the grass */
+      ctx.fillStyle = 'rgba(28,38,28,' + (0.26 * (1 - f * 0.8)).toFixed(3) + ')';
+      ctx.beginPath();
+      ctx.ellipse(xc, yGnd, Math.max(0.5, 1.8 * px), Math.max(0.3, 0.45 * px), 0, 0, 6.2832);
+      ctx.fill();
 
-<script>
-(function() {
-  const panels = document.getElementById('tc-panels');
-  const btnBev = document.getElementById('btn-to-bev');
-  const btnIce = document.getElementById('btn-to-ice');
-  function switchTo(mode) {
-    if (mode === 'bev') {
-      panels.classList.add('show-bev');
-      btnBev.style.opacity = '0.35'; btnBev.style.pointerEvents = 'none';
-      btnIce.style.opacity = '1';    btnIce.style.pointerEvents = 'auto';
-    } else {
-      panels.classList.remove('show-bev');
-      btnIce.style.opacity = '0.35'; btnIce.style.pointerEvents = 'none';
-      btnBev.style.opacity = '1';    btnBev.style.pointerEvents = 'auto';
+      if (sp < 0.24) {
+        /* cypress: a flame. The tallest thing on the verge and the first to
+           leave through the top of the windshield */
+        const H = 7 + hash(seed * 17) * 5, W = 0.5 + hash(seed * 23) * 0.35;
+        ctx.fillStyle = leaf;
+        ctx.beginPath();
+        ctx.moveTo(xc, syOf(H, z));
+        ctx.quadraticCurveTo(sxOf(X + W * 1.7, z), syOf(H * 0.42, z), xc, yGnd);
+        ctx.quadraticCurveTo(sxOf(X - W * 1.7, z), syOf(H * 0.42, z), xc, syOf(H, z));
+        ctx.fill();
+        blob(X - W * 0.45, H * 0.55, W * 0.5, H * 0.24, dark);      // shaded side
+
+      } else if (sp < 0.46) {
+        /* umbrella pine: bare trunk, then a flat wide crown */
+        const H = 6.5 + hash(seed * 17) * 4, W = 2.4 + hash(seed * 23) * 1.6;
+        trunk(H * 0.66, 0.16 + hash(seed * 31) * 0.08, 0.7);
+        blob(X, H * 0.82, W, H * 0.13, dark);
+        blob(X + W * 0.15, H * 0.90, W * 0.82, H * 0.11, leaf);
+
+      } else if (sp < 0.74) {
+        /* broadleaf: two or three lumps, never the same two */
+        const H = 4.5 + hash(seed * 17) * 5.5, W = 1.5 + hash(seed * 23) * 2.0;
+        trunk(H * 0.42, 0.14 + hash(seed * 31) * 0.1, 0.55);
+        blob(X, H * 0.66, W, W * 0.92, dark);
+        blob(X + W * 0.28, H * 0.76, W * 0.72, W * 0.66, leaf);
+        if (hash(seed * 41) > 0.4) blob(X - W * 0.42, H * 0.58, W * 0.56, W * 0.52, leaf);
+
+      } else {
+        /* scrub: low, wide, and it is what fills the gaps */
+        const H = 1.3 + hash(seed * 17) * 1.6, W = 1.2 + hash(seed * 23) * 1.4;
+        blob(X, H * 0.5, W, H * 0.55, dark);
+        blob(X + W * 0.35, H * 0.62, W * 0.6, H * 0.45, leaf);
+      }
     }
-    setTimeout(() => window.dispatchEvent(new Event('resize')), 460);
+
+    /* one row of trees, drawn far to near so the near ones overlap the far */
+    function treeRow(salt, side, near, span) {
+      const last = Math.floor((travel + TREE_FAR) / TREE_STEP);
+      const first = Math.ceil((travel + 6) / TREE_STEP);
+      for (let n = last; n >= first; n--) {
+        if (hash(n * 131 + salt) < 0.42) continue;                  // an empty slot
+        const s = n * TREE_STEP + (hash(n * 977 + salt) - 0.5) * 7;
+        const z = s - travel;
+        if (z < 6 || z > TREE_FAR) continue;
+        if (side > 0) {                                             // keep the forecourt clear
+          const m = s % ST_EVERY;
+          if (m < TREE_GAP || m > ST_EVERY - TREE_GAP) continue;
+        }
+        ctx.globalAlpha = Math.min(1, (TREE_FAR - z) / 70);
+        drawTree(side * (near + hash(n * 37 + salt) * span), z, n * 3 + salt);
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    /* Lateral offsets are the whole trick: a tree at 9.5 m leaves the frame
+       at 15 m ahead, so it sweeps the full width of the glass in the last
+       half second - that sweep IS the speed. The far rows only fill in. */
+    function trees() {
+      treeRow(0, -1, 19.5, 12);    // left: beyond the opposite carriageway
+      treeRow(7,  1,  9.5, 13);    // right: from just past the guardrail outwards
+    }
+
+    /* ── background: sky, sun, clouds, ridges ───────────────── */
+    function layer(par, fill, alpha, amp, freq, base) {
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = fill;
+      ctx.beginPath();
+      ctx.moveTo(0, HZ + 2);
+      for (let x = 0; x <= 1147; x += 8) {
+        const t = x * freq + travel * par;
+        const n = Math.sin(t) * 0.6 + Math.sin(t * 2.3 + 1.1) * 0.28 + Math.sin(t * 5.1) * 0.12;
+        ctx.lineTo(x, base - amp * (n + 0.6));
+      }
+      ctx.lineTo(1147, HZ + 2);
+      ctx.closePath(); ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+
+    function backdrop() {
+      const sky = ctx.createLinearGradient(0, -6, 0, HZ + 2);
+      sky.addColorStop(0, 'rgb(' + P.skyTop + ')');
+      sky.addColorStop(0.55, 'rgb(' + P.skyMid + ')');
+      sky.addColorStop(1, 'rgb(' + P.skyLow + ')');
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, -6, 1147, HZ + 8);
+
+      // a low sun off to the right, the only warm thing in the scene
+      const sun = ctx.createRadialGradient(790, 2, 0, 790, 2, 300);
+      sun.addColorStop(0, 'rgba(255,240,214,.34)');
+      sun.addColorStop(0.45, 'rgba(255,238,212,.12)');
+      sun.addColorStop(1, 'rgba(255,238,212,0)');
+      ctx.fillStyle = sun;
+      ctx.fillRect(440, -6, 707, HZ + 8);
+
+      // clouds sitting on the horizon, on a parallax so slow it reads as far
+      const drift = travel * 0.045;
+      for (let i = 0; i < 7; i++) {
+        const seed = hash(i * 977);
+        const x = ((seed * 2600 - drift * (0.5 + seed * 0.5)) % 1600 + 1600) % 1600 - 230;
+        const w = 90 + seed * 150, h = 4.5 + seed * 7;
+        const y = 5 + hash(i * 131 + 7) * 20;
+        const g = ctx.createRadialGradient(x, y, 0, x, y, w / 2);
+        g.addColorStop(0, 'rgba(255,255,255,.50)');
+        g.addColorStop(0.55, 'rgba(246,250,252,.18)');
+        g.addColorStop(1, 'rgba(246,250,252,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.ellipse(x, y, w / 2, h, 0, 0, 6.2832);
+        ctx.fill();
+      }
+
+      // two ridges and a treeline, each on its own parallax: that difference
+      // is what turns a flat band into distance
+      layer(0.00035, 'rgb(' + P.hillFar + ')', 0.55, 8, 0.0048, HZ - 3);
+      layer(0.00090, 'rgb(' + P.hillNear + ')', 0.72, 5.5, 0.0085, HZ - 1);
+      layer(0.00220, 'rgb(' + P.trees + ')', 0.92, 3.2, 0.0210, HZ + 2);
+    }
+
+    /* ── the ground, one scanline at a time ─────────────────── */
+    function ground() {
+      for (let i = 0; i < rows.length; i++) {
+        const r = rows[i], z = r.z, s = r.s, y = r.y;
+        const cx = VPX + (curveAt(z) - sway) * s;
+
+        ctx.fillStyle = r.grass;
+        ctx.fillRect(0, y, 1147, 1);
+        if (z < 130 && (travel + z) % 9 < 4.5) {           // mown bands: the
+          ctx.fillStyle = 'rgba(26,36,22,' +                // periphery has to
+            (0.13 * (1 - z / 130)).toFixed(3) + ')';        // move too
+          ctx.fillRect(0, y, 1147, 1);
+        }
+
+        ctx.fillStyle = r.opp;                              // the other carriageway
+        const oL = cx - (HALF + 12.5) * s, oR = cx - (HALF + 1.6) * s;
+        ctx.fillRect(oL, y, oR - oL, 1);
+
+        ctx.fillStyle = r.verge;
+        ctx.fillRect(cx - (HALF + 1.0) * s, y, (2 * HALF + SHOULDER + 1.0) * s, 1);
+        ctx.fillStyle = r.asph;
+        ctx.fillRect(cx - HALF * s, y, 2 * HALF * s, 1);
+
+        /* wheel ruts: the polished strips every lane carries, and the only
+           marks on the surface that do NOT scroll */
+        if (z < 90) {
+          ctx.fillStyle = 'rgba(150,160,170,' + (0.05 * (1 - z / 90)).toFixed(3) + ')';
+          for (let L = -1; L <= 1; L++) {
+            ctx.fillRect(cx + (L * LANE - 1.18) * s, y, 0.55 * s, 1);
+            ctx.fillRect(cx + (L * LANE + 0.63) * s, y, 0.55 * s, 1);
+          }
+        }
+
+        /* grain: the same metre of tarmac always draws the same speckles, so
+           the texture travels with the road instead of boiling */
+        if (z < 70) {
+          const band = ((travel + z) * 2.6) | 0;
+          const a = 0.16 * (1 - z / 70);
+          for (let k = 0; k < 6; k++) {
+            const h1 = hash(band * 7 + k * 71);
+            ctx.fillStyle = (h1 > 0.5 ? 'rgba(198,204,210,' : 'rgba(16,18,22,')
+              + (a * (0.4 + hash(band + k * 13) * 0.6)).toFixed(3) + ')';
+            ctx.fillRect(cx + (h1 * 2 - 1) * HALF * s, y, Math.max(1, 0.22 * s), 1);
+          }
+        }
+
+        /* a transverse tar seam every 20 m: cheap, and it flies at you */
+        if (z < 110 && (travel + z) % 20 < 0.35) {
+          ctx.fillStyle = 'rgba(22,24,28,' + (0.30 * (1 - z / 110)).toFixed(3) + ')';
+          ctx.fillRect(cx - HALF * s, y, 2 * HALF * s, 1);
+        }
+
+        /* paint: faded out near the horizon, where a hard line would crawl */
+        ctx.fillStyle = r.paint;
+        ctx.globalAlpha = r.fade;
+        const lw = Math.max(0.45, 0.15 * s);
+        ctx.fillRect(cx - (HALF - 0.12) * s - lw / 2, y, lw, 1);
+        ctx.fillRect(cx + (HALF - 0.12) * s - lw / 2, y, lw, 1);
+        if ((travel + z) % DASH < DASH_ON) {
+          ctx.fillRect(cx - (LANE / 2) * s - lw / 2, y, lw, 1);
+          ctx.fillRect(cx + (LANE / 2) * s - lw / 2, y, lw, 1);
+        }
+        ctx.globalAlpha = 1;
+      }
+    }
+
+    /* ── one frame ──────────────────────────────────────────── */
+    function frame(kmh, dt) {
+      if (!sized) { fit(); if (!sized) return; }
+
+      const v = Math.max(0, kmh) / 3.6;      // m/s — the car's real speed
+      clock += dt;
+      travel += v * dt;
+      sway = 0.13 * Math.sin(clock * 0.6) + 0.05 * Math.sin(clock * 1.7);
+      // the faster we go, the more the body works: a fraction of a pixel, but
+      // the eye reads it as effort
+      bob = (v / 60) * (0.5 * Math.sin(clock * 7.3) + 0.3 * Math.sin(clock * 13.1));
+      c0 = curveC(travel); d0 = curveD(travel);
+      moveTraffic(v, dt);
+
+      ctx.setTransform(scale, 0, 0, scale, 0, 0);
+      ctx.clearRect(0, 0, 1147, 641);
+      ctx.save();
+      ctx.beginPath(); ctx.rect(0, 0, 1147, YMAX); ctx.clip();
+      ctx.translate(0, bob);
+
+      backdrop();
+      ground();
+      trees();            // behind the barriers: they must occlude the trunks
+      medianWall();
+      guardrail();
+      signs();
+      stations();
+      traffic.sort((a, b) => b.z - a.z).forEach(drawVehicle);
+
+      /* haze: thick at the horizon, gone by the time it reaches the dashboard */
+      const hz = ctx.createLinearGradient(0, HZ, 0, YMAX);
+      hz.addColorStop(0, 'rgba(192,207,218,.72)');
+      hz.addColorStop(0.12, 'rgba(188,203,215,.30)');
+      hz.addColorStop(0.34, 'rgba(186,201,213,.10)');
+      hz.addColorStop(1, 'rgba(186,201,213,0)');
+      ctx.fillStyle = hz;
+      ctx.fillRect(0, HZ, 1147, YMAX - HZ);
+
+      ctx.restore();
+    }
+
+    return { frame, station };
+  })();
+
+  /* ── physics: consumption follows speed ─────────────── */
+  function update(dt) {
+    state.driftAngle += 0.04;
+    applyPedals(dt);
+
+    /* the car cannot jump to the requested speed: power-limited acceleration
+       that fades as drag builds up, so the top of the dial takes real effort */
+    const gap = state.targetSpeed - state.currentSpeed;
+    if (Math.abs(gap) > 0.05) {
+      let rate;                                        // km/h per second
+      if (gap > 0) {
+        const head = Math.max(0, 1 - state.currentSpeed / (VMAX + 15));
+        rate = ACC_MAX * Math.pow(head, 1.7);          // ~13 at rest, <1 above 200
+      } else {
+        rate = -(DEC_COAST + state.currentSpeed * 0.035);   // lift-off: engine brake + drag
+      }
+      const step = rate * dt;
+      state.currentSpeed += Math.abs(step) > Math.abs(gap) ? gap : step;
+    } else {
+      state.currentSpeed = state.targetSpeed;
+    }
+    const v = Math.max(0, Math.min(VMAX, state.currentSpeed));
+    state.currentSpeed = v;
+
+    /* gearbox: the ratio picks the revs, and the up/down thresholds are far
+       enough apart that the box cannot hunt between two gears */
+    state.shiftLock = Math.max(0, state.shiftLock - dt);
+    if (state.shiftLock === 0) {
+      if (state.gear < GEARS.length - 1 && GEARS[state.gear] * v > UPSHIFT) {
+        state.gear++; state.shiftLock = SHIFT_LOCK;
+      } else if (state.gear > 0 && GEARS[state.gear] * v < DOWNSHIFT) {
+        // hard braking skips gears, as a real box does
+        while (state.gear > 0 && GEARS[state.gear] * v < DOWNSHIFT) state.gear--;
+        state.shiftLock = SHIFT_LOCK;
+      }
+    }
+    /* below walking pace the clutch is out: the engine falls back to idle */
+    const drift = Math.sin(state.driftAngle) * 12;
+    const rpmTarget = Math.max(RPM_IDLE, GEARS[state.gear] * v) + drift;
+    state.currentRpm += (rpmTarget - state.currentRpm) * Math.min(1, dt * 9);
+
+    if (v < 1) {
+      state.instantL100  = 0;
+      state.instantEurKm = 0;
+    } else {
+      state.instantL100  = 0.000282 * v * v - 0.0163 * v + 4.61;
+      state.instantEurKm = (state.instantL100 / 100) * state.refuelPrice;
+    }
+
+    const stepKm = (v / 3600) * dt;
+    const stepL  = stepKm * (state.instantL100 / 100);
+    state.tripKm     += stepKm;
+    state.tripLiters += stepL;
+    state.tripCost   += stepKm * state.instantEurKm;
+    state.tankLiters  = Math.max(0, state.tankLiters - stepL);
   }
 
-  btnBev.addEventListener('click', () => switchTo('bev'));
-  btnIce.addEventListener('click', () => switchTo('ice'));
-  switchTo('ice');
+  /* ── render ─────────────────────────────────────────── */
+  function render() {
+    el.spd.textContent    = Math.round(state.currentSpeed);
+    el.rpm.textContent    = Math.round(state.currentRpm);
+    el.gear.textContent   = state.currentSpeed < 1 ? 'N' : state.gear + 1;
+    el.eurKm.textContent  = state.instantEurKm.toFixed(2);
+    el.dist.textContent   = state.tripKm.toFixed(2);
+    el.cons.textContent   = state.tripLiters.toFixed(2);
+    el.total.textContent  = 'EUR ' + state.tripCost.toFixed(2);
+    el.refuel.textContent = state.refuelPrice.toFixed(2) + ' €/L';
+
+    /* Local Price is the price of the NEXT station on the road, and it counts
+       down to it: metres under a kilometre, so the last stretch feels alive */
+    const st = road.station();
+    el.local.textContent    = st.price.toFixed(2) + ' €';
+    el.localDist.textContent = '· ' + (st.dist >= 995     // 995 m already rounds to "1.0 km"
+      ? (st.dist / 1000).toFixed(1) + ' km'
+      : Math.round(st.dist / 10) * 10 + ' m');
+
+    const lvl = Math.max(0, Math.min(1, state.tankLiters / state.tankCapacity));
+    el.fuelbar.setAttribute('width', (lvl * 100).toFixed(1));
+
+    rpmVal.innerHTML = Math.round(state.currentSpeed) + ' km/h <em>· ' +
+                       Math.round(state.currentRpm) + ' rpm</em>';
+
+    paintDial(state.currentSpeed);
+  }
+
+  let lastFrame = performance.now();
+  (function loop(now) {
+    now = now || performance.now();
+    const dt = Math.min(0.05, (now - lastFrame) / 1000);   // clamped: tab switches
+    lastFrame = now;
+    update(dt);
+    render();
+    road.frame(state.currentSpeed, dt);
+    requestAnimationFrame(loop);
+  })();
 })();
 </script>
-
 </body>
 </html>
