@@ -11,6 +11,17 @@
   --blue:#00AEEF;
   --green:#3ddc84;
   --amber:#F0A500;
+  /* ── how much sky sits above the photo ──────────────────────
+     The interior shot is 1147x641 and the glass runs OUT of the top
+     of it: there is no roof and no header rail in the picture. So the
+     stage is made --rise rows TALLER than the photo, the photo and the
+     cluster are pinned to its bottom, and the road canvas paints the
+     whole thing — the extra band is pure windshield.
+     --rise is the single source of truth: the road reads it back out of
+     this variable, so changing it here moves everything together. */
+  --rise:150;
+  --stageh:791;          /* = 641 + rise; recomputed from --rise at boot */
+  --deckh:66px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{
@@ -19,14 +30,23 @@ html,body{
   font-family:"Segoe UI",Roboto,Arial,sans-serif;
   color:var(--ink);
 }
-body{display:flex;flex-direction:column;align-items:center;padding-bottom:40px}
+body{
+  display:flex;flex-direction:column;align-items:center;
+  min-height:100dvh;padding-bottom:0;
+  /* the whole cockpit drops to the bottom edge of the screen and the sky
+     fills whatever room is left above it. Padding, not a flex alignment,
+     so that on a short window the page simply scrolls instead of hiding
+     its own top row. Nothing is ever scaled down. */
+  --sw:min(1147px, 100vw);
+  padding-top:max(0px, calc(100dvh - var(--sw) * var(--stageh) / 1147 - var(--deckh)));
+}
 
 /* ══════════ COCKPIT STAGE ══════════ */
 #stage{
   position:relative;
   width:100%;
   max-width:1147px;
-  aspect-ratio:1147/641;
+  aspect-ratio:1147 / var(--stageh);
   overflow:hidden;
   background:#000;
 }
@@ -50,7 +70,8 @@ body{display:flex;flex-direction:column;align-items:center;padding-bottom:40px}
 /* the interior photo, with the windshield glass punched out */
 #interior{
   position:absolute;
-  inset:0;
+  left:0;right:0;bottom:0;
+  height:calc(641 / var(--stageh) * 100%);
   z-index:2;
   background:url("True-Cost project picture.jpg") center/100% 100% no-repeat;
   -webkit-mask-image:var(--wsmask);
@@ -64,9 +85,10 @@ body{display:flex;flex-direction:column;align-items:center;padding-bottom:40px}
 /* the live instrument cluster drawn over the photo's display */
 #cluster{
   position:absolute;
-  inset:0;
+  left:0;right:0;bottom:0;
+  height:calc(641 / var(--stageh) * 100%);
   z-index:3;
-  width:100%;height:100%;
+  width:100%;
   display:block;
 }
 
@@ -89,8 +111,11 @@ body{display:flex;flex-direction:column;align-items:center;padding-bottom:40px}
   border:1px solid #16202b;
   border-top:none;
   border-radius:0 0 14px 14px;
-  padding:16px 22px 18px;
+  padding:26px 22px 10px;      /* the top padding clears the overhanging pedals */
 }
+/* the speed slider still exists — the pedals and the arrow keys write to it —
+   but it no longer costs the windshield any vertical room */
+#hidden-controls{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .deck-title{
   font-size:9px;letter-spacing:2.6px;text-transform:uppercase;
   color:#3d5266;font-weight:700;margin-bottom:14px;
@@ -108,8 +133,8 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
 }
 .slider-val em{color:#62798c;font-style:normal}
 #deck-foot{
-  display:flex;align-items:center;justify-content:flex-end;gap:16px;
-  margin-top:14px;padding-top:13px;border-top:1px solid #131c25;flex-wrap:wrap;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  flex-wrap:wrap;
 }
 .price-live{font-size:11px;color:#5d7488;letter-spacing:.4px}
 .price-live b{color:var(--green);font-weight:600}
@@ -120,15 +145,15 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .btn{
   background:transparent;border:1px solid #23313f;color:#7b93a7;
-  border-radius:7px;padding:7px 16px;font-size:10px;letter-spacing:1.4px;
+  border-radius:7px;padding:6px 14px;font-size:10px;letter-spacing:1.4px;
   text-transform:uppercase;font-weight:700;cursor:pointer;
   transition:border-color .2s,color .2s;font-family:inherit;
 }
 .btn:hover{border-color:var(--blue);color:var(--blue)}
 
 #signature{
-  font-size:10px;letter-spacing:1.6px;text-transform:uppercase;
-  color:rgba(120,140,160,.45);padding:16px 0 0;text-align:center;
+  font-size:9px;letter-spacing:1.5px;text-transform:uppercase;
+  color:rgba(120,140,160,.45);
 }
 #signature a{color:var(--blue);text-decoration:none}
 
@@ -416,25 +441,22 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
      CONTROL DECK
      ═══════════════════════════════════════════════════════════ -->
 <div id="deck">
-  <div class="deck-title">Simulator Controls</div>
 
-  <div class="slider-row">
-    <span class="control-label">Speed</span>
+  <div id="hidden-controls">
     <input type="range" id="rpmSlider" min="0" max="240" value="128" step="1">
-    <span class="slider-val" id="rpmVal">128 km/h <em>· 2250 rpm</em></span>
+    <span id="rpmVal">128 km/h <em>· 2250 rpm</em></span>
   </div>
 
   <div id="deck-foot">
+    <div id="signature">
+      Star*Up 2026 &nbsp;·&nbsp; True Cost Project &nbsp;·&nbsp; Stellantis &nbsp;·&nbsp;
+      <a href="https://forms.office.com/e/jJ7Sgw7WkD" target="_blank" rel="noopener">✍ Give feedback</a>
+    </div>
     <div style="display:flex;gap:10px">
       <button class="btn" id="helpBtn">? Info</button>
       <button class="btn" id="resetBtn">↺ Reset trip</button>
     </div>
   </div>
-</div>
-
-<div id="signature">
-  Star*Up 2026 &nbsp;·&nbsp; True Cost Project &nbsp;·&nbsp; Stellantis &nbsp;·&nbsp;
-  <a href="https://forms.office.com/e/jJ7Sgw7WkD" target="_blank" rel="noopener">✍ Give feedback</a>
 </div>
 
 <!-- ═══════════════ HELP ═══════════════ -->
@@ -465,6 +487,18 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
 </div>
 
 <script>
+/* ══════════════════════════════════════════════════════════
+   --stageh is only ever 641 + --rise. Deriving it here rather
+   than trusting the two to be typed in step means --rise in
+   the stylesheet is the one number anyone has to touch to
+   open up (or close down) the windshield.
+   ══════════════════════════════════════════════════════════ */
+(function () {
+  const root = document.documentElement;
+  const rise = parseFloat(getComputedStyle(root).getPropertyValue('--rise')) || 0;
+  root.style.setProperty('--stageh', 641 + rise);
+})();
+
 /* ══════════════════════════════════════════════════════════
    Windshield mask — punches the glass area out of the photo
    so #windshield (left empty on purpose) shows through,
@@ -687,6 +721,15 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
        cut at 12.9 m and 15 deg/s: a 65 deg lens, which is what an interior
        shot is taken with anyway. NOTHING about the physics changed - travel
        is still metric, the dashes are still 12 m apart. */
+    /* how many rows of glass sit ABOVE the photo. It is declared in the
+       stylesheet (--rise) and read back here, so the CSS that pins the photo
+       to the bottom of the stage and the canvas that paints over it can never
+       drift apart. Everything below is still in the photo's own 1147x641
+       coordinates: the frame just translates by RISE before it draws, so
+       y = -RISE is the top of the stage and y = 0 is the top of the photo. */
+    const RISE = parseFloat(
+      getComputedStyle(document.documentElement).getPropertyValue('--rise')) || 0;
+
     const VPX = 575, HZ = 38, YMAX = 176;   // vanishing point · last visible row
     const F = 900, CAMH = 1.2;              // focal (px) · eye height (m)
     const K = F * CAMH;                     // a ground row sits at y = HZ + K/z
@@ -766,7 +809,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
          or the road blinks out for a frame at random moments */
       if (px === cv.width) { sized = true; return; }
       cv.width = px;
-      cv.height = Math.round(px * 641 / 1147);
+      cv.height = Math.round(px * (641 + RISE) / 1147);
       scale = px / 1147;
       sized = true;
     }
@@ -958,7 +1001,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         const X = RAIL + 2.2, w = 4.2 * F / z;
         const xc = sxOf(X, z);
         const yTop = syOf(5.6, z), yBot = syOf(3.4, z);
-        if (yBot < -40 || xc - w > 1300) continue;
+        if (yBot < -RISE - 40 || xc - w > 1300) continue;
         ctx.globalAlpha = Math.min(1, (320 - z) / 90);
         const lw = Math.max(0.6, 0.16 * F / z);
         ctx.fillStyle = '#5e666b';                        // the two legs
@@ -977,6 +1020,100 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         }
         ctx.globalAlpha = 1;
       }
+    }
+
+
+    /* ── STELLANTIS billboards ────────────────────────────────
+       One every 300 m, on the LEFT, just beyond the opposite carriageway
+       (which ends at -17.9 m): the right-hand verge already carries the
+       green motorway signs and the fuel stations, so the two would fight.
+
+       They alternate: the plain STELLANTIS wordmark, then the same board
+       carrying TRUE COST under it, then plain again. At 130 km/h that is a
+       board every 8 seconds and the pair repeats every 17, which is often
+       enough to register the strapline without either version turning into
+       wallpaper.
+
+       The panel spans 2.4 to 5.6 m, a real billboard height: with --rise
+       rows of glass above the photo there is finally headroom for one. It
+       stays inside the frame from ~340 m down to ~21 m, so it sweeps up and
+       over the roof as you pass instead of vanishing while still far off.
+
+       Corporate palette, the same one the cluster badge wears: the navy
+       gradient #1d2c68 -> #0c1638, a white wordmark, the cyan accent bar. */
+    const KM_EVERY = 300;                     // m between billboards
+    const KM_X = -19.6;                       // left verge, past the far carriageway
+    const KM_LO = 2.4, KM_HI = 5.6, KM_HALF = 4.2;
+
+    /* one line of the wordmark, squeezed to the board rather than clipped by
+       it: the board is 2.6:1 and the type has to survive every distance it is
+       drawn at, so it is measured and scaled horizontally instead of trusting
+       a font size to fit. */
+    function boardText(txt, xc, y, fs, maxw, fill) {
+      ctx.font = '700 ' + fs.toFixed(1) + 'px "Segoe UI",Arial,sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      const tw = ctx.measureText(txt).width || 1;
+      ctx.fillStyle = fill;
+      ctx.save();
+      ctx.translate(xc, y);
+      ctx.scale(Math.min(1, maxw / tw), 1);
+      ctx.fillText(txt, 0, 0);
+      ctx.restore();
+      ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    }
+
+    function kmSigns() {
+      const start = Math.ceil((travel + 26) / KM_EVERY) * KM_EVERY;
+      for (let s = start; s < travel + Z_FAR; s += KM_EVERY) {
+        const z = s - travel;
+        if (z > 340) continue;
+
+        const yTop = syOf(KM_HI, z), yBot = syOf(KM_LO, z);
+        const xc = sxOf(KM_X, z), w = 2 * KM_HALF * F / z, h = yBot - yTop;
+        if (yTop > YMAX || xc + w / 2 < -260) continue;   // below the dash, or gone left
+
+        ctx.globalAlpha = Math.min(1, (340 - z) / 110);
+
+        /* two legs down to the grass */
+        const lw = Math.max(0.6, 0.18 * F / z);
+        ctx.fillStyle = '#5b6670';
+        ctx.fillRect(sxOf(KM_X - KM_HALF * 0.5, z) - lw / 2, yBot, lw, Math.max(0, syOf(0, z) - yBot));
+        ctx.fillRect(sxOf(KM_X + KM_HALF * 0.5, z) - lw / 2, yBot, lw, Math.max(0, syOf(0, z) - yBot));
+
+        /* the panel */
+        const g = ctx.createLinearGradient(0, yTop, 0, yBot);
+        g.addColorStop(0, '#1d2c68');
+        g.addColorStop(0.55, '#16234f');
+        g.addColorStop(1, '#0c1638');
+        ctx.fillStyle = g;
+        ctx.fillRect(xc - w / 2, yTop, w, h);
+        ctx.strokeStyle = 'rgba(200,220,236,.7)';
+        ctx.lineWidth = Math.max(0.4, 0.05 * F / z);
+        ctx.strokeRect(xc - w / 2, yTop, w, h);
+
+        /* the cyan accent along the foot of the board */
+        ctx.fillStyle = '#00AEEF';
+        ctx.fillRect(xc - w / 2, yBot - h * 0.15, w, h * 0.15);
+
+        /* every other board carries the strapline. Its wordmark rides higher
+           and smaller to leave room for it; on the plain board STELLANTIS
+           takes the whole panel. */
+        if (h > 7) {
+          if (Math.round(s / KM_EVERY) % 2) {   // round: s is accumulated, not exact
+            boardText('STELLANTIS', xc, yTop + h * 0.31,
+                      Math.min(h * 0.30, w * 0.115), w * 0.84, '#ffffff');
+            if (h > 16) {                     // below this the strapline is a smudge
+              boardText('TRUE COST', xc, yTop + h * 0.61,
+                        Math.min(h * 0.24, w * 0.092), w * 0.66, '#00AEEF');
+            }
+          } else {
+            boardText('STELLANTIS', xc, yTop + h * 0.40,
+                      Math.min(h * 0.40, w * 0.15), w * 0.84, '#ffffff');
+          }
+        }
+        ctx.globalAlpha = 1;
+      }
+      ctx.globalAlpha = 1;
     }
 
 
@@ -1050,13 +1187,14 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       pillar(ST_X + 10, z0, 1.9, 0.45, '#dfe4e7');
 
       /* ── the price board, the only thing that HAS to be readable ──
-         Its height is a compromise with the windshield, not with reality: the
-         glass shows a strip from the horizon down, so anything tall leaves
-         through the top of the frame exactly when it gets close enough to
-         read. A board from 1.4 to 4.4 m stays inside the glass from ~200 m
-         down to ~40 m, which is the whole approach. */
+         It used to be squashed down to 1.4-4.4 m because the glass was a
+         thin strip and anything taller left through the top of the frame at
+         exactly the moment it got close enough to read. With --rise rows of
+         sky above the photo that constraint is gone: 2.2 to 5.6 m is a real
+         totem, it reads bigger at every distance, and it stays in the frame
+         from ~250 m all the way down to ~21 m. */
       const zt = Math.max(4, z0 - 6);
-      const BRD_LO = 1.4, BRD_HI = 4.4;
+      const BRD_LO = 2.2, BRD_HI = 5.6;
       const half = 1.9, yTop = syOf(BRD_HI, zt), yBot = syOf(BRD_LO, zt);
       const xc = sxOf(ST_TOTEM, zt), w = 2 * half * F / zt, h = yBot - yTop;
       pillar(ST_TOTEM - 1.2, zt, BRD_LO + 0.1, 0.16, '#b9c1c6');
@@ -1221,28 +1359,38 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     }
 
     function backdrop() {
-      const sky = ctx.createLinearGradient(0, -6, 0, HZ + 2);
+      const TOP = -RISE - 6;                  // the top row of the whole stage
+      const sky = ctx.createLinearGradient(0, TOP, 0, HZ + 2);
       sky.addColorStop(0, 'rgb(' + P.skyTop + ')');
       sky.addColorStop(0.55, 'rgb(' + P.skyMid + ')');
       sky.addColorStop(1, 'rgb(' + P.skyLow + ')');
       ctx.fillStyle = sky;
-      ctx.fillRect(0, -6, 1147, HZ + 8);
+      ctx.fillRect(0, TOP, 1147, HZ + 8 - TOP);
 
-      // a low sun off to the right, the only warm thing in the scene
-      const sun = ctx.createRadialGradient(790, 2, 0, 790, 2, 300);
+      // a low sun off to the right, the only warm thing in the scene.
+      // With a taller sky it can sit properly above the horizon instead of
+      // being a glow cut off by the frame.
+      const sy = 2 - RISE * 0.30;
+      const sun = ctx.createRadialGradient(790, sy, 0, 790, sy, 300 + RISE * 0.6);
       sun.addColorStop(0, 'rgba(255,240,214,.34)');
       sun.addColorStop(0.45, 'rgba(255,238,212,.12)');
       sun.addColorStop(1, 'rgba(255,238,212,0)');
       ctx.fillStyle = sun;
-      ctx.fillRect(440, -6, 707, HZ + 8);
+      ctx.fillRect(440, TOP, 707, HZ + 8 - TOP);
 
-      // clouds sitting on the horizon, on a parallax so slow it reads as far
+      // Clouds. They used to all sit on the horizon because that was the only
+      // sky there was; now they fill the band up to the top of the glass, and
+      // the higher one rides the puffier it gets — a cloud overhead shows its
+      // depth, one on the horizon is a flat smear.
       const drift = travel * 0.045;
-      for (let i = 0; i < 7; i++) {
+      const NCLOUD = 7 + Math.round(RISE / 26);
+      for (let i = 0; i < NCLOUD; i++) {
         const seed = hash(i * 977);
         const x = ((seed * 2600 - drift * (0.5 + seed * 0.5)) % 1600 + 1600) % 1600 - 230;
-        const w = 90 + seed * 150, h = 4.5 + seed * 7;
-        const y = 5 + hash(i * 131 + 7) * 20;
+        const y = 25 - (RISE + 18) * hash(i * 131 + 7);
+        const up = Math.min(1, Math.max(0, -y / (RISE + 1)));   // 0 horizon, 1 overhead
+        const w = (90 + seed * 150) * (1 + up * 0.55);
+        const h = (4.5 + seed * 7) * (1 + up * 3.2);
         const g = ctx.createRadialGradient(x, y, 0, x, y, w / 2);
         g.addColorStop(0, 'rgba(255,255,255,.50)');
         g.addColorStop(0.55, 'rgba(246,250,252,.18)');
@@ -1340,15 +1488,17 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       c0 = curveC(travel); d0 = curveD(travel);
       moveTraffic(v, dt);
 
-      ctx.setTransform(scale, 0, 0, scale, 0, 0);
-      ctx.clearRect(0, 0, 1147, 641);
+      /* the extra RISE rows live at NEGATIVE y in the photo's coordinates */
+      ctx.setTransform(scale, 0, 0, scale, 0, scale * RISE);
+      ctx.clearRect(0, -RISE, 1147, 641 + RISE);
       ctx.save();
-      ctx.beginPath(); ctx.rect(0, 0, 1147, YMAX); ctx.clip();
+      ctx.beginPath(); ctx.rect(0, -RISE, 1147, YMAX + RISE); ctx.clip();
       ctx.translate(0, bob);
 
       backdrop();
       ground();
       trees();            // behind the barriers: they must occlude the trunks
+      kmSigns();          // the km billboards stand out on the left verge
       medianWall();
       guardrail();
       signs();
