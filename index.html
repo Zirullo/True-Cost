@@ -193,7 +193,10 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
    and they mirror the arrow keys (hold, don't tap). */
 #shell{position:relative;width:100%;max-width:1147px}
 #pedals{
-  position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);
+  /* bottom: one pedal height (~50px: 26px key + 2x11 padding + borders)
+     above where they used to sit, so they clear the seam instead of
+     hanging off it */
+  position:absolute;left:50%;bottom:28px;transform:translateX(-50%);
   z-index:12;display:flex;gap:14px;
 }
 .pedal{
@@ -749,7 +752,8 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
   $('help-close').addEventListener('click', close);
   $('help-cta').addEventListener('click', close);
   overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
-  open();
+  /* no splash on load: the card is still there behind the ? button, but the
+     scene comes up first */
 
   /* ── live pump price ────────────────────────────────── */
   (async function fetchPrice() {
@@ -1137,8 +1141,8 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
        stays inside the frame from ~340 m down to ~21 m, so it sweeps up and
        over the roof as you pass instead of vanishing while still far off.
 
-       Corporate palette, the same one the cluster badge wears: the navy
-       gradient #1d2c68 -> #0c1638, a white wordmark, the cyan accent bar. */
+       Corporate palette: the marque board is printed the way the real logo
+       is, navy #2b3a8f on white; the True Cost poster keeps the blue ground. */
     const KM_EVERY = 300;                     // m between billboards
     const KM_X = -19.6;                       // left verge, past the far carriageway
     const KM_LO = 2.4, KM_HI = 5.6, KM_HALF = 4.2;
@@ -1155,9 +1159,9 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
 
     /* the wordmark, tracked out by hand. Returns the centre x of the A,
        which is where the ring of dots belongs. */
-    function wordmark(g, cx, cy, fs, fill) {
-      const TXT = 'STELLANTIS', TRACK = fs * 0.30;
-      g.font = '400 ' + fs + 'px "Segoe UI",Arial,sans-serif';
+    function wordmark(g, cx, cy, fs, fill, track, weight) {
+      const TXT = 'STELLANTIS', TRACK = fs * (track || 0.30);
+      g.font = (weight || 400) + ' ' + fs + 'px "Segoe UI",Arial,sans-serif';
       g.textAlign = 'left'; g.textBaseline = 'middle';
       g.fillStyle = fill;
       const wid = [];
@@ -1181,40 +1185,42 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
        what makes it read as a constellation instead of a stencil. */
     function dotRing(g, cx, cy, R, fill) {
       g.fillStyle = fill;
-      for (let i = 0; i < 54; i++) {
-        const ang = (i / 54) * 6.2832;
-        const rr = R * (1 + (hash(i * 13 + 1) - 0.5) * 0.15);
+      /* one clean ring, evenly spaced, the dots simply graded from heavy at
+         the lower left to light at the upper right. The earlier version
+         scattered them off the radius in three sizes, which at board
+         distance collapsed into a smudge instead of a circle. */
+      const N = 30;
+      for (let i = 0; i < N; i++) {
+        const ang = (i / N) * 6.2832;
         const k = 0.5 + 0.5 * Math.cos(ang - 2.3);
-        /* the floor matters: with the light side of the ring taken all the
-           way down to nothing the circle stops closing at board distances,
-           and what is left reads as a smudge rather than as the logo */
-        const rad = R * (0.024 + 0.040 * k * k) * (0.8 + hash(i * 29 + 5) * 0.4);
+        const rad = R * (0.045 + 0.045 * k);
         g.beginPath();
-        g.arc(cx + rr * Math.cos(ang), cy + rr * Math.sin(ang), rad, 0, 6.2832);
+        g.arc(cx + R * Math.cos(ang), cy + R * Math.sin(ang), rad, 0, 6.2832);
         g.fill();
       }
     }
 
-    /* board A: the marque alone, white on the corporate navy */
+    /* board A: the marque alone, the way the real one is printed - navy on
+       plain white, nothing else on the panel. The old board put a white
+       wordmark on a navy gradient with a cyan foot: three values fighting
+       each other at 100 m, where the letters are two pixels tall. White
+       ground and one dark mark is the version that still reads.
+
+       Drawn at the board's own 2.625:1 so it can be stamped full bleed. */
     const LOGO = (function () {
-      const W = 1400, H = 460;
+      const W = 1400, H = Math.round(1400 / 2.625);
       const oc = document.createElement('canvas');
       oc.width = W; oc.height = H;
       const g = oc.getContext('2d');
-      const cy = H * 0.5, FS = 150;
-      const aCx = wordmark(g, W / 2, cy, FS, '#ffffff');
+      g.fillStyle = '#ffffff'; g.fillRect(0, 0, W, H);
+      const NAVY = '#2b3a8f';
+      const cy = H * 0.52, FS = 118;
+      const aCx = wordmark(g, W / 2, cy, FS, NAVY, 0.34, 500);
       /* the ring belongs on the CAP centre, which sits above the middle
          baseline the letters were drawn from - hence the lift */
-      dotRing(g, aCx, cy - FS * 0.10, FS * 1.25, '#ffffff');
+      dotRing(g, aCx, cy - FS * 0.10, FS * 1.30, NAVY);
       return oc;
     })();
-    const LOGO_AR = LOGO.height / LOGO.width;
-
-    /* stamp the marque centred on (xc, y), as wide as maxw */
-    function logoAt(xc, y, maxw) {
-      const h = maxw * LOGO_AR;
-      ctx.drawImage(LOGO, xc - maxw / 2, y - h / 2, maxw, h);
-    }
 
     /* -- board B: the True Cost poster -----------------------
        Laid out at the board's own 2.625:1 rather than at the artwork's, so
@@ -1324,22 +1330,13 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         ctx.fillRect(sxOf(KM_X - KM_HALF * 0.5, z) - lw / 2, yBot, lw, Math.max(0, syOf(0, z) - yBot));
         ctx.fillRect(sxOf(KM_X + KM_HALF * 0.5, z) - lw / 2, yBot, lw, Math.max(0, syOf(0, z) - yBot));
 
-        /* the panel. The two artworks alternate: the True Cost poster is
-           stamped full bleed, the marque board is built here out of the
-           corporate navy. (round: s is accumulated, not exact) */
+        /* the panel. The two artworks alternate, both stamped full bleed.
+           (round: s is accumulated, not exact) */
         ctx.imageSmoothingQuality = 'high';
         if (Math.round(s / KM_EVERY) % 2) {
           ctx.drawImage(BOARD_TC, xc - w / 2, yTop, w, h);
         } else {
-          const g = ctx.createLinearGradient(0, yTop, 0, yBot);
-          g.addColorStop(0, '#1d2c68');
-          g.addColorStop(0.55, '#16234f');
-          g.addColorStop(1, '#0c1638');
-          ctx.fillStyle = g;
-          ctx.fillRect(xc - w / 2, yTop, w, h);
-          ctx.fillStyle = '#00AEEF';                   // the accent along the foot
-          ctx.fillRect(xc - w / 2, yBot - h * 0.15, w, h * 0.15);
-          if (h > 7) logoAt(xc, yTop + h * 0.42, w * 0.86);
+          ctx.drawImage(LOGO, xc - w / 2, yTop, w, h);
         }
         ctx.strokeStyle = 'rgba(200,220,236,.7)';
         ctx.lineWidth = Math.max(0.4, 0.05 * F / z);
@@ -1716,6 +1713,219 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       ctx.globalAlpha = 1;
     }
 
+    /* ── the blimp ────────────────────────────────────────────
+       Decoration, and the only hard-edged thing in the sky. The clouds are
+       soft gradients that read as atmosphere; one solid object crossing in
+       front of them is what actually says "there is distance up there".
+
+       Two motions add up. It crosses left to right at BL_SPD px/s of its
+       own, so it drifts even while the car is stopped, and the drive drags
+       it back at BL_PAR - a third of what the far clouds get, because it is
+       further away than they are. That difference IS the parallax; the
+       crossing on its own would just be a sprite sliding over a backdrop.
+
+       BL_SPAN is the wrap: it walks from well off the left edge to well off
+       the right, so it enters and leaves cleanly rather than popping. At
+       BL_SPD that is about four minutes a pass - slow enough that you notice
+       it has moved rather than watching it move.
+
+       BL_PHASE puts it on screen at load. Without it the walk starts at the
+       left end of the wrap and the first pass is twenty-five seconds of
+       empty sky - which is exactly how you end up thinking it is broken. */
+    const BL_SPD = 7.5, BL_PAR = 0.016, BL_SPAN = 1760, BL_PHASE = 700;
+
+    function blimp() {
+      const x = ((clock * BL_SPD - travel * BL_PAR + BL_PHASE) % BL_SPAN + BL_SPAN) % BL_SPAN - 310;
+      if (x < -140 || x > 1290) return;
+      const y = -RISE * 0.46 + 3 * Math.sin(clock * 0.11);
+      const L = 38, Hh = 11.5;                // half length / half height
+
+      ctx.save();
+      /* it is kilometres off, so it never gets full contrast: the haze the
+         ridges sit in has to be on it too, or it reads as a sticker */
+      ctx.globalAlpha = 0.82;
+
+      /* the hull, lit from above */
+      const hull = ctx.createLinearGradient(0, y - Hh, 0, y + Hh);
+      hull.addColorStop(0, '#eef4fa');
+      hull.addColorStop(0.45, '#cfdae8');
+      hull.addColorStop(1, '#95a6bd');
+      ctx.fillStyle = hull;
+      ctx.beginPath();
+      ctx.ellipse(x, y, L, Hh, 0, 0, 6.2832);
+      ctx.fill();
+
+      /* tail fins, on the trailing (left) end */
+      ctx.fillStyle = '#8496b0';
+      ctx.beginPath();
+      ctx.moveTo(x - L * 0.74, y - Hh * 0.35);
+      ctx.lineTo(x - L * 1.14, y - Hh * 1.85);
+      ctx.lineTo(x - L * 0.66, y - Hh * 0.62);
+      ctx.closePath(); ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(x - L * 0.74, y + Hh * 0.35);
+      ctx.lineTo(x - L * 1.14, y + Hh * 1.70);
+      ctx.lineTo(x - L * 0.66, y + Hh * 0.62);
+      ctx.closePath(); ctx.fill();
+
+      /* the gondola: two pixels of it, but it is what separates a blimp
+         from an ellipse */
+      ctx.fillStyle = '#6f7f96';
+      ctx.beginPath();
+      ctx.ellipse(x + L * 0.10, y + Hh * 0.92, L * 0.17, Hh * 0.28, 0, 0, 6.2832);
+      ctx.fill();
+
+      /* the band along the flank, in the same navy as the billboards */
+      ctx.globalAlpha = 0.34;
+      ctx.fillStyle = '#2b3a8f';
+      ctx.beginPath();
+      ctx.ellipse(x, y + Hh * 0.10, L * 0.86, Hh * 0.22, 0, 0, 6.2832);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    /* ── the UFO ──────────────────────────────────────────────
+       An easter egg, and deliberately a rare one: it lives in the empty
+       left half of the sky — the only stretch of glass no instrument and
+       no billboard ever crosses — and it is on screen for nine seconds
+       out of every minute and a half or so. Someone watching the cluster
+       will never see it; someone who lets the car drive itself will.
+
+       The motion is the whole joke: it drops in from above the top of the
+       stage, hangs, drops a beam, and goes straight back up the way it
+       came. Nothing else in this scene moves vertically, so even at 30 px
+       wide the eye catches it.
+
+       It does NOT scroll with travel and it does NOT parallax. Everything
+       else up there is scenery being dragged past; this one is holding
+       station over the road on its own, which is exactly the difference
+       between "far away" and "not from here". Pressing U calls it in on
+       demand, for when you have to show it to someone. */
+    const UFO_X = 208;            // left third of the glass, clear of the A-pillar
+    const UFO_DUR = 9.2;          // s from entering to gone
+    const UFO_GAP = 62, UFO_JIT = 34;   // s between passes: fixed part + random
+    const UFO_R = 15;             // half width, in photo px. Small on purpose.
+
+    let ufoT = -1;                       // -1 = off stage, else seconds into the pass
+    let ufoNext = 26 + Math.random() * 20;   // the first one comes early-ish
+
+    const smooth = u => u * u * (3 - 2 * u);
+
+    function ufoTick(dt) {
+      if (ufoT >= 0) {
+        ufoT += dt;
+        if (ufoT > UFO_DUR) { ufoT = -1; ufoNext = UFO_GAP + Math.random() * UFO_JIT; }
+      } else if ((ufoNext -= dt) <= 0) {
+        ufoT = 0;
+      }
+    }
+
+    /* U summons it: the egg is useless in a demo if you cannot show it */
+    window.addEventListener('keydown', e => {
+      if (e.key !== 'u' && e.key !== 'U') return;
+      if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+      const t = e.target;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return;
+      ufoT = 0;
+    });
+
+    function ufo() {
+      if (ufoT < 0) return;
+      const p = ufoT / UFO_DUR;
+
+      /* down, hold, up — the three beats of every abduction ever filmed.
+         smoothstep on the two travelling beats so it eases out of the drop
+         and back into the climb instead of stopping dead. */
+      const glide = p < 0.30 ? smooth(p / 0.30)
+        : p < 0.68 ? 1
+        : 1 - smooth((p - 0.68) / 0.32);
+
+      const yTop = -RISE - 34;           // above the top of the stage: it slides in
+      const yLow = -26;                  // still well clear of the ridges at y 35
+      const x = UFO_X + 5.5 * Math.sin(clock * 0.55) * glide;
+      const y = yTop + (yLow - yTop) * glide + 2.4 * Math.sin(clock * 1.9) * glide;
+
+      /* the beam only exists at the bottom of the drop, and it comes and
+         goes with the hover rather than on a timer of its own */
+      const beam = Math.max(0, (glide - 0.74) / 0.26);
+      const tilt = 0.10 * Math.sin(clock * 0.8) * glide;
+
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(tilt);
+
+      if (beam > 0) {
+        const LEN = 132;                 // reaches down toward the tarmac
+        const g = ctx.createLinearGradient(0, 3, 0, LEN);
+        g.addColorStop(0, 'rgba(196,255,232,' + (0.42 * beam).toFixed(3) + ')');
+        g.addColorStop(0.45, 'rgba(170,240,220,' + (0.15 * beam).toFixed(3) + ')');
+        g.addColorStop(1, 'rgba(160,230,215,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.moveTo(-UFO_R * 0.50, 3);
+        ctx.lineTo(UFO_R * 0.50, 3);
+        ctx.lineTo(UFO_R * 2.05, LEN);
+        ctx.lineTo(-UFO_R * 2.05, LEN);
+        ctx.closePath();
+        ctx.fill();
+
+        /* one bright band sliding down the cone: without it the beam is a
+           triangle, with it something is being pulled along it */
+        const bp = (clock * 0.42) % 1;
+        const by = 3 + bp * (LEN - 3), bw = UFO_R * (0.50 + 1.55 * bp);
+        ctx.fillStyle = 'rgba(214,255,240,' + (0.20 * beam * (1 - bp)).toFixed(3) + ')';
+        ctx.fillRect(-bw, by, bw * 2, 2.4);
+      }
+
+      /* the glow it sits in — sells the hull as lit rather than painted */
+      const halo = ctx.createRadialGradient(0, 0, 0, 0, 0, UFO_R * 2.1);
+      halo.addColorStop(0, 'rgba(190,250,230,.20)');
+      halo.addColorStop(1, 'rgba(190,250,230,0)');
+      ctx.fillStyle = halo;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, UFO_R * 2.1, UFO_R * 1.1, 0, 0, 6.2832);
+      ctx.fill();
+
+      /* underside first, so the hull sits on top of its own shadow */
+      ctx.fillStyle = '#2a323f';
+      ctx.beginPath();
+      ctx.ellipse(0, 1.1, UFO_R, 3.6, 0, 0, 6.2832);
+      ctx.fill();
+
+      /* the saucer, lit from above like everything else in this sky */
+      const hull = ctx.createLinearGradient(0, -3.6, 0, 3.2);
+      hull.addColorStop(0, '#eef5f8');
+      hull.addColorStop(0.5, '#b9c6d2');
+      hull.addColorStop(1, '#7d8b9c');
+      ctx.fillStyle = hull;
+      ctx.beginPath();
+      ctx.ellipse(0, -0.6, UFO_R, 3.1, 0, 0, 6.2832);
+      ctx.fill();
+
+      /* dome */
+      const dome = ctx.createLinearGradient(0, -8, 0, -1);
+      dome.addColorStop(0, 'rgba(226,255,246,.95)');
+      dome.addColorStop(1, 'rgba(120,190,180,.75)');
+      ctx.fillStyle = dome;
+      ctx.beginPath();
+      ctx.ellipse(0, -1.6, UFO_R * 0.40, UFO_R * 0.40, 0, Math.PI, 0);
+      ctx.fill();
+
+      /* three rim lights, chasing. The pulse is what reads as "machine" at
+         this size — the silhouette alone could be a frisbee. */
+      for (let i = 0; i < 3; i++) {
+        const ph = (clock * 1.6 + i / 3) % 1;
+        const a = 0.35 + 0.65 * Math.pow(Math.max(0, Math.sin(ph * 6.2832)), 3);
+        ctx.fillStyle = 'rgba(255,214,120,' + a.toFixed(3) + ')';
+        ctx.beginPath();
+        ctx.ellipse((i - 1) * UFO_R * 0.58, 1.5, 1.5, 1.15, 0, 0, 6.2832);
+        ctx.fill();
+      }
+
+      ctx.restore();
+    }
+
     function backdrop() {
       const TOP = -RISE - 6;                  // the top row of the whole stage
       const sky = ctx.createLinearGradient(0, TOP, 0, HZ + 2);
@@ -1758,6 +1968,9 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         ctx.ellipse(x, y, w / 2, h, 0, 0, 6.2832);
         ctx.fill();
       }
+
+      blimp();
+      ufo();          // the easter egg, on the empty left half of the sky
 
       // two ridges and a treeline, each on its own parallax: that difference
       // is what turns a flat band into distance
@@ -1845,6 +2058,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       bob = (v / 60) * (0.5 * Math.sin(clock * 7.3) + 0.3 * Math.sin(clock * 13.1));
       c0 = curveC(travel); d0 = curveD(travel);
       moveTraffic(v, dt);
+      ufoTick(dt);
 
       /* the extra RISE rows live at NEGATIVE y in the photo's coordinates */
       ctx.setTransform(scale, 0, 0, scale, 0, scale * RISE);
