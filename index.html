@@ -67,6 +67,35 @@ body{
   display:block;
 }
 
+/* ══════════ REFUEL PROMPT ══════════
+   Sits in the open sky band above the photo, so it never covers the
+   cluster. Hidden by default; .show fades it in while a station is
+   inside 200 m, .done swaps the call to action for the receipt. */
+#refuel-prompt{
+  position:absolute;
+  left:50%;
+  top:calc(58 / var(--stageh) * 100%);
+  transform:translate(-50%, -6px);
+  z-index:4;
+  padding:11px 22px;
+  border-radius:10px;
+  background:rgba(6,12,18,.82);
+  border:1px solid rgba(0,174,239,.55);
+  box-shadow:0 6px 26px rgba(0,0,0,.55), 0 0 22px rgba(0,174,239,.18);
+  backdrop-filter:blur(3px);
+  font-size:15px;letter-spacing:1.6px;text-transform:uppercase;font-weight:700;
+  color:#dbeaf6;white-space:nowrap;
+  opacity:0;visibility:hidden;pointer-events:none;
+  transition:opacity .22s ease, transform .22s ease, visibility .22s;
+}
+#refuel-prompt.show{opacity:1;visibility:visible;transform:translate(-50%,0)}
+#refuel-prompt .rp-ask b{color:var(--blue)}
+#refuel-prompt .rp-done{display:none}
+#refuel-prompt .rp-done b{color:var(--green)}
+#refuel-prompt.done{border-color:rgba(61,220,132,.6);box-shadow:0 6px 26px rgba(0,0,0,.55), 0 0 22px rgba(61,220,132,.2)}
+#refuel-prompt.done .rp-ask{display:none}
+#refuel-prompt.done .rp-done{display:inline}
+
 /* the interior photo, with the windshield glass punched out */
 #interior{
   position:absolute;
@@ -423,6 +452,13 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       </g>
     </g>
   </svg>
+
+  <!-- ▼▼ REFUEL PROMPT — shown inside the last 200 m before a station ▼▼ -->
+  <div id="refuel-prompt" aria-live="polite">
+    <span class="rp-ask">PRESS <b>&ldquo;R&rdquo;</b> to refuel</span>
+    <span class="rp-done">Tank full &mdash; refuelled at <b id="rp-price">0.00 &euro;/L</b></span>
+  </div>
+  <!-- ▲▲ ─────────────────────────────────────────────────── ▲▲ -->
 </div>
   <!-- PEDALS: they sit on the seam between the cockpit and the deck -->
   <div id="pedals" class="untouched">
@@ -654,6 +690,57 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     rpmSlider.value = state.targetSpeed;
   }
 
+  /* ── refuel ─────────────────────────────────────────────
+     The prompt rides the countdown to the next station: it appears
+     inside REFUEL_RANGE metres and goes away by itself the moment the
+     station is behind us, because station() then reports the *next*
+     one, a full ST_EVERY away.
+
+     Pressing R fills the tank and rewrites Last Refuel Price with the
+     price on that station's totem — from there on the trip cost is
+     computed on the new price, since update() reads state.refuelPrice
+     every frame. The receipt replaces the call to action for 2 s. */
+  const REFUEL_RANGE = 200;                 // m: how early the prompt shows
+  const RECEIPT_MS   = 2000;                // ms the confirmation stays up
+  const promptEl = $('refuel-prompt'), promptPrice = $('rp-price');
+  let promptOpen = false, receiptUntil = 0;
+
+  function refuel() {
+    const st = road.station();
+    if (st.dist > REFUEL_RANGE) return;     // no station within reach
+    state.tankLiters  = state.tankCapacity;
+    state.refuelPrice = st.price;
+    promptPrice.textContent = st.price.toFixed(2) + ' €/L';
+    promptEl.classList.add('done');
+    receiptUntil = performance.now() + RECEIPT_MS;
+  }
+
+  window.addEventListener('keydown', e => {
+    if (e.key !== 'r' && e.key !== 'R') return;
+    if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (!promptOpen || promptEl.classList.contains('done')) return;
+    e.preventDefault();
+    refuel();
+  });
+
+  /* called once a frame from render(), with the distance already known */
+  function syncRefuelPrompt(dist, now) {
+    const inRange = dist <= REFUEL_RANGE;
+    /* the receipt owns the panel until it times out, then the panel goes
+       back to asking — or closes, if the station is already behind us */
+    if (receiptUntil && now >= receiptUntil) {
+      receiptUntil = 0;
+      promptEl.classList.remove('done');
+    }
+    const show = inRange || receiptUntil > 0;
+    if (show !== promptOpen) {
+      promptOpen = show;
+      promptEl.classList.toggle('show', show);
+    }
+    /* driving past the station with the receipt still up closes both */
+    if (!inRange && !receiptUntil) promptEl.classList.remove('done');
+  }
+
   /* ── help ───────────────────────────────────────────── */
   const overlay = $('help-overlay');
   const open  = () => overlay.classList.add('open');
@@ -760,9 +847,18 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
 
     let scale = 1, travel = 0, sway = 0, bob = 0, clock = 0, sized = false;
 
-    /* ── road centre line: two very long, very gentle bends ── */
-    const curveC = s => 25 * Math.sin(s / 420) + 6 * Math.sin(s / 173);
-    const curveD = s => (25 / 420) * Math.cos(s / 420) + (6 / 173) * Math.cos(s / 173);
+    /* ── road centre line: two long bends, one inside the other ──
+       What the eye reads as "how tight" is the *curvature* of the centre
+       line, not its amplitude: the offset and the heading are subtracted
+       out below, so a term A·sin(s/L) is felt as A/L² — a radius of L²/A
+       metres. The two terms below come to about 1.2e-3, i.e. a radius of
+       roughly 850 m at the peak of a bend: a proper sweeping motorway
+       curve, some 3.5x tighter than the near-straight it used to be.
+       Raise the amplitudes or shorten the wavelengths to tighten it
+       further; keep them in this ratio so the short bend stays a
+       modulation of the long one instead of a wobble on top of it. */
+    const curveC = s => 55 * Math.sin(s / 300) + 9 * Math.sin(s / 125);
+    const curveD = s => (55 / 300) * Math.cos(s / 300) + (9 / 125) * Math.cos(s / 125);
     // where the centre of the road is at distance z, seen from a car that is
     // aligned with the road here and now: the linear term is our heading,
     // what is left grows like z² and reads as a bend
@@ -1595,6 +1691,8 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     el.localDist.textContent = '· ' + (st.dist >= 995     // 995 m already rounds to "1.0 km"
       ? (st.dist / 1000).toFixed(1) + ' km'
       : Math.round(st.dist / 10) * 10 + ' m');
+
+    syncRefuelPrompt(st.dist, performance.now());
 
     const lvl = Math.max(0, Math.min(1, state.tankLiters / state.tankCapacity));
     el.fuelbar.setAttribute('width', (lvl * 100).toFixed(1));
