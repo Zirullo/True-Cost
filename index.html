@@ -102,14 +102,13 @@ body{display:flex;flex-direction:column;align-items:center;padding-bottom:40px}
   font-weight:700;color:#61798d;min-width:92px;
 }
 input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-color:var(--blue)}
-input#timeSlider{accent-color:var(--green)}
 .slider-val{
   font-size:12px;font-weight:700;font-family:Consolas,monospace;
   min-width:140px;text-align:right;color:#cfe0ee;
 }
 .slider-val em{color:#62798c;font-style:normal}
 #deck-foot{
-  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  display:flex;align-items:center;justify-content:flex-end;gap:16px;
   margin-top:14px;padding-top:13px;border-top:1px solid #131c25;flex-wrap:wrap;
 }
 .price-live{font-size:11px;color:#5d7488;letter-spacing:.4px}
@@ -126,29 +125,6 @@ input#timeSlider{accent-color:var(--green)}
   transition:border-color .2s,color .2s;font-family:inherit;
 }
 .btn:hover{border-color:var(--blue);color:var(--blue)}
-
-/* ══════════ TRIP HISTORY ══════════ */
-#history{
-  width:100%;max-width:1147px;margin-top:14px;
-  background:#070a0d;border:1px solid #131c25;border-radius:14px;
-  padding:12px 18px 14px;transition:opacity .5s;
-}
-#history-head{display:flex;align-items:center;gap:12px;margin-bottom:8px}
-.th-label{font-size:9px;letter-spacing:2.6px;text-transform:uppercase;color:#3d5266;font-weight:700;white-space:nowrap}
-.th-line{flex:1;height:1px;background:linear-gradient(to right,#1b2733,transparent)}
-#trip-cards{display:flex;align-items:stretch}
-.trip-card{
-  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:8px 6px;border-right:1px solid #121a22;min-width:0;
-}
-.trip-card:last-child{border-right:none}
-.tc-date{font-size:9px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:#7d94a8;margin-bottom:3px}
-.tc-km{font-size:10px;font-family:Consolas,monospace;color:#5d7488;margin-bottom:5px}
-.tc-cost{font-size:19px;font-weight:700;font-family:Consolas,monospace;color:#cfe0ee;line-height:1}
-.tc-unit{font-size:9px;color:#41566a;margin-top:3px}
-.trip-card:last-child .tc-cost{color:var(--green)}
-@keyframes slideIn{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
-.trip-card.new-entry{animation:slideIn .4s ease}
 
 #signature{
   font-size:10px;letter-spacing:1.6px;text-transform:uppercase;
@@ -273,7 +249,7 @@ input#timeSlider{accent-color:var(--green)}
 
     <!-- ── HEADER BAR ─────────────────────────────────────── -->
     <g>
-      <path d="M215,296 C216,258 250,230 300,212 C360,190 430,170 520,164
+      <path d="M215,204 C267,178 327,164 407,161
                L800,161 C880,164 940,178 992,204"
             fill="none" stroke="#6fd8b4" stroke-width="1.6" opacity=".45"/>
       <rect x="430" y="164" width="326" height="42" rx="7" fill="url(#headerG)"/>
@@ -288,20 +264,8 @@ input#timeSlider{accent-color:var(--green)}
             font-weight="400" fill="#eef5ff">STELLANTIS</text>
     </g>
 
-    <!-- speed limit sign -->
-    <g>
-      <circle cx="772" cy="203" r="15.5" fill="#f4f6f8"/>
-      <circle cx="772" cy="203" r="13.4" fill="none" stroke="#d8202a" stroke-width="3.6"/>
-      <text x="772" y="208" text-anchor="middle" font-size="11.5" font-weight="700"
-            letter-spacing="-.4" fill="#15181c">130</text>
-    </g>
-
     <!-- ── TRUE COST title + help ─────────────────────────── -->
     <text x="603" y="241" text-anchor="middle" font-size="19" letter-spacing="1.6" fill="#dfeaf4">TRUE COST</text>
-    <g id="help-hit" class="hit">
-      <circle cx="740" cy="234" r="11" fill="rgba(255,255,255,.06)" stroke="#9fb6c8" stroke-width="1.2"/>
-      <text x="740" y="240" text-anchor="middle" font-size="14" fill="#cfe0ee">?</text>
-    </g>
 
     <!-- ── SPEEDOMETER ────────────────────────────────────── -->
     <g id="dial">
@@ -320,11 +284,6 @@ input#timeSlider{accent-color:var(--green)}
       <text x="345" y="341" text-anchor="middle" font-size="17" fill="#c3d6e6">km/h</text>
       <text id="rpmTxt" x="347" y="404" text-anchor="middle" font-size="32" font-weight="600">2250</text>
       <text x="347" y="422" text-anchor="middle" font-size="14" letter-spacing="1.2" fill="#c3d6e6">RPM</text>
-      <!-- small side gauge, as in the reference cluster -->
-      <circle cx="238" cy="288" r="3.5" fill="#e0453f"/>
-      <path d="M241,322 A78,78 0 0 0 247,380" fill="none" stroke="#e9f2f8" stroke-width="4"
-            stroke-linecap="round" opacity=".55"/>
-      <rect x="247" y="388" width="8" height="8" rx="1.5" fill="#8ea6b8" opacity=".7"/>
     </g>
 
     <!-- ── LIVE CONSUMPTION ───────────────────────────────── -->
@@ -390,34 +349,17 @@ input#timeSlider{accent-color:var(--green)}
   <div class="deck-title">Simulator Controls</div>
 
   <div class="slider-row">
-    <span class="control-label">Throttle</span>
-    <input type="range" id="rpmSlider" min="800" max="3520" value="2250" step="1">
-    <span class="slider-val" id="rpmVal">2250 rpm <em>· 128 km/h</em></span>
-  </div>
-
-  <div class="slider-row">
-    <span class="control-label">Time Warp</span>
-    <input type="range" id="timeSlider" min="1" max="20" value="1" step="1">
-    <span class="slider-val" id="timeVal">1×</span>
+    <span class="control-label">Speed</span>
+    <input type="range" id="rpmSlider" min="0" max="240" value="128" step="1">
+    <span class="slider-val" id="rpmVal">128 km/h <em>· 2250 rpm</em></span>
   </div>
 
   <div id="deck-foot">
-    <span class="price-live" id="priceLive"><span class="dot-live"></span>Fetching live pump prices…</span>
     <div style="display:flex;gap:10px">
       <button class="btn" id="helpBtn">? Info</button>
       <button class="btn" id="resetBtn">↺ Reset trip</button>
     </div>
   </div>
-</div>
-
-<!-- ═══════════════ TRIP HISTORY ═══════════════ -->
-<div id="history">
-  <div id="history-head">
-    <span class="th-label">Last Trips</span>
-    <div class="th-line"></div>
-    <span class="th-label" style="color:#2f4152">visible at vehicle stop</span>
-  </div>
-  <div id="trip-cards"></div>
 </div>
 
 <div id="signature">
@@ -436,19 +378,16 @@ input#timeSlider{accent-color:var(--green)}
     <div class="help-grid">
       <div class="help-section" style="border-left-color:var(--amber)">
         <div class="help-section-title" style="color:var(--amber)">⛽ Live consumption</div>
-        <p>Cost per km = <strong>consumption × pump price</strong>. Consumption follows speed on a real fuel-map curve — drag the <strong>Throttle</strong> slider and watch the € / km move.</p>
+        <p>Cost per km = <strong>consumption × pump price</strong>. Consumption follows speed on a real fuel-map curve — drag the <strong>Speed</strong> slider and watch the € / km move.</p>
       </div>
       <div class="help-section" style="border-left-color:var(--blue)">
         <div class="help-section-title" style="color:var(--blue)">● Live prices</div>
         <p><strong>Local Price</strong> is fetched from stations within 50 km (MIMIT open data). <strong>Last Refuel Price</strong> is what the fuel in the tank actually cost — and the trip cost is computed on that.</p>
       </div>
-      <div class="help-section" style="border-left-color:var(--green)">
+      <div class="help-section" style="border-left-color:var(--green);grid-column:1/-1">
         <div class="help-section-title" style="color:var(--green)">● Trip &amp; tank</div>
-        <p>Distance, litres burned and total euro accumulate live; the fuel level bar drains with them. <strong>Time Warp</strong> up to 20× compresses a whole journey into seconds.</p>
-      </div>
-      <div class="help-section">
-        <div class="help-section-title" style="color:#9db4c6">● Trip history</div>
-        <p>Press <strong>RESET</strong> — on the cluster or on the deck — to close the current trip and log it. The last 6 trips are kept, shown when the vehicle is stopped.</p>
+        <p>Distance, litres burned and total euro accumulate live; the fuel level bar drains with them.
+           Press <strong>RESET</strong> — on the cluster or on the deck — to start a new trip from zero.</p>
       </div>
     </div>
     <button id="help-cta">Got it — let me drive →</button>
@@ -487,10 +426,11 @@ input#timeSlider{accent-color:var(--green)}
   const SVGNS = 'http://www.w3.org/2000/svg';
   const CX = 345, CY = 305, VMAX = 240;
   const RPM_IDLE = 800, K_SPEED = 0.08828;   // 2250 rpm -> 128 km/h, as in the reference
+  const ACC_MAX = 13, DEC_COAST = 4;         // km/h per second: full throttle at rest / lift-off
 
   const state = {
-    targetRpm: 2250, currentRpm: 2250, currentSpeed: 128,
-    driftAngle: 0, timeMultiplier: 1,
+    targetSpeed: 128, currentSpeed: 128, currentRpm: 2250,
+    driftAngle: 0,
     refuelPrice: 1.91,        // price of the fuel actually in the tank
     localPrice:  2.10,        // live price around the vehicle
     tankCapacity: 45, tankLiters: 27.5,
@@ -536,44 +476,7 @@ input#timeSlider{accent-color:var(--green)}
     nums.forEach(t => t.setAttribute('class', +t.dataset.v <= speed ? 'on' : 'off'));
   }
 
-  /* ── trip history ───────────────────────────────────── */
-  const tripLog = [
-    { date: '25 Apr', km: 312, cost: 41.20 },
-    { date: '28 Apr', km:  87, cost: 11.80 },
-    { date: '02 May', km: 195, cost: 26.40 },
-    { date: '06 May', km:  44, cost:  6.10 },
-    { date: '10 May', km: 228, cost: 30.90 },
-    { date: '13 May', km:  71, cost:  9.70 }
-  ];
-  const OPACITIES = [0.2, 0.34, 0.48, 0.64, 0.8, 1];
-
-  function buildHistory(isNew) {
-    const box = $('trip-cards');
-    box.innerHTML = '';
-    const visible = tripLog.slice(-6);
-    visible.forEach((t, i) => {
-      const card = document.createElement('div');
-      card.className = 'trip-card' + (isNew && i === visible.length - 1 ? ' new-entry' : '');
-      card.style.opacity = OPACITIES[i] !== undefined ? OPACITIES[i] : 1;
-      card.innerHTML =
-        '<span class="tc-date">' + t.date + '</span>' +
-        '<span class="tc-km">' + t.km + ' km</span>' +
-        '<span class="tc-cost">€' + t.cost.toFixed(2) + '</span>' +
-        '<span class="tc-unit">fuel cost</span>';
-      box.appendChild(card);
-    });
-  }
-  buildHistory(false);
-
   function resetTrip() {
-    if (state.tripKm > 0.5) {
-      tripLog.push({
-        date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }),
-        km:   Math.round(state.tripKm * 10) / 10,
-        cost: Math.round(state.tripCost * 100) / 100
-      });
-      buildHistory(true);
-    }
     state.tripKm = 0; state.tripLiters = 0; state.tripCost = 0;
   }
   $('reset-hit').addEventListener('click', resetTrip);
@@ -581,18 +484,12 @@ input#timeSlider{accent-color:var(--green)}
 
   /* ── controls ───────────────────────────────────────── */
   const rpmSlider = $('rpmSlider'), rpmVal = $('rpmVal');
-  rpmSlider.addEventListener('input', () => { state.targetRpm = parseFloat(rpmSlider.value); });
-  const timeSlider = $('timeSlider'), timeVal = $('timeVal');
-  timeSlider.addEventListener('input', () => {
-    state.timeMultiplier = parseInt(timeSlider.value, 10);
-    timeVal.textContent = timeSlider.value + '×';
-  });
+  rpmSlider.addEventListener('input', () => { state.targetSpeed = parseFloat(rpmSlider.value); });
 
   /* ── help ───────────────────────────────────────────── */
   const overlay = $('help-overlay');
   const open  = () => overlay.classList.add('open');
   const close = () => overlay.classList.remove('open');
-  $('help-hit').addEventListener('click', open);
   $('helpBtn').addEventListener('click', open);
   $('help-close').addEventListener('click', close);
   $('help-cta').addEventListener('click', close);
@@ -613,16 +510,8 @@ input#timeSlider{accent-color:var(--green)}
 
       state.localPrice  = avg;
       state.refuelPrice = avg - 0.19;    // tank filled some days ago, cheaper
-      const time  = new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
-      const delta = state.localPrice - state.refuelPrice;
-      $('priceLive').innerHTML =
-        '<span class="dot-live"></span>Local price <b>€ ' + avg.toFixed(3) + '/L</b> — average of ' +
-        list.length + ' stations within 50 km, ' + time +
-        ' &nbsp;·&nbsp; tank filled at € ' + state.refuelPrice.toFixed(3) + '/L (' +
-        (delta >= 0 ? '+' : '') + delta.toFixed(3) + ' €/L since)';
     } catch (e) {
-      $('priceLive').innerHTML = 'Live pump prices unavailable — using demo prices (1.91 / 2.10 €/L)';
-      $('priceLive').style.color = '#4a5f72';
+      /* keep the demo prices already in state */
     }
   })();
 
@@ -869,13 +758,30 @@ input#timeSlider{accent-color:var(--green)}
   })();
 
   /* ── physics: consumption follows speed ─────────────── */
-  function update() {
+  function update(dt) {
     state.driftAngle += 0.04;
-    const drift = Math.sin(state.driftAngle) * 12;
-    state.currentRpm += (state.targetRpm + drift - state.currentRpm) * 0.1;
 
-    const v = Math.max(0, Math.min(VMAX, (state.currentRpm - RPM_IDLE) * K_SPEED));
+    /* the car cannot jump to the requested speed: power-limited acceleration
+       that fades as drag builds up, so the top of the dial takes real effort */
+    const gap = state.targetSpeed - state.currentSpeed;
+    if (Math.abs(gap) > 0.05) {
+      let rate;                                        // km/h per second
+      if (gap > 0) {
+        const head = Math.max(0, 1 - state.currentSpeed / (VMAX + 15));
+        rate = ACC_MAX * Math.pow(head, 1.7);          // ~13 at rest, <1 above 200
+      } else {
+        rate = -(DEC_COAST + state.currentSpeed * 0.035);   // lift-off: engine brake + drag
+      }
+      const step = rate * dt;
+      state.currentSpeed += Math.abs(step) > Math.abs(gap) ? gap : step;
+    } else {
+      state.currentSpeed = state.targetSpeed;
+    }
+    const v = Math.max(0, Math.min(VMAX, state.currentSpeed));
     state.currentSpeed = v;
+
+    const drift = Math.sin(state.driftAngle) * 12;
+    state.currentRpm = v < 1 ? RPM_IDLE : RPM_IDLE + v / K_SPEED + drift;
 
     if (v < 1) {
       state.instantL100  = 0;
@@ -885,7 +791,7 @@ input#timeSlider{accent-color:var(--green)}
       state.instantEurKm = (state.instantL100 / 100) * state.refuelPrice;
     }
 
-    const stepKm = (v / 3600) * 0.016 * state.timeMultiplier;
+    const stepKm = (v / 3600) * dt;
     const stepL  = stepKm * (state.instantL100 / 100);
     state.tripKm     += stepKm;
     state.tripLiters += stepL;
@@ -907,13 +813,10 @@ input#timeSlider{accent-color:var(--green)}
     const lvl = Math.max(0, Math.min(1, state.tankLiters / state.tankCapacity));
     el.fuelbar.setAttribute('width', (lvl * 100).toFixed(1));
 
-    rpmVal.innerHTML = Math.round(state.currentRpm) + ' rpm <em>· ' +
-                       Math.round(state.currentSpeed) + ' km/h</em>';
+    rpmVal.innerHTML = Math.round(state.currentSpeed) + ' km/h <em>· ' +
+                       Math.round(state.currentRpm) + ' rpm</em>';
 
     paintDial(state.currentSpeed);
-
-    // in a real cluster the trip list only shows at a stop
-    $('history').style.opacity = state.currentSpeed < 1 ? '1' : '0.28';
   }
 
   let lastFrame = performance.now();
@@ -921,7 +824,7 @@ input#timeSlider{accent-color:var(--green)}
     now = now || performance.now();
     const dt = Math.min(0.05, (now - lastFrame) / 1000);   // clamped: tab switches
     lastFrame = now;
-    update();
+    update(dt);
     render();
     road.frame(state.currentSpeed, dt);
     requestAnimationFrame(loop);
