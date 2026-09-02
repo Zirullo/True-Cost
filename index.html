@@ -226,9 +226,24 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
 /* the nudge: the pedals breathe until the driver holds one for the first time */
 #pedals.untouched .pedal{animation:pedalCall 2.2s ease-in-out infinite}
 #pedals.untouched #pedal-brake{animation-delay:.35s}
+/* Red, and wide enough to be seen: the old ring was 4px of blue at .18 alpha
+   and on a dark dashboard it read as nothing at all, so the demo sat there
+   waiting for an input nobody knew it wanted. Same breathing, same stop on
+   the first hold - only louder. The red is the brake's own #ff5f4d, so the
+   call stays inside the palette instead of adding a fourth hue. */
 @keyframes pedalCall{
-  0%,100%{box-shadow:0 10px 26px rgba(0,0,0,.6)}
-  50%    {box-shadow:0 10px 26px rgba(0,0,0,.6),0 0 0 4px rgba(0,174,239,.18)}
+  0%,100%{
+    box-shadow:0 10px 26px rgba(0,0,0,.6),
+               0 0 0 2px rgba(255,95,77,.30),
+               0 0 14px 2px rgba(255,95,77,.16);
+    border-color:#5c3138;
+  }
+  50%    {
+    box-shadow:0 10px 26px rgba(0,0,0,.6),
+               0 0 0 7px rgba(255,95,77,.55),
+               0 0 30px 9px rgba(255,95,77,.40);
+    border-color:#ff5f4d;
+  }
 }
 #pedal-hint{
   position:absolute;left:50%;bottom:100%;transform:translateX(-50%);
@@ -570,6 +585,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
   const CX = 345, CY = 305, VMAX = 240;
   const RPM_IDLE = 800;
   const ACC_MAX = 13, DEC_COAST = 4;         // km/h per second: full throttle at rest / lift-off
+  const BRAKE_MAX = 20;                      // km/h per second with the brake pedal down
 
   /* 6-speed gearbox, ratios expressed as engine rpm per km/h.
      6th is calibrated on the reference cluster: 128 km/h -> 2250 rpm. */
@@ -638,11 +654,19 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
   rpmSlider.addEventListener('input', () => { state.targetSpeed = parseFloat(rpmSlider.value); });
 
   /* -- pedals: hold to accelerate / brake ---------------
-     The pedals and the arrow keys drive the same thing the slider does, the
-     requested speed: holding one ramps it, releasing leaves it where it got to
-     (a lift-off, not a cruise cut). The slider follows, so the deck always
-     shows what the pedals asked for. */
-  const PEDAL_UP = 55, PEDAL_DOWN = 95;      // km/h of *requested* speed per second
+     Three states, and only three: holding UP accelerates for as long as it is
+     held, holding DOWN slows for as long as it is held, and touching nothing
+     holds the speed you reached. There is no drift either way.
+
+     The pedals do NOT ramp the requested speed any more. They used to add
+     55 (or subtract 95) km/h per second to it, while the car itself can only
+     gain ~13 - so a one-second press left the target 40 km/h ahead of the
+     vehicle and it went on accelerating on its own long after the key was up.
+     Instead a held pedal simply asks for PEDAL_LEAD km/h more (or less) than
+     the *current* speed: the gap never closes while you hold, so the car
+     keeps pulling, and the instant you let go the target is pinned to the
+     speed actually reached. Lift-off is a cruise, not a coast. */
+  const PEDAL_LEAD = 8;                      // km/h asked beyond the current speed
   const pedals = $('pedals'), gasBtn = $('pedal-gas'), brakeBtn = $('pedal-brake');
   const held = { gas: false, brake: false };
 
@@ -650,7 +674,15 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     if (held[which] === on) return;
     held[which] = on;
     (which === 'gas' ? gasBtn : brakeBtn).classList.toggle('active', on);
-    if (on) pedals.classList.remove('untouched');    // the hint has done its job
+    if (on) {
+      pedals.classList.remove('untouched');          // the hint has done its job
+    } else if (!held.gas && !held.brake) {
+      /* both feet up: keep this speed. Pinning the target to the speed
+         actually reached is what makes releasing a key STOP the car from
+         accelerating, instead of letting it run on to an overshot target. */
+      state.targetSpeed = Math.max(0, Math.min(VMAX, state.currentSpeed));
+      rpmSlider.value = state.targetSpeed;
+    }
   }
 
   function bindPedal(btn, which) {
@@ -684,11 +716,12 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
   /* switching tab or window must not leave a pedal stuck down */
   window.addEventListener('blur', () => { setPedal('gas', false); setPedal('brake', false); });
 
-  function applyPedals(dt) {
-    if (!held.gas && !held.brake) return;
-    let t = state.targetSpeed;
-    if (held.gas)   t += PEDAL_UP * dt;
-    if (held.brake) t -= PEDAL_DOWN * dt;
+  function applyPedals() {
+    if (!held.gas && !held.brake) return;            // nothing held: hold the speed
+    /* brake is evaluated second, so with both down the brake wins - as it
+       does in a car, and as it must for a panic stop in a demo */
+    let t = state.currentSpeed + PEDAL_LEAD;
+    if (held.brake) t = state.currentSpeed - PEDAL_LEAD;
     state.targetSpeed = Math.max(0, Math.min(VMAX, t));
     rpmSlider.value = state.targetSpeed;
   }
@@ -2198,7 +2231,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
   /* ── physics: consumption follows speed ─────────────── */
   function update(dt) {
     state.driftAngle += 0.04;
-    applyPedals(dt);
+    applyPedals();
 
     /* the car cannot jump to the requested speed: power-limited acceleration
        that fades as drag builds up, so the top of the dial takes real effort */
@@ -2209,7 +2242,12 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         const head = Math.max(0, 1 - state.currentSpeed / (VMAX + 15));
         rate = ACC_MAX * Math.pow(head, 1.7);          // ~13 at rest, <1 above 200
       } else {
-        rate = -(DEC_COAST + state.currentSpeed * 0.035);   // lift-off: engine brake + drag
+        /* the brake is a brake: with the pedal down the car sheds speed about
+           twice as fast as it would just coasting. Without it, the only way
+           down was engine braking, and stopping took an implausibly long time.
+           The coast branch is still reached when the slider asks for less. */
+        rate = held.brake ? -(BRAKE_MAX + state.currentSpeed * 0.05)
+                          : -(DEC_COAST + state.currentSpeed * 0.035);
       }
       const step = rate * dt;
       state.currentSpeed += Math.abs(step) > Math.abs(gap) ? gap : step;
