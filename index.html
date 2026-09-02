@@ -1094,6 +1094,8 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         const z = s - travel;
         if (z > 320) continue;
         if (s % ST_EVERY === 0) continue;   // that slot belongs to a fuel station
+        if (overpassAt(s) < 20) continue;   // and this one to an overpass: the sign
+                                            // would stand inside the deck
         const X = RAIL + 2.2, w = 4.2 * F / z;
         const xc = sxOf(X, z);
         const yTop = syOf(5.6, z), yBot = syOf(3.4, z);
@@ -1135,34 +1137,182 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
        stays inside the frame from ~340 m down to ~21 m, so it sweeps up and
        over the roof as you pass instead of vanishing while still far off.
 
-       Corporate palette, the same one the cluster badge wears: the navy
-       gradient #1d2c68 -> #0c1638, a white wordmark, the cyan accent bar. */
+       Corporate palette: the marque board is printed the way the real logo
+       is, navy #2b3a8f on white; the True Cost poster keeps the blue ground. */
     const KM_EVERY = 300;                     // m between billboards
     const KM_X = -19.6;                       // left verge, past the far carriageway
     const KM_LO = 2.4, KM_HI = 5.6, KM_HALF = 4.2;
 
-    /* one line of the wordmark, squeezed to the board rather than clipped by
-       it: the board is 2.6:1 and the type has to survive every distance it is
-       drawn at, so it is measured and scaled horizontally instead of trusting
-       a font size to fit. */
-    function boardText(txt, xc, y, fs, maxw, fill) {
-      ctx.font = '700 ' + fs.toFixed(1) + 'px "Segoe UI",Arial,sans-serif';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      const tw = ctx.measureText(txt).width || 1;
-      ctx.fillStyle = fill;
-      ctx.save();
-      ctx.translate(xc, y);
-      ctx.scale(Math.min(1, maxw / tw), 1);
-      ctx.fillText(txt, 0, 0);
-      ctx.restore();
-      ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    /* -- the two board artworks ------------------------------
+       Both are painted ONCE into offscreen canvases and then stamped onto
+       the boards. Redrawing sixty dots and ten lines of type per board per
+       frame would cost more and, worse, would shimmer as the board scaled;
+       a bitmap scaled down stays quiet.
+
+       They alternate along the road, so with a board every KM_EVERY metres
+       each artwork comes round every 2 x KM_EVERY - 600 m at today's
+       spacing. */
+
+    /* the wordmark, tracked out by hand. Returns the centre x of the A,
+       which is where the ring of dots belongs. */
+    function wordmark(g, cx, cy, fs, fill, track, weight) {
+      const TXT = 'STELLANTIS', TRACK = fs * (track || 0.30);
+      g.font = (weight || 400) + ' ' + fs + 'px "Segoe UI",Arial,sans-serif';
+      g.textAlign = 'left'; g.textBaseline = 'middle';
+      g.fillStyle = fill;
+      const wid = [];
+      let total = 0;
+      for (let i = 0; i < TXT.length; i++) {
+        wid[i] = g.measureText(TXT[i]).width;
+        total += wid[i] + (i < TXT.length - 1 ? TRACK : 0);
+      }
+      let x = cx - total / 2, aCx = cx;
+      for (let i = 0; i < TXT.length; i++) {
+        g.fillText(TXT[i], x, cy);
+        if (i === 5) aCx = x + wid[i] / 2;        // the A of STELL-A-NTIS
+        x += wid[i] + TRACK;
+      }
+      return aCx;
     }
+
+    /* the ring is not a dotted circle: the dots vary in size around the
+       circumference (heaviest to the lower left, thinning away at the upper
+       right) and sit on a loose band rather than an exact radius. That is
+       what makes it read as a constellation instead of a stencil. */
+    function dotRing(g, cx, cy, R, fill) {
+      g.fillStyle = fill;
+      /* one clean ring, evenly spaced, the dots simply graded from heavy at
+         the lower left to light at the upper right. The earlier version
+         scattered them off the radius in three sizes, which at board
+         distance collapsed into a smudge instead of a circle. */
+      const N = 30;
+      for (let i = 0; i < N; i++) {
+        const ang = (i / N) * 6.2832;
+        const k = 0.5 + 0.5 * Math.cos(ang - 2.3);
+        const rad = R * (0.045 + 0.045 * k);
+        g.beginPath();
+        g.arc(cx + R * Math.cos(ang), cy + R * Math.sin(ang), rad, 0, 6.2832);
+        g.fill();
+      }
+    }
+
+    /* board A: the marque alone, the way the real one is printed - navy on
+       plain white, nothing else on the panel. The old board put a white
+       wordmark on a navy gradient with a cyan foot: three values fighting
+       each other at 100 m, where the letters are two pixels tall. White
+       ground and one dark mark is the version that still reads.
+
+       Drawn at the board's own 2.625:1 so it can be stamped full bleed. */
+    const LOGO = (function () {
+      const W = 1400, H = Math.round(1400 / 2.625);
+      const oc = document.createElement('canvas');
+      oc.width = W; oc.height = H;
+      const g = oc.getContext('2d');
+      g.fillStyle = '#ffffff'; g.fillRect(0, 0, W, H);
+      const NAVY = '#2b3a8f';
+      const cy = H * 0.52, FS = 118;
+      const aCx = wordmark(g, W / 2, cy, FS, NAVY, 0.34, 500);
+      /* the ring belongs on the CAP centre, which sits above the middle
+         baseline the letters were drawn from - hence the lift */
+      dotRing(g, aCx, cy - FS * 0.10, FS * 1.30, NAVY);
+      return oc;
+    })();
+
+    /* -- board B: the True Cost poster -----------------------
+       Laid out at the board's own 2.625:1 rather than at the artwork's, so
+       nothing is stretched when it is stamped: the roundel takes the left
+       third and the type stacks up the rest.
+
+       It is drawn full bleed - ground, frame and footer included - so for
+       this board kmSigns() skips the navy panel and the cyan foot.
+
+       The small print is there even though it is illegible past ~60 m. At
+       speed it is texture, and texture is what tells the eye it is looking
+       at a printed poster rather than at a coloured rectangle. */
+    const BOARD_TC = (function () {
+      const W = 1400, H = Math.round(1400 / 2.625);      // the board's own shape
+      const oc = document.createElement('canvas');
+      oc.width = W; oc.height = H;
+      const g = oc.getContext('2d');
+
+      /* blue ground: a diagonal gradient with a soft light behind the type,
+         the way a backlit panel actually looks */
+      const bg = g.createLinearGradient(0, 0, W, H);
+      bg.addColorStop(0, '#1b4f9e');
+      bg.addColorStop(0.5, '#123a7d');
+      bg.addColorStop(1, '#08163c');
+      g.fillStyle = bg; g.fillRect(0, 0, W, H);
+      const glow = g.createRadialGradient(W * 0.55, H * 0.42, 0, W * 0.55, H * 0.42, W * 0.55);
+      glow.addColorStop(0, 'rgba(150,200,255,.22)');
+      glow.addColorStop(1, 'rgba(150,200,255,0)');
+      g.fillStyle = glow; g.fillRect(0, 0, W, H);
+
+      /* the printed frame */
+      g.strokeStyle = 'rgba(198,222,248,.55)';
+      g.lineWidth = 5;
+      g.strokeRect(14, 14, W - 28, H - 28);
+
+      /* STELLANTIS across the head of the poster */
+      wordmark(g, W / 2, 68, 52, '#ffffff');
+
+      /* the True Cost roundel: a teal ring with its own halo, a TC monogram
+         and the leaf. Green against all that blue is the only warm-cool
+         contrast on the board, so it is what the eye lands on first. */
+      const rx = 210, ry = 300, R = 96;
+      const halo = g.createRadialGradient(rx, ry, R * 0.55, rx, ry, R * 1.6);
+      halo.addColorStop(0, 'rgba(61,220,132,.45)');
+      halo.addColorStop(1, 'rgba(61,220,132,0)');
+      g.fillStyle = halo;
+      g.beginPath(); g.arc(rx, ry, R * 1.6, 0, 6.2832); g.fill();
+      g.fillStyle = 'rgba(8,22,52,.85)';
+      g.beginPath(); g.arc(rx, ry, R, 0, 6.2832); g.fill();
+      g.strokeStyle = '#3ddc84'; g.lineWidth = 9;
+      g.beginPath(); g.arc(rx, ry, R, 0, 6.2832); g.stroke();
+      g.font = '300 118px "Segoe UI",Arial,sans-serif';
+      g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.fillStyle = 'rgba(226,240,255,.92)';
+      g.fillText('TC', rx, ry + 4);
+      g.fillStyle = '#3ddc84';                            // the leaf
+      g.beginPath();
+      g.ellipse(rx + 34, ry - 40, 40, 17, -0.7, 0, 6.2832);
+      g.fill();
+
+      /* the message, ranged off the roundel */
+      const tx = 360;
+      g.textAlign = 'left';
+      g.fillStyle = '#ffffff';
+      g.font = '700 112px "Segoe UI",Arial,sans-serif';
+      g.fillText('TRUE COST', tx, 258);
+      g.fillStyle = '#d6e8ff';
+      g.font = '600 44px "Segoe UI",Arial,sans-serif';
+      g.fillText('TRANSPARENCY THAT COUNT$', tx, 336);
+      g.fillStyle = 'rgba(206,226,248,.85)';
+      g.font = '400 25px "Segoe UI",Arial,sans-serif';
+      g.fillText('FULL VISIBILITY ON YOUR TOTAL VEHICLE', tx, 386);
+      g.fillText('OPERATING EXPENSES.', tx, 416);
+      g.fillText('OPTIMIZED FOR ALL STELLANTIS BRANDS.', tx, 446);
+
+      /* the footer strip with the family on it */
+      g.fillStyle = 'rgba(5,15,38,.5)';
+      g.fillRect(24, H - 66, W - 48, 44);
+      g.fillStyle = 'rgba(214,232,252,.9)';
+      g.font = '600 21px "Segoe UI",Arial,sans-serif';
+      g.fillText('POWERED BY STELLANTIS', 48, H - 43);
+      g.font = '700 22px "Segoe UI",Arial,sans-serif';
+      g.textAlign = 'right';
+      g.fillStyle = 'rgba(226,238,252,.8)';
+      g.fillText('Jeep   FIAT   OPEL   CITROEN   MASERATI', W - 48, H - 43);
+
+      g.textAlign = 'left'; g.textBaseline = 'alphabetic';
+      return oc;
+    })();
 
     function kmSigns() {
       const start = Math.ceil((travel + 26) / KM_EVERY) * KM_EVERY;
       for (let s = start; s < travel + Z_FAR; s += KM_EVERY) {
         const z = s - travel;
         if (z > 340) continue;
+        if (overpassAt(s) < 12) continue;   // that slot is taken by an overpass
 
         const yTop = syOf(KM_HI, z), yBot = syOf(KM_LO, z);
         const xc = sxOf(KM_X, z), w = 2 * KM_HALF * F / z, h = yBot - yTop;
@@ -1176,37 +1326,18 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         ctx.fillRect(sxOf(KM_X - KM_HALF * 0.5, z) - lw / 2, yBot, lw, Math.max(0, syOf(0, z) - yBot));
         ctx.fillRect(sxOf(KM_X + KM_HALF * 0.5, z) - lw / 2, yBot, lw, Math.max(0, syOf(0, z) - yBot));
 
-        /* the panel */
-        const g = ctx.createLinearGradient(0, yTop, 0, yBot);
-        g.addColorStop(0, '#1d2c68');
-        g.addColorStop(0.55, '#16234f');
-        g.addColorStop(1, '#0c1638');
-        ctx.fillStyle = g;
-        ctx.fillRect(xc - w / 2, yTop, w, h);
+        /* the panel. The two artworks alternate, both stamped full bleed.
+           (round: s is accumulated, not exact) */
+        ctx.imageSmoothingQuality = 'high';
+        if (Math.round(s / KM_EVERY) % 2) {
+          ctx.drawImage(BOARD_TC, xc - w / 2, yTop, w, h);
+        } else {
+          ctx.drawImage(LOGO, xc - w / 2, yTop, w, h);
+        }
         ctx.strokeStyle = 'rgba(200,220,236,.7)';
         ctx.lineWidth = Math.max(0.4, 0.05 * F / z);
         ctx.strokeRect(xc - w / 2, yTop, w, h);
 
-        /* the cyan accent along the foot of the board */
-        ctx.fillStyle = '#00AEEF';
-        ctx.fillRect(xc - w / 2, yBot - h * 0.15, w, h * 0.15);
-
-        /* every other board carries the strapline. Its wordmark rides higher
-           and smaller to leave room for it; on the plain board STELLANTIS
-           takes the whole panel. */
-        if (h > 7) {
-          if (Math.round(s / KM_EVERY) % 2) {   // round: s is accumulated, not exact
-            boardText('STELLANTIS', xc, yTop + h * 0.31,
-                      Math.min(h * 0.30, w * 0.115), w * 0.84, '#ffffff');
-            if (h > 16) {                     // below this the strapline is a smudge
-              boardText('TRUE COST', xc, yTop + h * 0.61,
-                        Math.min(h * 0.24, w * 0.092), w * 0.66, '#00AEEF');
-            }
-          } else {
-            boardText('STELLANTIS', xc, yTop + h * 0.40,
-                      Math.min(h * 0.40, w * 0.15), w * 0.84, '#ffffff');
-          }
-        }
         ctx.globalAlpha = 1;
       }
       ctx.globalAlpha = 1;
@@ -1317,6 +1448,129 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       ctx.globalAlpha = 1;
     }
 
+    /* ── overpasses ───────────────────────────────────────────
+       A bridge over the motorway every OVP_EVERY metres, the first one
+       OVP_FIRST metres in. It is the only thing in the scene that passes
+       OVER the camera: the deck walks down the frame, swells, and is gone
+       above the roof in the last second. Nothing else states as plainly
+       that the road has a third dimension.
+
+       It is also high, and high things leave early — y = HZ + (CAMH-Y)*F/z
+       puts the 5.4 m soffit off the top of the stage at z ~ 21 m. That is
+       the intent: it must vanish overhead, not shrink away in the distance.
+
+       Everything is drawn in one plane at constant z (piers, deck beam,
+       parapet), plus a soffit quad that only opens into a surface once you
+       are nearly underneath, and a shadow band on the tarmac. */
+    const OVP_EVERY = 1000;                 // m between bridges
+    const OVP_FIRST = 500;                  // the first one, half a km in
+    const OVP_GAP   = 24;                   // m of verge kept clear of trees
+    const OVP_CLEAR = 5.4;                  // soffit height: motorway headroom
+    const OVP_DECK  = 1.15;                 // depth of the deck beam
+    const OVP_PARA  = 1.05;                 // parapet standing on the deck
+    const OVP_L = -25.5, OVP_R = 13.5;      // where the FLAT span ends, each side
+    const OVP_PL = -21.5, OVP_PR = 10.2;    // piers, clear of both carriageways
+    const OVP_W = 9;                        // how wide the bridge is, in z
+    /* the approach ramps. A bridge that stops dead at its own deck reads as
+       a gantry; what says "road crossing this road" is the embankment either
+       side coming down to the fields. 48 m of run for 6.5 m of height is far
+       steeper than a real ramp (which would need ~110 m and be off frame at
+       any useful distance) but at 130 km/h what registers is the shape. */
+    const OVP_RUN = 48;                     // m from the end of the span to the ground
+    const OVP_RL = OVP_L - OVP_RUN, OVP_RR = OVP_R + OVP_RUN;
+    const OVP_REND = 0.35;                  // deck height where the ramp meets the ground
+
+    /* how far the next bridge is — the same shape as station(), so the
+       cluster could read it one day */
+    function overpassAt(s) {
+      const m = ((s - OVP_FIRST) % OVP_EVERY + OVP_EVERY) % OVP_EVERY;
+      return Math.min(m, OVP_EVERY - m);    // metres to the nearest bridge
+    }
+
+    function overpasses() {
+      const first = Math.ceil((travel - OVP_FIRST) / OVP_EVERY);
+      for (let n = first; ; n++) {
+        const z = n * OVP_EVERY + OVP_FIRST - travel;
+        if (z > Z_FAR) break;
+        if (z > 2) drawOverpass(z);
+      }
+    }
+
+    function drawOverpass(z) {
+      const a = Math.min(1, (Z_FAR - z) / 130);
+      if (a <= 0) return;
+      const f = 1 - Math.exp(-z / 190);                  // aerial perspective
+      const conc  = mix([190, 194, 190], P.hillFar, f * 0.85);   // lit concrete
+      const shade = mix([138, 145, 145], P.hillFar, f * 0.85);   // the shaded faces
+      const soff  = mix([ 92,  99, 102], P.hillFar, f * 0.85);   // the soffit
+      const edge  = mix([214, 218, 214], P.hillFar, f * 0.85);   // the top cornice
+
+      ctx.globalAlpha = a;
+
+      /* the shadow it throws across both carriageways */
+      if (z < 160) {
+        ctx.globalAlpha = a * 0.3;
+        quad([[OVP_L, 0.02, z + 0.8], [OVP_R, 0.02, z + 0.8],
+              [OVP_R, 0.02, z + OVP_W + 2], [OVP_L, 0.02, z + OVP_W + 2]],
+             'rgb(24,30,38)');
+        ctx.globalAlpha = a;
+      }
+
+      /* the two ramps, drawn before the span so the deck laps over them.
+         Each is one wedge: the road surface coming down on the diagonal and
+         the retaining face under it, straight down to the grass. */
+      const dTop = OVP_CLEAR + OVP_DECK;
+      const bank = mix([74, 86, 62], P.hillFar, f * 0.85);       // the grass slope
+      ramp(OVP_L, OVP_RL, dTop, z, bank, shade, conc, edge);
+      ramp(OVP_R, OVP_RR, dTop, z, bank, shade, conc, edge);
+
+      /* the piers stand at the middle of the span, so the beam overhangs them */
+      const pw = 1.15, zp = z + OVP_W * 0.5;
+      quad([[OVP_PL - pw, 0, zp], [OVP_PL + pw, 0, zp],
+            [OVP_PL + pw, OVP_CLEAR, zp], [OVP_PL - pw, OVP_CLEAR, zp]], shade);
+      quad([[OVP_PR - pw, 0, zp], [OVP_PR + pw, 0, zp],
+            [OVP_PR + pw, OVP_CLEAR, zp], [OVP_PR - pw, OVP_CLEAR, zp]], shade);
+
+      /* the underside: a line until ~70 m, a ceiling after that */
+      if (z < 70) {
+        quad([[OVP_L, OVP_CLEAR, z], [OVP_R, OVP_CLEAR, z],
+              [OVP_R, OVP_CLEAR, z + OVP_W], [OVP_L, OVP_CLEAR, z + OVP_W]], soff);
+      }
+
+      /* the deck beam we actually look at, and its cornice */
+      const d0 = OVP_CLEAR, d1 = OVP_CLEAR + OVP_DECK;
+      quad([[OVP_L, d0, z], [OVP_R, d0, z], [OVP_R, d1, z], [OVP_L, d1, z]], shade);
+      quad([[OVP_L, d1 - 0.16, z], [OVP_R, d1 - 0.16, z],
+            [OVP_R, d1, z], [OVP_L, d1, z]], edge);
+
+      /* the parapet, with the handrail catching the light along its top */
+      const p1 = d1 + OVP_PARA;
+      quad([[OVP_L, d1, z], [OVP_R, d1, z], [OVP_R, p1, z], [OVP_L, p1, z]], conc);
+      quad([[OVP_L, p1 - 0.14, z], [OVP_R, p1 - 0.14, z],
+            [OVP_R, p1, z], [OVP_L, p1, z]], edge);
+
+      ctx.globalAlpha = 1;
+    }
+
+    /* one approach ramp, from the end of the span at X0 out to the ground at
+       X1. Still all in the bridge's own plane, so it is four quads stacked
+       along one sloping edge: an EARTH bank, then the edge beam, the parapet
+       and the handrail. The bank is the point - a full-height concrete face
+       out to 60 m would wall off the whole horizon, and what is actually
+       built there is a grass embankment with the beam sitting on top. */
+    function ramp(X0, X1, top, z, bank, beam, para, edge) {
+      const B = 1.1;                                   // depth of the edge beam
+      const e0 = OVP_REND;                             // where the ramp meets the grass
+      quad([[X0, 0, z], [X0, top - B, z], [X1, Math.max(0, e0 - B * 0.4), z],
+            [X1, 0, z]], bank);
+      quad([[X0, top - B, z], [X1, Math.max(0, e0 - B * 0.4), z],
+            [X1, e0, z], [X0, top, z]], beam);
+      quad([[X0, top, z], [X1, e0, z],
+            [X1, e0 + OVP_PARA * 0.55, z], [X0, top + OVP_PARA, z]], para);
+      quad([[X0, top + OVP_PARA - 0.14, z], [X1, e0 + OVP_PARA * 0.55 - 0.09, z],
+            [X1, e0 + OVP_PARA * 0.55, z], [X0, top + OVP_PARA, z]], edge);
+    }
+
     /* ── roadside trees ───────────────────────────────────────
        Nothing sells speed like something close to the camera going past, and
        a tree is the cheapest close thing there is: the eye knows how big one
@@ -1424,6 +1678,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
           const m = s % ST_EVERY;
           if (m < TREE_GAP || m > ST_EVERY - TREE_GAP) continue;
         }
+        if (overpassAt(s) < OVP_GAP) continue;                      // and the bridge deck
         ctx.globalAlpha = Math.min(1, (TREE_FAR - z) / 70);
         drawTree(side * (near + hash(n * 37 + salt) * span), z, n * 3 + salt);
       }
@@ -1599,6 +1854,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       guardrail();
       signs();
       stations();
+      overpasses();      // the bridges pass over the camera
       traffic.sort((a, b) => b.z - a.z).forEach(drawVehicle);
 
       /* haze: thick at the horizon, gone by the time it reaches the dashboard */
