@@ -749,7 +749,8 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
   $('help-close').addEventListener('click', close);
   $('help-cta').addEventListener('click', close);
   overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
-  open();
+  /* no splash on load: the card is still there behind the ? button, but the
+     scene comes up first */
 
   /* ── live pump price ────────────────────────────────── */
   (async function fetchPrice() {
@@ -1709,6 +1710,78 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       ctx.globalAlpha = 1;
     }
 
+    /* ── the blimp ────────────────────────────────────────────
+       Decoration, and the only hard-edged thing in the sky. The clouds are
+       soft gradients that read as atmosphere; one solid object crossing in
+       front of them is what actually says "there is distance up there".
+
+       Two motions add up. It crosses left to right at BL_SPD px/s of its
+       own, so it drifts even while the car is stopped, and the drive drags
+       it back at BL_PAR - a third of what the far clouds get, because it is
+       further away than they are. That difference IS the parallax; the
+       crossing on its own would just be a sprite sliding over a backdrop.
+
+       BL_SPAN is the wrap: it walks from well off the left edge to well off
+       the right, so it enters and leaves cleanly rather than popping. At
+       BL_SPD that is about four minutes a pass - slow enough that you notice
+       it has moved rather than watching it move.
+
+       BL_PHASE puts it on screen at load. Without it the walk starts at the
+       left end of the wrap and the first pass is twenty-five seconds of
+       empty sky - which is exactly how you end up thinking it is broken. */
+    const BL_SPD = 7.5, BL_PAR = 0.016, BL_SPAN = 1760, BL_PHASE = 700;
+
+    function blimp() {
+      const x = ((clock * BL_SPD - travel * BL_PAR + BL_PHASE) % BL_SPAN + BL_SPAN) % BL_SPAN - 310;
+      if (x < -140 || x > 1290) return;
+      const y = -RISE * 0.46 + 3 * Math.sin(clock * 0.11);
+      const L = 38, Hh = 11.5;                // half length / half height
+
+      ctx.save();
+      /* it is kilometres off, so it never gets full contrast: the haze the
+         ridges sit in has to be on it too, or it reads as a sticker */
+      ctx.globalAlpha = 0.82;
+
+      /* the hull, lit from above */
+      const hull = ctx.createLinearGradient(0, y - Hh, 0, y + Hh);
+      hull.addColorStop(0, '#eef4fa');
+      hull.addColorStop(0.45, '#cfdae8');
+      hull.addColorStop(1, '#95a6bd');
+      ctx.fillStyle = hull;
+      ctx.beginPath();
+      ctx.ellipse(x, y, L, Hh, 0, 0, 6.2832);
+      ctx.fill();
+
+      /* tail fins, on the trailing (left) end */
+      ctx.fillStyle = '#8496b0';
+      ctx.beginPath();
+      ctx.moveTo(x - L * 0.74, y - Hh * 0.35);
+      ctx.lineTo(x - L * 1.14, y - Hh * 1.85);
+      ctx.lineTo(x - L * 0.66, y - Hh * 0.62);
+      ctx.closePath(); ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(x - L * 0.74, y + Hh * 0.35);
+      ctx.lineTo(x - L * 1.14, y + Hh * 1.70);
+      ctx.lineTo(x - L * 0.66, y + Hh * 0.62);
+      ctx.closePath(); ctx.fill();
+
+      /* the gondola: two pixels of it, but it is what separates a blimp
+         from an ellipse */
+      ctx.fillStyle = '#6f7f96';
+      ctx.beginPath();
+      ctx.ellipse(x + L * 0.10, y + Hh * 0.92, L * 0.17, Hh * 0.28, 0, 0, 6.2832);
+      ctx.fill();
+
+      /* the band along the flank, in the same navy as the billboards */
+      ctx.globalAlpha = 0.34;
+      ctx.fillStyle = '#2b3a8f';
+      ctx.beginPath();
+      ctx.ellipse(x, y + Hh * 0.10, L * 0.86, Hh * 0.22, 0, 0, 6.2832);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
     function backdrop() {
       const TOP = -RISE - 6;                  // the top row of the whole stage
       const sky = ctx.createLinearGradient(0, TOP, 0, HZ + 2);
@@ -1751,6 +1824,8 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         ctx.ellipse(x, y, w / 2, h, 0, 0, 6.2832);
         ctx.fill();
       }
+
+      blimp();
 
       // two ridges and a treeline, each on its own parallax: that difference
       // is what turns a flat band into distance
