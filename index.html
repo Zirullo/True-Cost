@@ -1799,7 +1799,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
        An easter egg, and deliberately a rare one: it works the far left
        of the sky — the only stretch of glass no instrument and no
        billboard ever crosses — low over the ridges, and it is on screen
-       for ten seconds out of every three minutes. Someone watching the
+       for ten seconds out of every five minutes. Someone watching the
        cluster will never see it; someone who lets the car drive itself
        will.
 
@@ -1815,18 +1815,20 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
        demand, for when you have to show it to someone. */
     const UFO_X = 152;            // far left, still well clear of the A-pillar
     const UFO_DUR = 10.5;         // s from entering to gone
-    const UFO_GAP = 180, UFO_JIT = 22;  // s between passes: three minutes, plus slack
+    const UFO_EVERY = 300;        // s from one arrival to the next: five minutes
     const UFO_R = 15;             // half width, in photo px. Small on purpose.
 
     let ufoT = -1;                       // -1 = off stage, else seconds into the pass
-    let ufoNext = 45 + Math.random() * 25;   // the first one comes early-ish
+    let ufoNext = UFO_EVERY;             // and the first one is a full five in
 
     const smooth = u => u * u * (3 - 2 * u);
 
     function ufoTick(dt) {
       if (ufoT >= 0) {
         ufoT += dt;
-        if (ufoT > UFO_DUR) { ufoT = -1; ufoNext = UFO_GAP + Math.random() * UFO_JIT; }
+        /* the wait runs from ARRIVAL to arrival, so the pass itself comes out
+           of it: otherwise five minutes would quietly be five ten. */
+        if (ufoT > UFO_DUR) { ufoT = -1; ufoNext = UFO_EVERY - UFO_DUR; }
       } else if ((ufoNext -= dt) <= 0) {
         ufoT = 0;
       }
