@@ -5,6 +5,39 @@ Ordine cronologico inverso (la più recente in alto). Ogni voce: **cosa**, **per
 
 ---
 
+## 2026-09-03 · La visuale si allarga fino al display centrale, ricostruito a mano
+
+**Scelta**: per ospitare un'app nel display centrale la scena passa da **1147** a
+**1720** unità di larghezza (altezza invariata, 791). La foto resta **intatta e
+ancorata a sinistra**, pixel per pixel nella posizione di oggi; tutto ciò che sta a
+destra di x 1147 — cruscotto, trim in alluminio, bocchetta, pannello in carbonio,
+cornice e schermo — è **disegnato in CSS/SVG**, non fotografico. Il display centrale
+è inclinato di **9°** verso il guidatore. Prima di integrare: mockup statico
+`mockup-plancia-estesa.html` (fuori dal repo) per giudicarlo a occhio.
+
+**Perché**: la foto di riferimento è 1147 × 641 e a destra del cluster **non esistono
+pixel**. Le alternative erano cambiare foto di base (il cockpit Jeep: cluster piccolo,
+inclinato, molto meno leggibile — cioè cambiare proprio la visuale che vogliamo
+tenere) o ricomporre un'altra foto della stessa plancia, che non abbiamo. La
+ricostruzione vettoriale è anche l'unica che dà uno **schermo vivo**: l'app dev'essere
+leggibile e animata, non un'immagine incollata. I 9° sono il compromesso fra la
+profondità della foto Jeep e la leggibilità dei numeri a schermo.
+
+**Come si ottiene la continuità dei colori**: l'ultima colonna della foto (20 px)
+viene stirata a destra e sfocata. Continua da sola le bande orizzontali — colline,
+guard-rail, cruscotto, carbonio — con gli stessi identici colori, e su quella base si
+disegna la geometria.
+
+**Comporta**: (a) la strada procedurale va allargata a 1720 e il punto di fuga
+**non** si sposta (resta quello della foto, x ≈ 573); (b) l'array `edge` della
+maschera del parabrezza va prolungato oltre x 1147 fino al nuovo bordo;
+(c) `--sw`, `max-width` e il `padding-top` che appoggia il cockpit al fondo pagina
+sono tutti tarati su 1147 e vanno rifatti su 1720; (d) su schermi stretti tutto
+scala insieme, quindi **il cluster diventa più piccolo di oggi a parità di finestra**:
+è il prezzo dell'inquadratura più larga.
+
+---
+
 ## 2026-09-03 · Una sola storia, e il push come unico canale di pubblicazione
 
 **Scelta**: il repo locale e quello su GitHub, fino a oggi separati, diventano una
@@ -311,3 +344,39 @@ non tremolano mentre il cartellone scala.
 **Comporta**: cartelli verdi (ogni 500 m) e cartelloni (ogni 300 m) cadevano dentro
 l'impalcato — ora lo slot che finisce su un cavalcavia viene saltato, come già si
 faceva per le stazioni. E gli alberi lasciano 24 m liberi attorno a ogni ponte.
+
+---
+
+## 2026-09-04 · L'app sul display: due viste, e la mappa è un mondo a sé
+
+**Scelta**: il display centrale mostra l'app True Cost con due schede —
+**Cost history** (aperta all'avvio) e **Local pump map**. Per fare posto, la fila
+di tasti clima finti sotto lo schermo è stata **eliminata** e quel nastro è
+diventato vetro: +34 % di altezza utile senza toccare l'inquadratura.
+
+**Perché aprire su Cost history**: è la tesi del progetto. Chi guarda la demo deve
+vedere per primo *quanto sto spendendo*, non un navigatore — di navigatori ne ha
+già visti. La mappa è la conseguenza («e allora dove conviene fermarsi?»), quindi
+sta a un tocco di distanza, non davanti.
+
+**Perché via i tasti clima**: erano decorazione, e rubavano il 20 % dell'unica
+superficie che in questa demo deve essere leggibile a distanza in una sala. Un
+display grande e nudo è anche più credibile di uno piccolo con finti comandi:
+è dove sta andando l'industria.
+
+**Perché le stazioni della mappa NON sono quelle della strada**: le due cose
+rispondono a due domande diverse. La strada racconta *il viaggio* (una stazione
+ogni 2 km, prezzo sul cartellone, ci si può fermare a fare il pieno); la mappa
+racconta *il mercato intorno alla vettura* — sette insegne sparse a 360°, dietro e
+davanti, che sulla carreggiata non si incontrerebbero mai. Legarle avrebbe voluto
+dire o una mappa con tutti i pin in fila indiana sulla stessa retta, o riscrivere
+il mondo di `road`. Il legame che conta lo abbiamo tenuto: **entrambe partono da
+`state.marketPrice`**, il prezzo vero preso dall'API, quindi non si contraddicono
+sul livello dei prezzi.
+
+**Comporta**: se un giorno servisse la coerenza pin-per-pin («la mappa dice 1.78 e
+fra 2 km sul cartellone leggo 1.78») va fatto generare a `road` anche le stazioni
+fuori percorso, non il contrario. E il colore è **una scala sola**
+(verde → ambra → rosso) calcolata sull'intervallo dei prezzi a schermo: se un
+giorno i prezzi si appiattissero, verde e rosso resterebbero comunque agli
+estremi — è una **classifica**, non una soglia assoluta.

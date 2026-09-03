@@ -8,8 +8,10 @@ Decisioni e alternative scartate: [01-decisioni.md](01-decisioni.md).
 
 ## Il modello prospettico
 
-Il canvas lavora nelle **stesse coordinate della foto** (1147 × 641), come l'SVG del
-cluster. Un punto del mondo — `X` metri a lato, `Y` metri di altezza, `z` metri avanti —
+Il canvas lavora nelle **stesse coordinate della foto** (1 unità = 1 px), come l'SVG
+del cluster — ma **è largo quanto la scena, non quanto la foto**: `SW` viene riletto
+da `--scenew` (oggi 1720) e vale per tutti i riempimenti a tutta larghezza. Il punto
+di fuga resta quello della foto: [11-plancia-estesa.md](11-plancia-estesa.md). Un punto del mondo — `X` metri a lato, `Y` metri di altezza, `z` metri avanti —
 finisce a:
 
 ```
@@ -98,7 +100,7 @@ rigida.
 Tutto quello che segue è **ridisegnato ogni frame** dentro un clip a `y < YMAX`.
 
 1. **Cielo** — gradiente a tre stop (`skyTop` → `skyMid` → `skyLow`), un alone
-   caldo di sole basso a destra e **7 nuvole** su parallasse lentissima
+   caldo di sole basso a destra e nuvole (**7 × SW/1147**, oggi ~10) su parallasse lentissima
    (`travel × 0.045`), posizionate da `hash()` così restano sempre le stesse
 1bis. **UFO** (`ufo()`) — l'easter egg: compare in fondo a sinistra ogni 5 minuti,
    scende, apre un raggio, **tira su una mucca** e risale. Non scorre e non ha
@@ -114,7 +116,8 @@ Tutto quello che segue è **ridisegnato ogni frame** dentro un clip a `y < YMAX`
    **giunti ogni 6 m**, **pannelli antiabbagliamento ogni 2.5 m** e catarifrangenti
    ogni 12 m
 5. **Guard-rail** a destra: pali ogni 4 m, nastro a doppia flangia con scanalatura,
-   delineatori ambra ogni 25 m
+   delineatori ambra ogni 25 m. È l'unica cosa disegnata **più vicina di `Z_NEAR`**
+   (`Z_RAIL`, ~4.95 m): vedi sotto
 6. **Cartelli autostradali** ogni 500 m sulla destra: entrano piccoli, si gonfiano ed
    escono sopra il tetto in circa un secondo. Niente legge "veloce" quanto loro.
    Lo slot che cade su una stazione viene saltato, altrimenti il cartello verde
@@ -407,6 +410,30 @@ esattamente ciò che separa "lontano" da "non di qui".
 **`U` lo chiama subito** (il listener è dentro il modulo, ignora i campi di testo):
 un easter egg che non si può mostrare a comando è inutile in demo.
 
+## `Z_NEAR` e il guard-rail
+
+`Z_NEAR = K / (YMAX − HZ)` è la profondità della riga `YMAX`, l'ultima che il canvas
+dipinge. Per tutto ciò che sta **sul piano stradale** è il punto giusto dove fermarsi:
+più vicino di così lo copre la plancia.
+
+Il guard-rail no. Sta **7.8 m di lato**, quindi a `Z_NEAR` è già a x 1472 — e finché
+la scena era larga 1147 quel troncone stava al sicuro dietro la plancia. Nella scena
+da 1720 è in mezzo al vetro, e il nastro **finiva a mezz'aria**.
+
+Per questo `ribbon()`, `posts()` e `studs()` accettano un `zNear` opzionale, e il
+guard-rail passa il suo:
+
+```
+Z_RAIL = min(Z_NEAR, 0.85 · RAIL · F / (SW + 60 − VPX))     ≈ 4.95 m
+```
+
+cioè: continua a disegnarlo finché non è **uscito dal bordo destro** della scena
+(a x 1720 ci arriva a z ≈ 6.1 m, e lì è già quasi tutto dietro il cruscotto).
+Lo 0.85 è il margine per le curve, che spostano il nastro di qualche metro di lato.
+
+Alberi (z ≥ 6) e stazioni (z ≥ 4) erano già disegnati più vicini di `Z_NEAR`, quindi
+non avevano il problema.
+
 ## Se qualcosa stona
 
 | Sintomo | Dove mettere le mani |
@@ -435,6 +462,8 @@ un easter egg che non si può mostrare a comando è inutile in demo.
 | Il prezzo sul cartellone non si legge | l'altezza del pannello `BRD_LO`/`BRD_HI` e la soglia `h > 12` — **non** la dimensione del font |
 | Il cartellone esce dal bordo alto | è alto: vedi *Perché il cartellone è basso* |
 | Un cartellone finisce dentro un cavalcavia | il passo è lo stesso (1 km): serve che `OVP_FIRST` resti sul mezzo chilometro |
+| Un elemento laterale finisce a mezz'aria a destra | è fermo a `Z_NEAR`: gli serve un `zNear` suo, come `Z_RAIL` per il guard-rail |
+| Il dirigibile sparisce prima del bordo | `BL_SPAN` e il cull, ora legati a `SW` |
 | La scritta sul dirigibile sbava | il corpo 7 px e il peso 600 in `blimp()` — non allargarla, si allarga il dirigibile |
 | L'UFO non si vede mai / si vede troppo | `UFO_EVERY` (cadenza) e `UFO_DUR` (durata); premi **U** per chiamarlo subito |
 | Gli alberi coprono sempre l'UFO | vola basso di proposito: alza `yLow` (verso −30) o spostalo a sinistra con `UFO_X` |

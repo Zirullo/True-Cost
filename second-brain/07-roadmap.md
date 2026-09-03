@@ -16,7 +16,24 @@
 - **Confronto esplicito** ICE vs BEV sullo stesso percorso: è il numero che colpisce
   di più chi guarda
 
+## Prossimo passo
+
+- **Il pieno visto dall'app**: oggi premere «R» aggiorna il cluster ma l'app non se
+  ne accorge, se non nel prezzo del serbatoio. Un evento nel grafico («qui hai fatto
+  il pieno a 1.78») legherebbe la scelta della stazione al costo dei km successivi
+- **Portare la mappa sul percorso**: pin coerenti con le stazioni che si incontrano
+  davvero nel parabrezza — la scelta contraria, e il perché, in
+  [01-decisioni.md](01-decisioni.md)
+
 ## Fatto
+
+- ✅ **L'app True Cost sul display centrale** (2026-09-04): due schede cliccabili,
+  *Cost history* (viaggio in corso dal vivo + viaggi precedenti) e *Local pump map*
+  (stazioni colorate per prezzo, verde la più conveniente); via i tasti clima per
+  fare spazio — [11-plancia-estesa.md](11-plancia-estesa.md)
+
+- ✅ Visuale allargata a 1720 fino al display centrale (2026-09-04) —
+  [11-plancia-estesa.md](11-plancia-estesa.md)
 
 - ✅ Alberi a bordo strada, quattro specie e nessuno uguale a un altro, per la
   sensazione di velocità (2026-09-02) — [09-strada.md](09-strada.md)

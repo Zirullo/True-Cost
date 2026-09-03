@@ -22,6 +22,7 @@ Punto di ingresso: leggi questo file, poi salta alla nota che ti serve.
 | [08-domande-aperte.md](08-domande-aperte.md) | Cose non ancora decise / da verificare | Quando serve una decisione tua |
 | [09-strada.md](09-strada.md) | La strada procedurale nel parabrezza: prospettiva, curve, traffico | Per ritoccare l'effetto velocità |
 | [10-pubblicazione.md](10-pubblicazione.md) | Dove vive la demo, come si pubblica, come si torna indietro | Per aggiornare il link pubblico o recuperare una versione |
+| [11-plancia-estesa.md](11-plancia-estesa.md) | La metà destra disegnata a mano e il display centrale | Per ritoccare la plancia estesa o lavorare sull'app |
 
 ## File del progetto
 
@@ -35,6 +36,7 @@ d:\Cowork\Simulator\
 │  solo su disco, non su GitHub:
 ├─ OLD index.html                  ← versione precedente, doppio pannello ICE/BEV su canvas
 ├─ index - Copia*.html             ← backup manuali, sostituiti dalla cronologia git
+├─ mockup-plancia-estesa.html      ← la prova statica con cui è stata approvata la plancia estesa
 └─ BCK\
 ```
 
@@ -54,3 +56,8 @@ dalla velocità, prezzi carburante live e una **strada procedurale nel parabrezz
 scorre alla velocità reale della vettura (vedi [09-strada.md](09-strada.md)). Si guida
 tenendo premuti i **pedali** sul bordo del cockpit (o le frecce), e ogni 2 km si
 incontra una **stazione** il cui prezzo si legge sul cartellone e sul cluster.
+Dal 2026-09-04 la visuale è **larga 1720**: oltre il cluster c'è la plancia
+ricostruita a mano col **display centrale**, dove gira l'**app True Cost** — due
+schede cliccabili, *Cost history* (il viaggio in corso, dal vivo) e *Local pump map*
+(le stazioni intorno, colorate per prezzo) — vedi
+[11-plancia-estesa.md](11-plancia-estesa.md).

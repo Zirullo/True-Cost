@@ -4,6 +4,12 @@ Tutte le coordinate sono in **pixel dell'immagine di riferimento**
 (`True-Cost project picture.jpg`, 1147 × 641) e coincidono con le unità del
 `viewBox` dell'SVG. Origine in alto a sinistra.
 
+> **La scena è più larga della foto.** Dal 2026-09-04 va da 0 a **1720**: foto e
+> cluster restano larghi 1147 e ancorati a sinistra — tutto quello che c'è in questa
+> nota è quindi invariato — e da x 1147 in poi c'è la plancia disegnata col display
+> centrale, le cui coordinate stanno in
+> [11-plancia-estesa.md](11-plancia-estesa.md).
+
 ## Schermo del cluster
 
 Sagoma (path `#screenClip`), l'"occhio" del display:

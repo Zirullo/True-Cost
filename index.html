@@ -22,6 +22,13 @@
   --rise:150;
   --stageh:791;          /* = 641 + rise; recomputed from --rise at boot */
   --deckh:66px;
+  /* ── how wide the scene is ──────────────────────────────────
+     The photo is 1147 wide and stops just past the cluster. The scene
+     is wider: everything from x 1147 to --scenew is dashboard we draw
+     ourselves, and it exists to carry the centre display. The photo
+     and the cluster keep their own 1147x641 coordinates and stay
+     pinned to the LEFT of the stage, so nothing about them moves. */
+  --scenew:1720;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{
@@ -37,16 +44,16 @@ body{
      fills whatever room is left above it. Padding, not a flex alignment,
      so that on a short window the page simply scrolls instead of hiding
      its own top row. Nothing is ever scaled down. */
-  --sw:min(1147px, 100vw);
-  padding-top:max(0px, calc(100dvh - var(--sw) * var(--stageh) / 1147 - var(--deckh)));
+  --sw:min(1720px, 100vw);
+  padding-top:max(0px, calc(100dvh - var(--sw) * var(--stageh) / var(--scenew) - var(--deckh)));
 }
 
 /* ══════════ COCKPIT STAGE ══════════ */
 #stage{
   position:relative;
   width:100%;
-  max-width:1147px;
-  aspect-ratio:1147 / var(--stageh);
+  max-width:1720px;
+  aspect-ratio:var(--scenew) / var(--stageh);
   overflow:hidden;
   background:#000;
 }
@@ -73,10 +80,10 @@ body{
    inside 200 m, .done swaps the call to action for the receipt. */
 #refuel-prompt{
   position:absolute;
-  left:50%;
+  left:calc(573.5 / var(--scenew) * 100%);   /* centred on the photo, not on the wider stage */
   top:calc(58 / var(--stageh) * 100%);
   transform:translate(-50%, -6px);
-  z-index:4;
+  z-index:7;
   padding:11px 22px;
   border-radius:10px;
   background:rgba(6,12,18,.82);
@@ -99,9 +106,10 @@ body{
 /* the interior photo, with the windshield glass punched out */
 #interior{
   position:absolute;
-  left:0;right:0;bottom:0;
+  left:0;bottom:0;
+  width:calc(1147 / var(--scenew) * 100%);
   height:calc(641 / var(--stageh) * 100%);
-  z-index:2;
+  z-index:3;
   background:url("True-Cost project picture.jpg") center/100% 100% no-repeat;
   -webkit-mask-image:var(--wsmask);
           mask-image:var(--wsmask);
@@ -114,12 +122,203 @@ body{
 /* the live instrument cluster drawn over the photo's display */
 #cluster{
   position:absolute;
-  left:0;right:0;bottom:0;
+  left:0;bottom:0;
+  width:calc(1147 / var(--scenew) * 100%);
   height:calc(641 / var(--stageh) * 100%);
-  z-index:3;
-  width:100%;
+  z-index:5;
   display:block;
 }
+
+/* ══════════ CENTRE STACK — the dashboard we draw ourselves ══════════
+   Everything from x 1147 to the right edge of the scene. The photo has no
+   pixels there, so the surface is rebuilt: an edge smear for the colours,
+   an SVG for the geometry, and an HTML display group for the app.
+   Coordinates below are the PHOTO's (0-641 vertically), so --rise can change
+   without dragging any of this with it. */
+
+/* the last 20 px column of the photo, stretched right and blurred: it carries
+   over the exact colours of dashboard, trim and carbon. The clip-path follows
+   the windshield edge, which at x 1147 sits at y 108 and keeps rising. */
+#ext{
+  position:absolute;
+  left:calc(1135 / var(--scenew) * 100%);   /* 12 px under the photo: see below */
+  right:0;bottom:0;
+  height:calc(545 / var(--stageh) * 100%);   /* photo rows 96 -> 641 */
+  z-index:2;
+  background:url("True-Cost project picture.jpg") 100% 100% / 5735% 117.6% no-repeat;
+  filter:blur(7px) saturate(.85);
+  clip-path:polygon(0 2.2%, 100% 0, 100% 100%, 0 100%);
+}
+/* the light in the photo falls off as it moves away from the driver */
+#ext::after{
+  content:"";position:absolute;left:0;right:0;bottom:0;top:2.2%;
+  background:linear-gradient(90deg, rgba(8,10,14,0) 0%, rgba(8,10,14,.45) 55%, rgba(8,10,14,.72) 100%);
+}
+
+/* the drawn geometry: cowl, trim, vent, carbon. Photo coordinates. */
+#dashext{
+  position:absolute;
+  left:calc(1147 / var(--scenew) * 100%);
+  right:0;bottom:0;
+  height:calc(641 / var(--stageh) * 100%);
+  z-index:4;
+  display:block;
+}
+
+/* the display group: one transform tilts bezel and glass together, 9 degrees
+   towards the driver. The climate button row that used to sit under the screen
+   is gone and that band is screen now, so the app has room to breathe. */
+#stack{
+  position:absolute;
+  left:calc(1212 / var(--scenew) * 100%);
+  width:calc(476 / var(--scenew) * 100%);
+  bottom:calc(100 / var(--stageh) * 100%);
+  height:calc(404 / var(--stageh) * 100%);
+  z-index:6;
+  transform-origin:left center;
+  transform:perspective(1500px) rotateY(-9deg);
+}
+#bezel{
+  position:relative;height:100%;border-radius:14px;
+  background:linear-gradient(160deg,#1b1e23,#0a0c0f 45%,#050607);
+  box-shadow:0 10px 26px rgba(0,0,0,.75), inset 0 1px 0 rgba(255,255,255,.10);
+  padding:2.3%;
+}
+#glass{
+  position:relative;height:100%;overflow:hidden;border-radius:6px;
+  background:radial-gradient(120% 140% at 30% 12%, #12243a 0%, #0a1524 55%, #05090f 100%);
+  box-shadow:inset 0 0 0 1px rgba(120,170,210,.14), inset 0 8px 26px rgba(0,0,0,.6);
+}
+/* without the oblique reflection the screen reads as a hole, not as glass */
+#glass::after{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:2;
+  background:linear-gradient(104deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.03) 16%,
+                                      rgba(255,255,255,0) 34%, rgba(255,255,255,0) 100%);
+}
+/* ══════════ THE APP ON THE CENTRE DISPLAY ══════════
+   Everything below is laid out at a FIXED design size of 454 x 382 and then
+   scaled onto the glass by the app module in JS (one non-uniform scale on
+   #app). So every number here is a plain px in that design space, at every
+   window size, and the canvas gets a backing store matched to the real one.
+   The screen keeps its own type scale: it is a touchscreen an arm's length
+   away, not the cluster. */
+#app{
+  position:absolute;top:0;left:0;z-index:1;
+  width:454px;height:382px;transform-origin:top left;
+  display:flex;flex-direction:column;overflow:hidden;
+  color:#dfeaf4;font-family:"Segoe UI",Roboto,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+#app *{box-sizing:border-box}
+#app button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+
+/* ── status bar ── */
+.ap-top{
+  flex:none;height:30px;display:flex;align-items:center;gap:8px;padding:0 11px;
+  border-bottom:1px solid rgba(120,170,210,.12);
+  background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,0));
+}
+.ap-brand{font-size:11px;font-weight:600;letter-spacing:2.2px;color:#eaf4ff}
+.ap-brand span{color:var(--blue)}
+.ap-chip{
+  font-size:8.5px;letter-spacing:1.4px;padding:2px 7px;border-radius:9px;
+  border:1px solid rgba(0,174,239,.45);color:#8fd8f5;background:rgba(0,174,239,.10);
+}
+.ap-sp{flex:1}
+.ap-now{font-size:11px;color:#eaf6ff;font-weight:600}
+.ap-now em{font-style:normal;font-size:9px;color:#7f9bb1;letter-spacing:1px;margin-left:3px}
+.ap-clock{font-size:11px;color:#9fb6c9;letter-spacing:.6px}
+
+/* ── the two tabs ── */
+.ap-tabs{flex:none;height:34px;display:flex;gap:6px;padding:6px 10px 0}
+.ap-tab{
+  flex:1;height:28px;border-radius:7px 7px 0 0;display:flex;align-items:center;
+  justify-content:center;gap:6px;font-size:10.5px;letter-spacing:1.1px;
+  text-transform:uppercase;color:#7f9bb1;background:rgba(255,255,255,.035);
+  border:1px solid rgba(120,170,210,.10);border-bottom:0;transition:background .12s,color .12s;
+}
+.ap-tab:hover{color:#cfe3f2;background:rgba(255,255,255,.06)}
+.ap-tab.on{color:#eaf6ff;background:rgba(0,174,239,.15);border-color:rgba(0,174,239,.42);
+           box-shadow:inset 0 -2px 0 var(--blue)}
+.ap-tab svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.7}
+
+.ap-body{flex:1;position:relative;min-height:0}
+.ap-pane{position:absolute;inset:0;padding:9px 11px 8px;display:flex;flex-direction:column}
+.ap-pane[hidden]{display:none}   /* beats the .ap-pane display, which [hidden] alone does not */
+
+/* ── COST HISTORY ── */
+.ch-hero{flex:none;display:flex;gap:9px;height:74px}
+.ch-cost{flex:1;display:flex;flex-direction:column;justify-content:center}
+.ch-lab{font-size:8.5px;letter-spacing:1.6px;color:#7f9bb1}
+.ch-big{font-size:33px;font-weight:600;color:#fff;line-height:1.1;letter-spacing:-.6px}
+.ch-big em{font-style:normal;font-size:14px;color:#9fb6c9;margin-right:5px;letter-spacing:0}
+.ch-sub{font-size:10px;color:#9fb6c9}
+.ch-grid{flex:none;width:196px;display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.ch-cell{background:rgba(255,255,255,.045);border:1px solid rgba(120,170,210,.10);
+         border-radius:6px;padding:4px 7px;display:flex;flex-direction:column;justify-content:center}
+.ch-cell b{font-size:14px;font-weight:600;color:#fff;line-height:1.15}
+.ch-cell i{font-style:normal;font-size:8px;letter-spacing:1.2px;color:#7f9bb1}
+
+/* the bar chart is live: one <i> per 200 m of road, oldest on the left */
+.ch-chart{flex:none;position:relative;height:96px;margin-top:8px;padding:6px 8px 3px;
+  border-radius:8px;background:rgba(255,255,255,.03);border:1px solid rgba(120,170,210,.10)}
+.ch-chart .hd{display:flex;justify-content:space-between;font-size:8.5px;
+              letter-spacing:1.3px;color:#7f9bb1}
+.ch-bars{position:absolute;left:8px;right:8px;top:23px;bottom:15px;
+         display:flex;align-items:flex-end;gap:2px}
+.ch-bars i{flex:1;min-height:2px;border-radius:2px 2px 0 0;
+           background:linear-gradient(180deg,#4fb8ec,#1b5f89)}
+.ch-bars i.hot{background:linear-gradient(180deg,#ffb347,#b9600c)}
+.ch-bars i.now{background:linear-gradient(180deg,#ffffff,#78c4ec)}
+.ch-avg{position:absolute;left:8px;right:8px;border-top:1px dashed rgba(61,220,132,.6);
+        pointer-events:none}
+.ch-chart .hd em{font-style:normal;color:#3ddc84}
+.ch-axis{position:absolute;left:8px;right:8px;bottom:1px;display:flex;
+         justify-content:space-between;font-size:8px;color:#68829a}
+
+.ch-hist{flex:1;min-height:0;margin-top:7px}
+.ch-hist .hd{font-size:8.5px;letter-spacing:1.5px;color:#7f9bb1;margin-bottom:2px}
+.ch-row{display:grid;grid-template-columns:42px 1fr 48px 54px 50px;align-items:center;
+        height:21px;font-size:11px;color:#c8d8e6;
+        border-top:1px solid rgba(120,170,210,.09)}
+.ch-row .d{font-size:9.5px;color:#8fa6ba;letter-spacing:.4px}
+.ch-row .r{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.ch-row .k{text-align:right;color:#9fb6c9;font-size:10px}
+.ch-row .u{text-align:right;font-size:10.5px}
+.ch-row .e{text-align:right;font-weight:600;color:#fff}
+.ch-row.up .u{color:#ff8f6d}
+.ch-row.dn .u{color:#3ddc84}
+
+/* ── LOCAL PUMP MAP ── */
+.mp-head{flex:none;display:flex;justify-content:space-between;align-items:baseline;
+         font-size:8.5px;letter-spacing:1.4px;color:#7f9bb1}
+.mp-body{flex:1;min-height:0;display:flex;gap:8px;margin-top:5px}
+.mp-list{width:236px;flex:none;display:flex;flex-direction:column;gap:3px;
+         overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(120,170,210,.3) transparent}
+.mp-list::-webkit-scrollbar{width:3px}
+.mp-list::-webkit-scrollbar-thumb{background:rgba(120,170,210,.3);border-radius:3px}
+.st{flex:none;display:grid;grid-template-columns:5px 1fr 60px;gap:7px;align-items:center;
+    height:31px;padding-right:8px;overflow:hidden;border-radius:6px;
+    background:rgba(255,255,255,.04);border:1px solid rgba(120,170,210,.10)}
+.st .bar{width:5px;height:31px;background:var(--c)}
+.st .nm{font-size:11px;color:#e6f0f8;line-height:1.2;
+        white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st .ds{font-size:9px;color:#8fa6ba;letter-spacing:.3px}
+.st .pr{text-align:right;font-size:14px;font-weight:600;color:#fff;line-height:1.1}
+.st .dl{text-align:right;font-size:8.5px;color:var(--c)}
+.st.best{background:rgba(61,220,132,.13);border-color:rgba(61,220,132,.55);
+         box-shadow:0 0 15px rgba(61,220,132,.30), inset 0 0 20px rgba(61,220,132,.07)}
+.st.sel{border-color:rgba(0,174,239,.65);box-shadow:0 0 13px rgba(0,174,239,.28)}
+.mp-map{flex:1;position:relative;border-radius:8px;overflow:hidden;
+        border:1px solid rgba(120,170,210,.12);background:#080d13}
+.mp-map canvas{position:absolute;inset:0;width:100%;height:100%}
+.mp-foot{flex:none;height:28px;margin-top:6px;display:flex;align-items:center;gap:7px;
+  padding:0 9px;border-radius:7px;font-size:10.5px;color:#bff4d8;
+  background:rgba(61,220,132,.10);border:1px solid rgba(61,220,132,.35);
+  white-space:nowrap;overflow:hidden}
+.mp-foot .dot{width:7px;height:7px;flex:none;border-radius:50%;background:var(--green);
+              box-shadow:0 0 8px rgba(61,220,132,.9)}
+.mp-foot b{color:#fff;font-weight:600}
 
 /* cluster typography */
 #cluster text{font-family:"Segoe UI",Roboto,Arial,sans-serif;fill:#fff}
@@ -135,7 +334,7 @@ body{
 
 /* ══════════ CONTROL DECK ══════════ */
 #deck{
-  width:100%;max-width:1147px;
+  width:100%;max-width:1720px;
   background:#080a0d;
   border:1px solid #16202b;
   border-top:none;
@@ -191,12 +390,12 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
    Two pedals straddling the seam between the cockpit and the deck:
    they overlap the photo just enough to read as part of the car,
    and they mirror the arrow keys (hold, don't tap). */
-#shell{position:relative;width:100%;max-width:1147px}
+#shell{position:relative;width:100%;max-width:1720px}
 #pedals{
   /* bottom: one pedal height (~50px: 26px key + 2x11 padding + borders)
      above where they used to sit, so they clear the seam instead of
      hanging off it */
-  position:absolute;left:50%;bottom:28px;transform:translateX(-50%);
+  position:absolute;left:calc(573.5 / var(--scenew) * 100%);bottom:28px;transform:translateX(-50%);
   z-index:12;display:flex;gap:14px;
 }
 .pedal{
@@ -471,6 +670,152 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     </g>
   </svg>
 
+  <!-- ▼▼ CENTRE STACK — the dashboard the photo does not have.
+          #ext carries the colours, #dashext the geometry, #stack the display.
+          Nothing in here touches the cluster or the road. ▼▼ -->
+  <div id="ext"></div>
+
+  <svg id="dashext" viewBox="1147 0 573 641" preserveAspectRatio="none">
+    <defs>
+      <linearGradient id="cowlG" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0"   stop-color="#4a4a50"/>
+        <stop offset=".35" stop-color="#33343a"/>
+        <stop offset="1"   stop-color="#17181d"/>
+      </linearGradient>
+      <linearGradient id="trimG" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0"   stop-color="#b9b7bd"/>
+        <stop offset=".28" stop-color="#8e8c93"/>
+        <stop offset=".55" stop-color="#c8c6cc"/>
+        <stop offset=".78" stop-color="#75737a"/>
+        <stop offset="1"   stop-color="#a2a0a6"/>
+      </linearGradient>
+      <linearGradient id="carbonG" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#26272c"/><stop offset="1" stop-color="#101115"/>
+      </linearGradient>
+      <pattern id="defrostP" width="7" height="10" patternUnits="userSpaceOnUse">
+        <rect x="0" y="0" width="3" height="10" fill="rgba(255,255,255,.055)"/>
+      </pattern>
+      <pattern id="cfxP" width="14" height="14" patternUnits="userSpaceOnUse">
+        <rect width="14" height="14" fill="#15161a"/>
+        <rect x="0" y="0" width="7" height="7" fill="rgba(255,255,255,.05)"/>
+        <rect x="7" y="7" width="7" height="7" fill="rgba(255,255,255,.05)"/>
+      </pattern>
+      <filter id="extBlur6"><feGaussianBlur stdDeviation="6"/></filter>
+      <filter id="extBlur14"><feGaussianBlur stdDeviation="14"/></filter>
+    </defs>
+
+    <!-- the glass edge keeps running: y 108 at x 1147, 94 at the far side -->
+    <path d="M1147,108 L1720,94 L1720,136 L1147,150 Z" fill="rgba(0,0,0,.55)" filter="url(#extBlur6)"/>
+
+    <!-- top of the dashboard, suede, with the defroster grille -->
+    <path d="M1147,112 L1720,96 L1720,242 L1147,270 Z" fill="url(#cowlG)"/>
+    <path d="M1180,122 L1700,104 L1700,150 L1180,170 Z" fill="url(#defrostP)" opacity=".9"/>
+
+    <!-- carbon panel down low, continuing the one in the photo -->
+    <path d="M1147,410 L1720,390 L1720,641 L1147,641 Z" fill="url(#cfxP)"/>
+    <path d="M1147,410 L1720,390 L1720,641 L1147,641 Z" fill="url(#carbonG)" opacity=".55"/>
+
+    <!-- brushed aluminium: picks up the trim of the photo and frames the display -->
+    <path d="M1147,302 L1210,286 L1700,264 L1720,262 L1720,320 L1210,346 L1147,366 Z"
+          fill="url(#trimG)" opacity=".92"/>
+    <path d="M1147,302 L1210,286 L1700,264 L1720,262" fill="none"
+          stroke="rgba(255,255,255,.45)" stroke-width="1.4"/>
+    <path d="M1147,366 L1210,346 L1720,320" fill="none"
+          stroke="rgba(0,0,0,.55)" stroke-width="2"/>
+
+    <!-- air vent between cluster and display: narrower now, the screen grew -->
+    <g>
+      <rect x="1156" y="180" width="42" height="104" rx="9" fill="#0d0e11"/>
+      <rect x="1161" y="185" width="32" height="94" rx="6" fill="#17191d"/>
+      <g stroke="rgba(255,255,255,.10)" stroke-width="2">
+        <line x1="1164" y1="198" x2="1190" y2="195"/>
+        <line x1="1164" y1="214" x2="1190" y2="211"/>
+        <line x1="1164" y1="230" x2="1190" y2="227"/>
+        <line x1="1164" y1="246" x2="1190" y2="243"/>
+        <line x1="1164" y1="262" x2="1190" y2="259"/>
+      </g>
+    </g>
+
+    <!-- the group's own shadow, and the cold light it throws on the dashboard.
+         Both follow the taller screen: the shadow sits lower, the glow higher. -->
+    <ellipse cx="1450" cy="556" rx="238" ry="32" fill="rgba(0,0,0,.5)" filter="url(#extBlur14)"/>
+    <ellipse cx="1450" cy="310" rx="308" ry="222" fill="rgba(70,150,220,.07)" filter="url(#extBlur14)"/>
+  </svg>
+
+  <div id="stack">
+    <div id="bezel">
+      <div id="glass">
+        <!-- the True Cost app. Fixed 454x382 design space, scaled onto the
+             glass in JS; the lists and the bars are built by that module. -->
+        <div id="app">
+          <div class="ap-top">
+            <div class="ap-brand">TRUE<span>COST</span></div>
+            <div class="ap-chip">BENZINA</div>
+            <div class="ap-sp"></div>
+            <div class="ap-now"><span id="ap-eurkm">0.14</span><em>&euro;/KM</em></div>
+            <div class="ap-clock" id="ap-clock">--:--</div>
+          </div>
+
+          <div class="ap-tabs">
+            <button class="ap-tab on" type="button" data-v="history">
+              <svg viewBox="0 0 16 16"><path d="M2 13.2h12M3.4 11V6.4M6.7 11V3.2M10 11V8.2M13.3 11V5.2" stroke-linecap="round"/></svg>
+              Cost history
+            </button>
+            <button class="ap-tab" type="button" data-v="map">
+              <svg viewBox="0 0 16 16"><path d="M8 14.2s4.5-4.4 4.5-7.5a4.5 4.5 0 1 0-9 0C3.5 9.8 8 14.2 8 14.2Z"/><circle cx="8" cy="6.6" r="1.7"/></svg>
+              Local pump map
+            </button>
+          </div>
+
+          <div class="ap-body">
+            <!-- ── COST HISTORY ── -->
+            <div class="ap-pane" id="pane-history">
+              <div class="ch-hero">
+                <div class="ch-cost">
+                  <div class="ch-lab">THIS TRIP &middot; COST SO FAR</div>
+                  <div class="ch-big"><em>EUR</em><span id="ap-total">9.55</span></div>
+                  <div class="ch-sub"><span id="ap-km">48.1</span> km &middot; <span id="ap-lit">5.02</span> L burned</div>
+                </div>
+                <div class="ch-grid">
+                  <div class="ch-cell"><b id="ap-c1">0.14</b><i>&euro;/KM NOW</i></div>
+                  <div class="ch-cell"><b id="ap-c2">0.20</b><i>&euro;/KM AVG</i></div>
+                  <div class="ch-cell"><b id="ap-c3">7.1</b><i>L / 100 KM</i></div>
+                  <div class="ch-cell"><b id="ap-c4">1.91</b><i>TANK &euro;/L</i></div>
+                </div>
+              </div>
+
+              <div class="ch-chart">
+                <div class="hd"><span>COST PER KM &middot; LAST 5 KM</span><span id="ap-peak"></span></div>
+                <div class="ch-bars" id="ap-bars"></div>
+                <div class="ch-avg" id="ap-avg"></div>
+                <div class="ch-axis"><span>&minus;5.0 km</span><span>now</span></div>
+              </div>
+
+              <div class="ch-hist">
+                <div class="hd">PREVIOUS TRIPS</div>
+                <div id="ap-trips"></div>
+              </div>
+            </div>
+
+            <!-- ── LOCAL PUMP MAP ── -->
+            <div class="ap-pane" id="pane-map" hidden>
+              <div class="mp-head">
+                <span><b id="ap-nst">8</b> STATIONS NEARBY</span>
+                <span>SORTED BY PRICE</span>
+              </div>
+              <div class="mp-body">
+                <div class="mp-list" id="ap-stations"></div>
+                <div class="mp-map"><canvas id="ap-canvas"></canvas></div>
+              </div>
+              <div class="mp-foot"><span class="dot"></span><span id="ap-best">&mdash;</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- ▲▲ ─────────────────────────────────────────────────── ▲▲ -->
+
   <!-- ▼▼ REFUEL PROMPT — shown inside the last 200 m before a station ▼▼ -->
   <div id="refuel-prompt" aria-live="polite">
     <span class="rp-ask">PRESS <b>&ldquo;R&rdquo;</b> to refuel</span>
@@ -534,6 +879,10 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         <div class="help-section-title" style="color:var(--green)">● Trip &amp; tank</div>
         <p>Distance, litres burned and total euro accumulate live; the fuel level bar drains with them.
            Press <strong>RESET</strong> — on the cluster or on the deck — to start a new trip from zero.</p>
+      </div>
+      <div class="help-section" style="border-left-color:#8fd8f5;grid-column:1/-1">
+        <div class="help-section-title" style="color:#8fd8f5">▣ Centre display</div>
+        <p>The screen on the dashboard runs the app itself, and it is <strong>touchable</strong>: <strong>Cost history</strong> charts what every kilometre has cost you — one bar per 200 m of the road you are driving — over your previous trips. <strong>Local pump map</strong> ranks the stations around the car by price, cheapest in green with the halo, dearest in red, with what you would save on this tank.</p>
       </div>
     </div>
     <button id="help-cta">Got it — hold &#8593; to drive →</button>
@@ -854,6 +1203,16 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     const RISE = parseFloat(
       getComputedStyle(document.documentElement).getPropertyValue('--rise')) || 0;
 
+    /* how wide the scene is. The photo is 1147 wide, the scene is wider (the
+       drawn centre stack lives past its right edge), and the canvas spans the
+       WHOLE of it. Read back from --scenew so the stylesheet stays the single
+       source of truth. Note what does NOT change: VPX. The vanishing point
+       belongs to the photo, not to the frame, so the carriageway keeps sitting
+       exactly where the interior shot says it does — off centre in the wider
+       view, which is precisely what a passenger-side window shows. */
+    const SW = parseFloat(
+      getComputedStyle(document.documentElement).getPropertyValue('--scenew')) || 1147;
+
     const VPX = 575, HZ = 38, YMAX = 176;   // vanishing point · last visible row
     const F = 900, CAMH = 1.2;              // focal (px) · eye height (m)
     const K = F * CAMH;                     // a ground row sits at y = HZ + K/z
@@ -942,8 +1301,8 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
          or the road blinks out for a frame at random moments */
       if (px === cv.width) { sized = true; return; }
       cv.width = px;
-      cv.height = Math.round(px * (641 + RISE) / 1147);
-      scale = px / 1147;
+      cv.height = Math.round(px * (641 + RISE) / SW);
+      scale = px / SW;
       sized = true;
     }
     fit();
@@ -1042,9 +1401,9 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
 
     /* ── roadside furniture ─────────────────────────────────── */
     // a ribbon running along the road at a constant height band
-    function ribbon(X, yLo, yHi, fill) {
+    function ribbon(X, yLo, yHi, fill, zNear) {
       const zs = [];
-      for (let z = Z_NEAR; z < Z_FAR; z *= 1.05) zs.push(z);
+      for (let z = zNear || Z_NEAR; z < Z_FAR; z *= 1.05) zs.push(z);
       zs.push(Z_FAR);
       ctx.beginPath();
       for (let i = 0; i < zs.length; i++) {
@@ -1061,9 +1420,9 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     }
 
     // evenly spaced uprights — the strongest speed cue we have
-    function posts(X, every, width, yLo, yHi, fill) {
+    function posts(X, every, width, yLo, yHi, fill, zNear) {
       ctx.fillStyle = fill;
-      const start = Math.ceil((travel + Z_NEAR) / every) * every;
+      const start = Math.ceil((travel + (zNear || Z_NEAR)) / every) * every;
       for (let s = start; s < travel + Z_FAR; s += every) {
         const z = s - travel;
         const w = Math.max(0.45, width * F / z);
@@ -1073,8 +1432,8 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     }
 
     // small bright markers: they flick past and sell the speed at a glance
-    function studs(X, every, Y, size, near, far) {
-      const start = Math.ceil((travel + Z_NEAR) / every) * every;
+    function studs(X, every, Y, size, near, far, zNear) {
+      const start = Math.ceil((travel + (zNear || Z_NEAR)) / every) * every;
       for (let s = start; s < travel + 260; s += every) {
         const z = s - travel;
         const px = Math.max(0.6, size * F / z);
@@ -1113,13 +1472,25 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       }
     }
 
-    /* the metal guardrail on the right, as a W-beam: two flanges and a groove */
+    /* the metal guardrail on the right, as a W-beam: two flanges and a groove.
+
+       Z_NEAR is the depth of row YMAX, the last row the canvas paints — and
+       for everything that lives on the road surface that is the right place to
+       stop, because the dashboard covers it. The rail does NOT: it sits 7.8 m
+       to the side, so at Z_NEAR it is already at x 1472, and in the photo-wide
+       scene that was safely hidden behind the dash. In the wider scene it is
+       out in the open, and the rail ended in mid-air.
+       So it keeps being drawn nearer than Z_NEAR, until it has run off the
+       right edge of the scene. The 0.85 is slack for the bends, which swing
+       the rail sideways by a few metres. */
+    const Z_RAIL = Math.min(Z_NEAR, 0.85 * RAIL * F / (SW + 60 - VPX));
+
     function guardrail() {
-      posts(RAIL, 4, 0.12, 0, 0.78, '#4b5359');
-      ribbon(RAIL, 0.50, 0.86, '#8b959d');
-      ribbon(RAIL, 0.66, 0.72, 'rgba(60,68,74,.55)');     // the groove
-      ribbon(RAIL, 0.80, 0.86, '#bcc4ca');                // top flange highlight
-      studs(RAIL, 25, 0.90, 0.11, '#ffb43c', '#d9a05a');  // amber delineators
+      posts(RAIL, 4, 0.12, 0, 0.78, '#4b5359', Z_RAIL);
+      ribbon(RAIL, 0.50, 0.86, '#8b959d', Z_RAIL);
+      ribbon(RAIL, 0.66, 0.72, 'rgba(60,68,74,.55)', Z_RAIL);   // the groove
+      ribbon(RAIL, 0.80, 0.86, '#bcc4ca', Z_RAIL);              // top flange highlight
+      studs(RAIL, 25, 0.90, 0.11, '#ffb43c', '#d9a05a', Z_RAIL);// amber delineators
     }
 
     /* a motorway sign every so often: it enters small, swells and leaves over
@@ -1136,7 +1507,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         const X = RAIL + 2.2, w = 4.2 * F / z;
         const xc = sxOf(X, z);
         const yTop = syOf(5.6, z), yBot = syOf(3.4, z);
-        if (yBot < -RISE - 40 || xc - w > 1300) continue;
+        if (yBot < -RISE - 40 || xc - w > SW + 160) continue;
         ctx.globalAlpha = Math.min(1, (320 - z) / 90);
         const lw = Math.max(0.6, 0.16 * F / z);
         ctx.fillStyle = '#5e666b';                        // the two legs
@@ -1740,12 +2111,12 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       ctx.fillStyle = fill;
       ctx.beginPath();
       ctx.moveTo(0, HZ + 2);
-      for (let x = 0; x <= 1147; x += 8) {
+      for (let x = 0; x <= SW; x += 8) {
         const t = x * freq + travel * par;
         const n = Math.sin(t) * 0.6 + Math.sin(t * 2.3 + 1.1) * 0.28 + Math.sin(t * 5.1) * 0.12;
         ctx.lineTo(x, base - amp * (n + 0.6));
       }
-      ctx.lineTo(1147, HZ + 2);
+      ctx.lineTo(SW, HZ + 2);
       ctx.closePath(); ctx.fill();
       ctx.globalAlpha = 1;
     }
@@ -1769,11 +2140,14 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
        BL_PHASE puts it on screen at load. Without it the walk starts at the
        left end of the wrap and the first pass is twenty-five seconds of
        empty sky - which is exactly how you end up thinking it is broken. */
-    const BL_SPD = 7.5, BL_PAR = 0.016, BL_SPAN = 1760, BL_PHASE = 700;
+    /* the wrap and the cull follow the SCENE, not the photo: on the wider
+       sky the old fixed 1760/1290 made it vanish three quarters of the way
+       across, in plain sight */
+    const BL_SPD = 7.5, BL_PAR = 0.016, BL_SPAN = SW + 613, BL_PHASE = 700;
 
     function blimp() {
       const x = ((clock * BL_SPD - travel * BL_PAR + BL_PHASE) % BL_SPAN + BL_SPAN) % BL_SPAN - 310;
-      if (x < -140 || x > 1290) return;
+      if (x < -140 || x > SW + 143) return;
       const y = -RISE * 0.46 + 3 * Math.sin(clock * 0.11);
       const L = 38, Hh = 11.5;                // half length / half height
 
@@ -2068,7 +2442,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       sky.addColorStop(0.55, 'rgb(' + P.skyMid + ')');
       sky.addColorStop(1, 'rgb(' + P.skyLow + ')');
       ctx.fillStyle = sky;
-      ctx.fillRect(0, TOP, 1147, HZ + 8 - TOP);
+      ctx.fillRect(0, TOP, SW, HZ + 8 - TOP);
 
       // a low sun off to the right, the only warm thing in the scene.
       // With a taller sky it can sit properly above the horizon instead of
@@ -2079,17 +2453,18 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       sun.addColorStop(0.45, 'rgba(255,238,212,.12)');
       sun.addColorStop(1, 'rgba(255,238,212,0)');
       ctx.fillStyle = sun;
-      ctx.fillRect(440, TOP, 707, HZ + 8 - TOP);
+      ctx.fillRect(440, TOP, SW - 440, HZ + 8 - TOP);
 
       // Clouds. They used to all sit on the horizon because that was the only
       // sky there was; now they fill the band up to the top of the glass, and
       // the higher one rides the puffier it gets — a cloud overhead shows its
       // depth, one on the horizon is a flat smear.
       const drift = travel * 0.045;
-      const NCLOUD = 7 + Math.round(RISE / 26);
+      const NCLOUD = Math.round((7 + RISE / 26) * SW / 1147);
+      const SPAN = SW + 460;                      // wrap-around band, wider than the sky
       for (let i = 0; i < NCLOUD; i++) {
         const seed = hash(i * 977);
-        const x = ((seed * 2600 - drift * (0.5 + seed * 0.5)) % 1600 + 1600) % 1600 - 230;
+        const x = ((seed * 2600 - drift * (0.5 + seed * 0.5)) % SPAN + SPAN) % SPAN - 230;
         const y = 25 - (RISE + 18) * hash(i * 131 + 7);
         const up = Math.min(1, Math.max(0, -y / (RISE + 1)));   // 0 horizon, 1 overhead
         const w = (90 + seed * 150) * (1 + up * 0.55);
@@ -2121,11 +2496,11 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         const cx = VPX + (curveAt(z) - sway) * s;
 
         ctx.fillStyle = r.grass;
-        ctx.fillRect(0, y, 1147, 1);
+        ctx.fillRect(0, y, SW, 1);
         if (z < 130 && (travel + z) % 9 < 4.5) {           // mown bands: the
           ctx.fillStyle = 'rgba(26,36,22,' +                // periphery has to
             (0.13 * (1 - z / 130)).toFixed(3) + ')';        // move too
-          ctx.fillRect(0, y, 1147, 1);
+          ctx.fillRect(0, y, SW, 1);
         }
 
         ctx.fillStyle = r.opp;                              // the other carriageway
@@ -2197,9 +2572,9 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
 
       /* the extra RISE rows live at NEGATIVE y in the photo's coordinates */
       ctx.setTransform(scale, 0, 0, scale, 0, scale * RISE);
-      ctx.clearRect(0, -RISE, 1147, 641 + RISE);
+      ctx.clearRect(0, -RISE, SW, 641 + RISE);
       ctx.save();
-      ctx.beginPath(); ctx.rect(0, -RISE, 1147, YMAX + RISE); ctx.clip();
+      ctx.beginPath(); ctx.rect(0, -RISE, SW, YMAX + RISE); ctx.clip();
       ctx.translate(0, bob);
 
       backdrop();
@@ -2220,12 +2595,411 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       hz.addColorStop(0.34, 'rgba(186,201,213,.10)');
       hz.addColorStop(1, 'rgba(186,201,213,0)');
       ctx.fillStyle = hz;
-      ctx.fillRect(0, HZ, 1147, YMAX - HZ);
+      ctx.fillRect(0, HZ, SW, YMAX - HZ);
 
       ctx.restore();
     }
 
     return { frame, station };
+  })();
+
+  /* ══════════════════════════════════════════════════════════
+     CENTRE DISPLAY — the True Cost app
+     ──────────────────────────────────────────────────────────
+     The app is laid out at a fixed 454 x 382 design size and put on
+     the glass with one scale(), so every px in the CSS above means the
+     same thing at any window size. Two views:
+
+       COST HISTORY  the trip you are driving, live — the bar chart is
+                     one bar per 200 m of real road, fed by the same
+                     state the cluster reads — over a list of past trips.
+       PUMP MAP      stations around the car, sorted by price and drawn
+                     on a north-up mini map. Cheapest is green and glows,
+                     dearest is red.
+
+     The map stations are their OWN world: they are not the stations you
+     drive past in the windshield (those live in `road`). They scroll
+     towards the car with the real distance travelled and recycle ahead
+     once they are behind, and their prices float around the same live
+     `state.marketPrice` the cluster uses — so if the API answers, map
+     and cluster move together.
+     ══════════════════════════════════════════════════════════ */
+  const app = (function () {
+    const root = $('app'), glass = $('glass'), cv = $('ap-canvas');
+    if (!root || !glass) return { frame() {} };
+    const ctx = cv ? cv.getContext('2d') : null;
+    const TAU = Math.PI * 2;
+    const DW = 454, DH = 382;                 // the design space of the CSS above
+
+    /* deterministic: the same demo every time it is opened */
+    let seed = 20260904;
+    const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+
+    /* ── fit the design space onto the glass ───────────────
+       One transform, so the canvas can keep drawing in design px and
+       only its backing store follows the real pixels. */
+    let pxRatio = 1, cw = 0, ch = 0;
+    /* Writing cv.width WIPES the canvas, and ResizeObserver fires once on its
+       own the moment it starts observing — so this only ever touches the
+       backing store when it really changed, and repaints straight after. */
+    function sizeCanvas() {
+      if (!cv || !cv.clientWidth) return;
+      const w = Math.round(cv.clientWidth * pxRatio), h = Math.round(cv.clientHeight * pxRatio);
+      if (cv.width === w && cv.height === h) return;
+      cw = cv.clientWidth; ch = cv.clientHeight;
+      cv.width = w; cv.height = h;
+      if (view === 'map') drawMap(performance.now());
+    }
+    function fit() {
+      const w = glass.clientWidth, h = glass.clientHeight;
+      if (!w || !h) return;
+      root.style.transform = 'scale(' + (w / DW) + ',' + (h / DH) + ')';
+      pxRatio = (w / DW) * (window.devicePixelRatio || 1);
+      sizeCanvas();
+    }
+    if (window.ResizeObserver) new ResizeObserver(fit).observe(glass);
+    window.addEventListener('resize', fit);
+
+    /* ── tabs ──────────────────────────────────────────── */
+    const panes = { history: $('pane-history'), map: $('pane-map') };
+    const tabs  = Array.prototype.slice.call(root.querySelectorAll('.ap-tab'));
+    let view = 'history';
+    function show(v) {
+      view = v;
+      tabs.forEach(t => t.classList.toggle('on', t.dataset.v === v));
+      for (const k in panes) panes[k].hidden = (k !== v);
+      if (v === 'map') { fit(); paintList(); drawMap(performance.now()); }
+      else paintTrip();
+    }
+    tabs.forEach(t => t.addEventListener('click', () => { show(t.dataset.v); t.blur(); }));
+
+    const T = {
+      total: $('ap-total'), km: $('ap-km'), lit: $('ap-lit'),
+      c1: $('ap-c1'), c2: $('ap-c2'), c3: $('ap-c3'), c4: $('ap-c4'),
+      peak: $('ap-peak'), avg: $('ap-avg'), eurkm: $('ap-eurkm'),
+      clock: $('ap-clock'), best: $('ap-best'), nst: $('ap-nst')
+    };
+
+    /* ── the live bar chart: one bar per 200 m ─────────────
+       Prefilled at boot, because the trip counter already starts at 48 km:
+       an empty chart would say the car has never moved. */
+    const NB = 25, SAMPLE_KM = 0.2, BARS_H = 58;   // px, the .ch-bars box
+    const bars = [], barEl = [], barsBox = $('ap-bars');
+    for (let i = 0; i < NB; i++) {
+      let v = 0.155 + rnd() * 0.055;
+      if (rnd() > 0.80) v += 0.05 + rnd() * 0.08;   // a village, a climb, traffic
+      bars.push(v);
+      const b = document.createElement('i');
+      barsBox.appendChild(b); barEl.push(b);
+    }
+
+    let segKm = 0, segEur = 0, lastKm = state.tripKm, lastEur = state.tripCost;
+    function sampleTrip() {
+      let dKm = state.tripKm - lastKm, dEur = state.tripCost - lastEur;
+      lastKm = state.tripKm; lastEur = state.tripCost;
+      if (dKm < 0) { dKm = 0; dEur = 0; segKm = 0; segEur = 0; }   // trip reset
+      segKm += dKm; segEur += dEur;
+      if (segKm >= SAMPLE_KM) {
+        bars.push(segEur / segKm); bars.shift();
+        segKm = 0; segEur = 0;
+      }
+      return dKm;
+    }
+
+    /* ── past trips: fictional, but dated off today ────── */
+    (function buildTrips() {
+      const list = [
+        { back: 1, route: 'Torino &ndash; Milano', km: 142.6, eur: 27.10 },
+        { back: 2, route: 'Commute &middot; A55',  km: 38.4,  eur: 8.10  },
+        { back: 4, route: 'Milano &ndash; Genova', km: 118.9, eur: 21.60 },
+        { back: 6, route: 'City &middot; Torino',  km: 22.7,  eur: 6.05  }
+      ];
+      const box = $('ap-trips');
+      const ref = list.reduce((a, t) => a + t.eur, 0) / list.reduce((a, t) => a + t.km, 0);
+      list.forEach(t => {
+        const epk = t.eur / t.km, up = epk > ref;
+        const d = new Date(); d.setDate(d.getDate() - t.back);
+        const row = document.createElement('div');
+        row.className = 'ch-row ' + (up ? 'up' : 'dn');
+        row.innerHTML =
+          '<span class="d">' +
+            d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }).toUpperCase() +
+          '</span>' +
+          '<span class="r">' + t.route + '</span>' +
+          '<span class="k">' + t.km.toFixed(1) + ' km</span>' +
+          '<span class="u">' + (up ? '&#9650; ' : '&#9660; ') + epk.toFixed(3) + '</span>' +
+          '<span class="e">' + t.eur.toFixed(2) + '</span>';
+        box.appendChild(row);
+      });
+    })();
+
+    function paintTrip() {
+      const avg = state.tripKm > 0.05 ? state.tripCost / state.tripKm : 0;
+      T.total.textContent = state.tripCost.toFixed(2);
+      T.km.textContent    = state.tripKm.toFixed(1);
+      T.lit.textContent   = state.tripLiters.toFixed(2);
+      T.c1.textContent    = state.instantEurKm.toFixed(2);
+      T.c2.textContent    = avg.toFixed(2);
+      T.c3.textContent    = state.instantL100.toFixed(1);
+      T.c4.textContent    = state.refuelPrice.toFixed(2);
+
+      let peak = 0;
+      for (let i = 0; i < NB; i++) if (bars[i] > peak) peak = bars[i];
+      const top = Math.max(peak, avg, 0.06) * 1.12;      // headroom above the tallest
+      T.peak.innerHTML = '<em>AVG ' + avg.toFixed(2) + '</em> &middot; PEAK ' + peak.toFixed(2);
+      for (let i = 0; i < NB; i++) {
+        const v = bars[i];
+        barEl[i].style.height = Math.max(2, (v / top) * BARS_H).toFixed(1) + 'px';
+        barEl[i].className = i === NB - 1 ? 'now' : (v > avg * 1.12 ? 'hot' : '');
+      }
+      T.avg.style.top = (23 + BARS_H * (1 - avg / top)).toFixed(1) + 'px';
+    }
+
+    /* ══ the pump map ══════════════════════════════════════ */
+    const BRANDS = ['Eni', 'Q8', 'IP', 'Tamoil', 'Esso', 'Api', 'Repsol', 'Beyfin'];
+    const PLACES = ['Via Emilia', 'Tangenziale Ovest', 'Casello Nord', 'Corso Francia',
+                    'SS9 km 12', 'Viale Europa', 'Zona Industriale', 'Raccordo Sud',
+                    'Piazza Trento', 'Via Torino'];
+    const NST = 7;
+    /* The world is cut to what the map can show, so every row in the list has
+       a pin you can point at: 1500 m either side, from 1800 m behind the car
+       to 2400 m ahead, and MAPR is the half-height the mini map draws. */
+    const XSPAN = 1500, BACK = 1800, AHEAD = 2400, MAPR = 2500;
+    const SPREAD = 0.13;       // euro either side of the live market average
+    const DIRS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+
+    const sts = [];
+    function spawn(s, y) {
+      for (let n = 0; n < 12; n++) {          // no two identical signs on screen
+        s.b = BRANDS[Math.floor(rnd() * BRANDS.length)];
+        s.p = PLACES[Math.floor(rnd() * PLACES.length)];
+        if (!sts.some(o => o !== s && o.b === s.b && o.p === s.p)) break;
+      }
+      s.x = (rnd() * 2 - 1) * XSPAN;
+      s.y = y;
+      s.off = (rnd() * 2 - 1) * SPREAD;
+      return s;
+    }
+    for (let i = 0; i < NST; i++) sts.push(spawn({}, -BACK + rnd() * (BACK + AHEAD)));
+
+    const priceOf = s => state.marketPrice + s.off;
+    const distOf  = s => Math.sqrt(s.x * s.x + s.y * s.y);
+    const dirOf   = s => DIRS[(Math.round(Math.atan2(s.x, s.y) / (Math.PI / 4)) + 8) % 8];
+
+    /* green -> amber -> red across the price range on screen */
+    function priceColor(t) {
+      const A = [61, 220, 132], B = [240, 165, 0], C = [255, 77, 77];
+      const mix = (u, v, f) => Math.round(u + (v - u) * f);
+      const p = t < 0.5 ? A.map((u, i) => mix(u, B[i], t * 2))
+                        : B.map((u, i) => mix(u, C[i], (t - 0.5) * 2));
+      return 'rgb(' + p[0] + ',' + p[1] + ',' + p[2] + ')';
+    }
+
+    let travelM = 0, sel = null;
+    function moveStations(dKm) {
+      const d = dKm * 1000;
+      travelM += d;
+      for (const s of sts) {
+        s.y -= d;
+        if (s.y < -BACK) { if (s === sel) sel = null; spawn(s, AHEAD - rnd() * 300); }
+      }
+    }
+
+    /* one row per station, built once: only text and colour change, and the
+       sort order is a flexbox `order`, so nothing is ever re-created */
+    const listBox = $('ap-stations'), rows = [];
+    sts.forEach(s => {
+      const r = document.createElement('div');
+      r.className = 'st';
+      r.innerHTML = '<span class="bar"></span>' +
+                    '<div><div class="nm"></div><div class="ds"></div></div>' +
+                    '<div><div class="pr"></div><div class="dl"></div></div>';
+      r.addEventListener('click', () => { sel = (sel === s ? null : s); paintList(); });
+      r.q = { nm: r.querySelector('.nm'), ds: r.querySelector('.ds'),
+              pr: r.querySelector('.pr'), dl: r.querySelector('.dl') };
+      listBox.appendChild(r); rows.push(r);
+    });
+    T.nst.textContent = NST;
+
+    function paintList() {
+      const prices = sts.map(priceOf);
+      const min = Math.min.apply(null, prices), max = Math.max.apply(null, prices);
+      const mean = prices.reduce((a, b) => a + b, 0) / prices.length;
+      const order = sts.slice().sort((a, b) => priceOf(a) - priceOf(b));
+      const litres = Math.max(5, state.tankCapacity - state.tankLiters);
+
+      order.forEach((s, rank) => {
+        const r = rows[sts.indexOf(s)], p = priceOf(s), d = distOf(s);
+        const c = priceColor(max > min ? (p - min) / (max - min) : 0);
+        r.style.order = rank;
+        r.style.setProperty('--c', c);
+        r.classList.toggle('best', rank === 0);
+        r.classList.toggle('sel', s === sel);
+        r.q.nm.textContent = s.b + ' · ' + s.p;
+        r.q.ds.textContent = (d / 1000).toFixed(1) + ' km · ' + dirOf(s);
+        r.q.pr.textContent = p.toFixed(2);
+        r.q.dl.textContent = rank === 0 ? 'BEST' : '+' + (p - min).toFixed(2) + ' €/L';
+      });
+
+      const b = order[0], save = (mean - priceOf(b)) * litres;
+      T.best.innerHTML =
+        '<b>' + b.b + ' · ' + b.p + '</b> &middot; ' + priceOf(b).toFixed(2) +
+        ' &euro;/L &middot; ' + (distOf(b) / 1000).toFixed(1) + ' km ' + dirOf(b) +
+        ' &middot; save <b>' + save.toFixed(2) + ' &euro;</b> on this tank';
+    }
+
+    /* ── the mini map: north up, the car on its road ────── */
+    function roundRect(x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+    }
+
+    function drawMap(now) {
+      if (!ctx || !cw) return;
+      ctx.setTransform(cv.width / cw, 0, 0, cv.height / ch, 0, 0);
+      ctx.fillStyle = '#080d13';
+      ctx.fillRect(0, 0, cw, ch);
+
+      const cx = cw / 2, cy = ch * 0.56;      // the car sits low: more road ahead
+      const k  = (ch * 0.56) / MAPR;          // px per metre
+      const G  = 420;                          // m between streets: a town block
+
+      /* the street grid scrolls with the real distance driven. Every third
+         line is an arterial, which is what stops it reading as graph paper */
+      const n0 = Math.floor((travelM - MAPR) / G), n1 = Math.ceil((travelM + MAPR) / G);
+      const cols = Math.ceil(cw / (G * k)) + 2;
+      for (let pass = 0; pass < 2; pass++) {
+        ctx.beginPath();
+        ctx.lineWidth   = pass ? 2 : 1;
+        ctx.strokeStyle = pass ? 'rgba(150,195,225,.24)' : 'rgba(122,170,210,.16)';
+        for (let n = n0; n <= n1; n++) {
+          if ((((n % 3) + 3) % 3 === 0) !== !!pass) continue;
+          const y = cy - (n * G - travelM) * k;
+          ctx.moveTo(0, y); ctx.lineTo(cw, y);
+        }
+        for (let i = -cols; i <= cols; i++) {
+          if ((((i % 3) + 3) % 3 === 0) !== !!pass) continue;
+          const x = cx + i * G * k;
+          ctx.moveTo(x, 0); ctx.lineTo(x, ch);
+        }
+        ctx.stroke();
+      }
+
+      /* a ring road and a diagonal: no real town is a perfect lattice */
+      ctx.strokeStyle = 'rgba(150,195,225,.20)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(cx - 700 * k, cy - (900 - (travelM % (G * 9))) * k, 1500 * k, 0, TAU);
+      ctx.moveTo(0, cy + (1800 - (travelM % (G * 9))) * k);
+      ctx.lineTo(cw, cy + (1800 - (travelM % (G * 9))) * k - cw * 0.75);
+      ctx.stroke();
+
+      /* the road we are on */
+      ctx.strokeStyle = 'rgba(0,174,239,.20)'; ctx.lineWidth = 7;
+      ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, ch); ctx.stroke();
+      ctx.strokeStyle = 'rgba(0,174,239,.80)'; ctx.lineWidth = 2.2;
+      ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, ch); ctx.stroke();
+
+      /* the edges fall away, so the map reads as a window on a bigger place */
+      const vg = ctx.createRadialGradient(cx, cy, ch * 0.22, cx, cy, ch * 0.78);
+      vg.addColorStop(0, 'rgba(8,13,19,0)');
+      vg.addColorStop(1, 'rgba(8,13,19,.62)');
+      ctx.fillStyle = vg; ctx.fillRect(0, 0, cw, ch);
+
+      const prices = sts.map(priceOf);
+      const min = Math.min.apply(null, prices), max = Math.max.apply(null, prices);
+      const pulse = 0.5 + 0.5 * Math.sin(now / 420);
+
+      sts.forEach(s => {
+        const p = priceOf(s);
+        const x = cx + s.x * k, y = cy - s.y * k;
+        if (x < -30 || x > cw + 30 || y < -30 || y > ch + 30) return;
+        const best = (p === min);
+        const col = priceColor(max > min ? (p - min) / (max - min) : 0);
+
+        if (best) {                                   /* the halo on the cheapest */
+          const g = ctx.createRadialGradient(x, y, 1, x, y, 22);
+          g.addColorStop(0, 'rgba(61,220,132,.55)');
+          g.addColorStop(1, 'rgba(61,220,132,0)');
+          ctx.fillStyle = g;
+          ctx.beginPath(); ctx.arc(x, y, 22, 0, TAU); ctx.fill();
+          ctx.strokeStyle = 'rgba(61,220,132,' + (0.75 - pulse * 0.5).toFixed(2) + ')';
+          ctx.lineWidth = 1.4;
+          ctx.beginPath(); ctx.arc(x, y, 8 + pulse * 5, 0, TAU); ctx.stroke();
+        } else if (s === sel) {
+          ctx.strokeStyle = 'rgba(0,174,239,.9)'; ctx.lineWidth = 1.4;
+          ctx.beginPath(); ctx.arc(x, y, 10, 0, TAU); ctx.stroke();
+        }
+
+        ctx.beginPath(); ctx.arc(x, y, best ? 6.2 : 5, 0, TAU);
+        ctx.fillStyle = col; ctx.fill();
+        ctx.lineWidth = 1.2; ctx.strokeStyle = 'rgba(4,8,12,.85)'; ctx.stroke();
+
+        if (best || s === sel) {
+          const txt = p.toFixed(2);
+          ctx.font = '600 10px "Segoe UI",Roboto,Arial,sans-serif';
+          const w = ctx.measureText(txt).width + 9;
+          const lx = (x + 9 + w > cw) ? x - 9 - w : x + 9;
+          ctx.fillStyle = 'rgba(6,12,18,.88)';
+          roundRect(lx, y - 8, w, 16, 4); ctx.fill();
+          ctx.fillStyle = col; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+          ctx.fillText(txt, lx + 4.5, y + 0.5);
+        }
+      });
+
+      /* the car */
+      ctx.fillStyle = 'rgba(0,174,239,.22)';
+      ctx.beginPath(); ctx.arc(cx, cy, 11, 0, TAU); ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - 7.5); ctx.lineTo(cx + 5.6, cy + 6);
+      ctx.lineTo(cx, cy + 3.2); ctx.lineTo(cx - 5.6, cy + 6);
+      ctx.closePath();
+      ctx.fillStyle = '#eaf6ff'; ctx.fill();
+
+      /* compass and scale */
+      ctx.font = '600 9px "Segoe UI",Roboto,Arial,sans-serif';
+      ctx.fillStyle = 'rgba(190,214,232,.55)';
+      ctx.textAlign = 'right'; ctx.textBaseline = 'top';
+      ctx.fillText('N ▲', cw - 6, 6);
+      const bar = 1000 * k;
+      ctx.fillStyle = 'rgba(8,13,19,.82)';        /* so a pin cannot sit on it */
+      roundRect(4, ch - 26, bar + 12, 22, 4); ctx.fill();
+      ctx.fillStyle = 'rgba(190,214,232,.55)';
+      ctx.strokeStyle = 'rgba(190,214,232,.45)'; ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(8, ch - 12); ctx.lineTo(8 + bar, ch - 12);
+      ctx.moveTo(8, ch - 15); ctx.lineTo(8, ch - 9);
+      ctx.moveTo(8 + bar, ch - 15); ctx.lineTo(8 + bar, ch - 9);
+      ctx.stroke();
+      ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+      ctx.fillText('1 km', 8, ch - 14);
+    }
+
+    /* ── the beat ──────────────────────────────────────── */
+    let accSlow = 0, accMap = 0;
+    function frame(dt) {
+      const dKm = sampleTrip();
+      moveStations(dKm);
+      T.eurkm.textContent = state.instantEurKm.toFixed(2);
+
+      accSlow += dt;
+      if (accSlow >= 0.25) {
+        accSlow = 0;
+        const d = new Date();
+        T.clock.textContent = ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+        if (view === 'history') paintTrip(); else paintList();
+      }
+      if (view === 'map') {
+        accMap += dt;
+        if (accMap >= 0.06) { accMap = 0; drawMap(performance.now()); }
+      }
+    }
+
+    fit(); paintTrip(); paintList();
+    requestAnimationFrame(fit);        // once more after the first layout pass
+    return { frame, show };
   })();
 
   /* ── physics: consumption follows speed ─────────────── */
@@ -2328,6 +3102,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     update(dt);
     render();
     road.frame(state.currentSpeed, dt);
+    app.frame(dt);
     requestAnimationFrame(loop);
   })();
 })();

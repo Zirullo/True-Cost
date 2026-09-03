@@ -3,24 +3,43 @@
 File unico, nessuna dipendenza esterna a parte la foto e una chiamata HTTP ai prezzi.
 Funziona aprendolo con doppio click.
 
-## I tre layer della scena
+## I layer della scena
 
 ```
 #shell  (wrapper, serve solo ad ancorare i pedali al bordo basso della scena)
-#stage  (aspect-ratio 1147/641, max-width 1147px)
- ├─ z1  #windshield   <canvas id="road">  la strada procedurale
- ├─ z2  #interior     la foto, col vetro ritagliato via CSS mask
- └─ z3  #cluster      <svg viewBox="0 0 1147 641">  il quadro strumenti live
+#stage  (aspect-ratio --scenew/--stageh = 1720/791, max-width 1720px)
+ ├─ z1  #windshield   <canvas id="road">  la strada, su TUTTI i 1720
+ ├─ z2  #ext          x 1135→1720: l'ultima colonna della foto stirata e sfocata
+ ├─ z3  #interior     la foto (x 0–1147), col vetro ritagliato via CSS mask
+ ├─ z4  #dashext      <svg viewBox="1147 0 573 641">  la plancia disegnata
+ ├─ z5  #cluster      <svg viewBox="0 0 1147 641">  il quadro strumenti live
+ ├─ z6  #stack        il gruppo display centrale (HTML, inclinato 9°)
+ └─ z7  #refuel-prompt
 ```
 
-Tutto scala insieme perché lo stage ha un aspect-ratio fisso e l'SVG usa lo stesso
-sistema di coordinate della foto: **1 unità SVG = 1 pixel dell'immagine originale**.
+Tutto scala insieme perché lo stage ha un aspect-ratio fisso e ogni layer usa lo
+stesso sistema di coordinate della foto: **1 unità = 1 pixel dell'immagine
+originale**. La foto e il cluster restano **larghi 1147 e ancorati a sinistra**:
+allargare la scena non li ha toccati.
+
+### `--scenew`, la larghezza della scena
+
+`--scenew:1720` nel foglio di stile è l'unica fonte di verità: la usano
+`aspect-ratio`, il `padding-top` che appoggia il cockpit al fondo pagina, la
+posizione dei layer nuovi, e il canvas della strada che la rilegge in JS
+(`SW`). Il **punto di fuga resta VPX 575**, quello della foto: la carreggiata è
+decentrata a sinistra nell'inquadratura larga, ed è giusto così.
 
 ### Layer 1 — `#windshield`
 
 Contiene un solo `<canvas id="road">`, ridisegnato a ogni frame. La maschera del
 layer sopra lo ritaglia nella forma del vetro, quindi il canvas puo' disegnare
 liberamente oltre i bordi. Dettaglio del modulo: [09-strada.md](09-strada.md).
+
+### Layer 2b — `#ext` + `#dashext` + `#stack` (la plancia che la foto non ha)
+
+Da x 1147 in poi non esistono pixel fotografici: quella metà destra è
+ricostruita. Vedi [11-plancia-estesa.md](11-plancia-estesa.md).
 
 ### Layer 2 — `#interior`
 
@@ -44,7 +63,7 @@ Coordinate di ogni elemento: [03-mappa-design.md](03-mappa-design.md).
 ## Il loop
 
 ```
-loop(now) → update() → render() → road.frame(speed, dt) → requestAnimationFrame(loop)
+loop(now) → update() → render() → road.frame(speed, dt) → app.frame(dt) → requestAnimationFrame(loop)
 ```
 
 Il `dt` reale (secondi fra un frame e l'altro, limitato a 50 ms per sopravvivere ai
@@ -58,6 +77,10 @@ passo fisso di 0.016 s.
   prezzo e distanza della prossima stazione, aggiorna la larghezza della
   barra carburante, accende/spegne le tacche del quadrante, attenua lo storico
   viaggi quando la vettura è in moto.
+
+- **`app.frame(dt)`** — il display centrale: campiona il costo ogni 200 m, muove le
+  stazioni della mappa, e ridisegna testi (4 Hz) e canvas (~16 Hz) solo per la vista
+  aperta — [11-plancia-estesa.md](11-plancia-estesa.md).
 
 Nessun ridisegno completo: l'SVG resta lo stesso, cambiano solo testi e classi.
 
@@ -77,6 +100,10 @@ Nessun ridisegno completo: l'SVG resta lo stesso, cambiano solo testi e classi.
 | `#fuelbar` | la barra livello carburante (cambia `width`) |
 | `#tick-group` `#num-group` | tacche e numeri del quadrante, generati in JS |
 | `#help-hit` `#reset-hit` | zone cliccabili dentro l'SVG ("?" e RESET) |
+| `#ext` | la base colore della plancia estesa (foto stirata + sfocata) |
+| `#dashext` | l'SVG della plancia disegnata: cruscotto, trim, bocchetta, carbonio |
+| `#stack` `#bezel` `#glass` | il gruppo display centrale (la fila clima `#hvac` non c'è più) |
+| `#app` | l'app True Cost sul display: `.ap-tab`, `#pane-history`, `#pane-map`, `#ap-canvas` |
 | `#deck` `#history` | comandi e storico viaggi, HTML sotto la scena |
 | `#pedals` | i due pedali a cavallo fra scena e deck (`#pedal-gas`, `#pedal-brake`) |
 | `#pedal-hint` | la scritta che invita a tenere premuto, sparisce al primo uso |
