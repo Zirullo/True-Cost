@@ -12,9 +12,14 @@ Da chiarire quando serve. Non bloccano il lavoro, ma cambiano le scelte.
   distribuita come link (https://zirullo.github.io/True-Cost/). Quindi gira su
   macchine che non controlliamo: ogni dipendenza da un servizio esterno va sempre
   con il suo fallback (vedi [05-dati-esterni.md](05-dati-esterni.md))
-- **Il repo è pubblico**, e con esso questo second-brain. Va bene, o le note vanno
-  spostate in un repo privato? Da decidere prima di scriverci dentro numeri
-  Stellantis non ancora comunicabili
+- ~~**Il repo è pubblico**, e con esso queste note: privato o no?~~ → **decisa il
+  2026-09-03**: restano pubbliche. Non c'è niente di segreto — formule, coordinate,
+  decisioni tecniche, prezzi da API aperte. Vale però la regola che ne discende:
+  **queste note sono un documento pubblico**, quindi niente numeri, nomi o
+  affermazioni su terzi che non siano già comunicabili. Un repo pubblico è
+  scopribile senza condividerne il link (profilo, ricerca, feed eventi di GitHub),
+  e la storia git è permanente: quello che entra in un commit non si toglie
+  cancellandolo dopo
 - **Lingua**: la UI è in inglese, queste note in italiano. Va bene così?
 
 ## Dati e affermazioni
