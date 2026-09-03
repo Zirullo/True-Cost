@@ -5,6 +5,60 @@ Ordine cronologico inverso (la più recente in alto). Ogni voce: **cosa**, **per
 
 ---
 
+## 2026-09-02 · I pedali comandano la velocità reale, e il rilascio è un cruise
+
+**Scelta**: tre stati e solo tre. **↑ tenuto** accelera finché è tenuto, **↓ tenuto**
+rallenta finché è tenuto, **niente premuto mantiene** la velocità raggiunta. Un pedale
+premuto non rampa più la velocità *richiesta*: chiede semplicemente `PEDAL_LEAD` = 8 km/h
+oltre (o sotto) quella **reale**, e al rilascio `setPedal()` aggancia `targetSpeed` a
+`currentSpeed`.
+
+**Perché**: i pedali spostavano `targetSpeed` di +55 / −95 km/h al secondo, mentre la
+vettura ne può guadagnare al massimo ~13. Una pressione di un secondo lasciava quindi il
+target **40 km/h davanti** al veicolo, che continuava ad accelerare da solo per parecchi
+secondi dopo che il tasto era già su. Il comando non era né un pedale né un cruise: era
+una richiesta che si scaricava con ritardo, e in demo si finiva per inseguire il numero
+invece di guidarlo.
+
+Con il divario fisso a 8 km/h il divario non si chiude mai mentre tieni premuto — quindi
+si accelera per tutto il tempo, alla rampa vera limitata da `ACC_MAX` e dal cambio — e si
+azzera nell'istante del rilascio.
+
+**Il freno ora frena**: la decelerazione con il pedale giù è `BRAKE_MAX` 20 + 5% della
+velocità (~26 km/h/s a 130), circa il doppio del rilascio motore `DEC_COAST`. Prima
+l'unico modo di rallentare era il freno motore, e fermarsi richiedeva un tempo
+implausibile. Il ramo di puro rilascio resta, e si raggiunge quando è **lo slider** a
+chiedere meno.
+
+**Comporta**: con entrambi premuti **vince il freno** (valutato per secondo in
+`applyPedals()`). Lo slider continua a funzionare come prima ed è l'unico modo di
+ottenere una decelerazione in solo rilascio motore. `PEDAL_UP` e `PEDAL_DOWN` non
+esistono più.
+
+---
+
+## 2026-09-02 · L'alone di richiamo dei pedali diventa rosso
+
+**Scelta**: l'anello che pulsa attorno ai pedali finché non se ne tiene premuto uno
+(`@keyframes pedalCall`) passa da 4 px di azzurro ad alfa **.18** a 7 px di **rosso
+`#ff5f4d`** ad alfa **.55**, più un bagliore esterno di 30 px, il bordo che pulsa
+insieme, e un anello sottile che resta anche nella fase bassa.
+
+**Perché**: su una plancia scura l'azzurro al 18% non si vedeva. La demo restava ferma
+ad aspettare un input che nessuno capiva di dover dare — esattamente il rischio che i
+tre livelli di discoverability dovevano coprire. Il minimo dell'animazione non torna
+più a zero perché un alone che si annulla del tutto per un secondo lascia proprio la
+finestra in cui chi guarda non vede alcun invito.
+
+**Perché quel rosso**: `#ff5f4d` è già il colore del pedale del freno premuto.
+Introdurne un quarto per un solo elemento avrebbe sporcato la palette.
+
+**Comporta**: mentre l'animazione gira, `border-color` è controllato dai keyframe,
+quindi l'`:hover` non tinge più il bordo **prima** del primo utilizzo. Dopo torna
+normale.
+
+---
+
 ## 2026-09-02 · Un UFO nel cielo, come easter egg
 
 **Scelta**: in fondo a sinistra, basso sulle colline, ogni **5 minuti** compare un
@@ -153,7 +207,7 @@ l'unico gesto che sembra guidare. La sovrapposizione col cockpit li lega alla ve
 invece che al pannello di debug.
 
 **Discoverability** (il vero rischio: che l'utente non capisca di poter accelerare):
-tre livelli ridondanti — (1) i pedali *respirano* con un alone azzurro finché non ne
+tre livelli ridondanti — (1) i pedali *respirano* con un alone **rosso** finché non ne
 viene tenuto premuto uno la prima volta (`#pedals.untouched`), (2) sopra c'è la
 scritta "Hold a pedal — or the ↑ ↓ arrow keys" che svanisce al primo uso, (3) il
 popup di benvenuto lo dice e il suo bottone di chiusura è "Got it — hold ↑ to drive".

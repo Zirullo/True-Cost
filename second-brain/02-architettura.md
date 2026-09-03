@@ -85,10 +85,11 @@ Nessun ridisegno completo: l'SVG resta lo stesso, cambiano solo testi e classi.
 
 - **Slider Speed** → `state.targetSpeed` (0–240 km/h): la velocità *richiesta*,
   non quella reale — ci si arriva con la rampa di accelerazione e il cambio
-- **Pedali ↑ / ↓** → rampa su `state.targetSpeed` finché sono tenuti premuti
-  (+55 km/h al secondo in accelerazione, −95 in frenata), da mouse/touch o dalle
-  frecce della tastiera. Al rilascio la velocità richiesta resta dov'è arrivata.
-  Lo slider Speed si muove da solo per riflettere il pedale.
+- **Pedali ↑ / ↓** → finché sono tenuti premuti chiedono `PEDAL_LEAD` (8 km/h) in
+  più o in meno della velocità **reale**, da mouse/touch o dalle frecce della
+  tastiera: il divario non si chiude mai, quindi la vettura tira per tutto il
+  tempo. **Al rilascio la velocità richiesta viene agganciata a quella raggiunta**,
+  quindi non si tocca nulla e si mantiene l'andatura. Lo slider Speed segue.
 - **Reset trip** → chiude il viaggio, lo scrive nello storico, azzera gli accumulatori
   (stesso effetto del RESET dentro il cluster)
 
