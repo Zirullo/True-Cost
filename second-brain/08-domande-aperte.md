@@ -8,8 +8,13 @@ Da chiarire quando serve. Non bloccano il lavoro, ma cambiano le scelte.
   opzioni in [07-roadmap.md](07-roadmap.md)
 - **BEV**: quando torna, e in che forma — switcher, seconda pagina, o vista unica
   che si adatta al tipo di vettura?
-- **Pubblico della demo**: gira su un portatile davanti a una persona, o va
-  distribuita come link? Cambia quanto possiamo dipendere da servizi esterni
+- ~~**Pubblico della demo**: portatile o link?~~ → **risolta il 2026-09-03**: è
+  distribuita come link (https://zirullo.github.io/True-Cost/). Quindi gira su
+  macchine che non controlliamo: ogni dipendenza da un servizio esterno va sempre
+  con il suo fallback (vedi [05-dati-esterni.md](05-dati-esterni.md))
+- **Il repo è pubblico**, e con esso questo second-brain. Va bene, o le note vanno
+  spostate in un repo privato? Da decidere prima di scriverci dentro numeri
+  Stellantis non ancora comunicabili
 - **Lingua**: la UI è in inglese, queste note in italiano. Va bene così?
 
 ## Dati e affermazioni

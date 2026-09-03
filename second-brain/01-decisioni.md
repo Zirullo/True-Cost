@@ -5,6 +5,37 @@ Ordine cronologico inverso (la più recente in alto). Ogni voce: **cosa**, **per
 
 ---
 
+## 2026-09-03 · Una sola storia, e il push come unico canale di pubblicazione
+
+**Scelta**: il repo locale e quello su GitHub, fino a oggi separati, diventano una
+storia sola. Da qui in avanti si pubblica **solo** con `git push`: niente più upload
+di `index.html` dalla pagina web di GitHub. Questo stato è marcato **`v1.0`**.
+
+**Perché**: erano due progetti che si credevano lo stesso. Su GitHub un repo
+costruito trascinando il file nel browser — quindici salvataggi tutti chiamati
+"Add files via upload", solo `index.html` e la foto. Sul PC un `git init` separato,
+con i messaggi veri e tutto il `second-brain/`. Nessun collegamento fra i due
+(`git remote` era vuoto): le copie combaciavano per disciplina manuale, non per
+meccanismo, e bastava una dimenticanza per farle divergere in silenzio — con la
+versione online che è quella che il pubblico vede.
+
+Al momento dell'unione i due `index.html` avevano contenuto **identico** (differivano
+solo per i fine riga), quindi il merge non ha perso nulla. La storia degli upload da
+browser resta sotto, innestata nella nostra.
+
+**Comporta**: un upload dal web adesso crea un commit che il PC non ha, e il `push`
+successivo viene rifiutato — con conflitto da ricucire a mano dentro un file da
+oltre centomila caratteri. Il canale è uno solo, alla volta. Il link pubblico non
+cambia mai: GitHub Pages serve sempre l'`index.html` in cima a `main`, quindi ogni
+push aggiorna la demo allo stesso indirizzo. Dettagli operativi in
+[10-pubblicazione.md](10-pubblicazione.md).
+
+**Comporta anche**: il repo è **pubblico**, quindi da oggi queste note sono leggibili
+da chiunque abbia il link. Vedi la voce corrispondente in
+[08-domande-aperte.md](08-domande-aperte.md).
+
+---
+
 ## 2026-09-02 · I pedali comandano la velocità reale, e il rilascio è un cruise
 
 **Scelta**: tre stati e solo tre. **↑ tenuto** accelera finché è tenuto, **↓ tenuto**

@@ -21,16 +21,31 @@ Punto di ingresso: leggi questo file, poi salta alla nota che ti serve.
 | [07-roadmap.md](07-roadmap.md) | Prossimi passi, a partire dall'effetto velocità | A inizio sessione |
 | [08-domande-aperte.md](08-domande-aperte.md) | Cose non ancora decise / da verificare | Quando serve una decisione tua |
 | [09-strada.md](09-strada.md) | La strada procedurale nel parabrezza: prospettiva, curve, traffico | Per ritoccare l'effetto velocità |
+| [10-pubblicazione.md](10-pubblicazione.md) | Dove vive la demo, come si pubblica, come si torna indietro | Per aggiornare il link pubblico o recuperare una versione |
 
 ## File del progetto
 
 ```
 d:\Cowork\Simulator\
 ├─ index.html                      ← il simulatore attuale (design della foto)
-├─ OLD index.html                  ← versione precedente, doppio pannello ICE/BEV su canvas
 ├─ True-Cost project picture.jpg   ← immagine di riferimento del design (1147×641)
-└─ second-brain\                   ← queste note
+├─ second-brain\                   ← queste note
+├─ .gitignore                      ← tiene i backup manuali fuori dal repo
+│
+│  solo su disco, non su GitHub:
+├─ OLD index.html                  ← versione precedente, doppio pannello ICE/BEV su canvas
+├─ index - Copia*.html             ← backup manuali, sostituiti dalla cronologia git
+└─ BCK\
 ```
+
+## Dove vive
+
+Demo live: **https://zirullo.github.io/True-Cost/** — sempre questo indirizzo, si
+aggiorna a ogni `git push`. Repo pubblico: **https://github.com/Zirullo/True-Cost**.
+Versione marcata corrente: **`v1.0`**. Tutto il resto in
+[10-pubblicazione.md](10-pubblicazione.md).
+
+> Il repo è pubblico: **queste note sono leggibili da chiunque abbia il link.**
 
 ## Stato in una riga
 
