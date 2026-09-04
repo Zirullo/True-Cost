@@ -1107,6 +1107,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
                 <button class="sc" type="button" data-r="10000">10 km</button>
                 <button class="sc" type="button" data-r="20000">20 km</button>
                 <button class="sc on" type="button" data-r="road">Along this road</button>
+                <button class="sc" type="button" data-r="route">On my route</button>
               </div>
               <div class="mp-body">
                 <div class="mp-list" id="ap-stations"><div class="mp-empty" id="ap-none" hidden>No station in range.<br>Widen the search.</div></div>
@@ -1322,7 +1323,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       </div>
       <div class="help-section" style="border-left-color:#8fd8f5;grid-column:1/-1">
         <div class="help-section-title" style="color:#8fd8f5">▣ Centre display</div>
-        <p>The screen on the dashboard runs the app itself, and it is <strong>touchable</strong>: <strong>Cost history</strong> charts what every kilometre has cost you — one bar per 200 m of the road you are driving — over your previous trips: <strong>tap any of them</strong> to open it, with its own cost profile, litres, average speed and the price paid at the pump. <strong>Pump map</strong> &mdash; the view the demo opens on &mdash; ranks the stations around the car by price, cheapest in green with the halo, dearest in red: choose how far to look &mdash; 5, 10 or 20 km, or <em>along this road</em>, which is not a radius but the totems you are about to drive past, each one at the price its sign will show through the windshield &mdash; then <strong>tap a station and NAVIGATE</strong> to be driven there by a simulated navigator, arrow by arrow. <strong>Price history</strong> puts two years of the Italian pump price behind our own refuels: pick the window and how finely to sample it, and tap any stop to see what we paid against the market that day. <strong>Report</strong> is the view for whoever pays rather than drives: pick a week, a month or single trips, keep only the <strong>business</strong> ones or only the <strong>private</strong> ones, and the log becomes an expense claim &mdash; spend, kilometres, litres, &euro;/km, the <strong>business / private</strong> split and the recoverable VAT &mdash; ready for email, CSV, a fleet portal, an expense tool or a ride&#8209;hailing ledger. <em>The delivery is simulated: nothing leaves this page.</em></p>
+        <p>The screen on the dashboard runs the app itself, and it is <strong>touchable</strong>: <strong>Cost history</strong> charts what every kilometre has cost you — one bar per 200 m of the road you are driving — over your previous trips: <strong>tap any of them</strong> to open it, with its own cost profile, litres, average speed and the price paid at the pump. <strong>Pump map</strong> &mdash; the view the demo opens on &mdash; ranks the stations around the car by price, cheapest in green with the halo, dearest in red: choose how far to look &mdash; 5, 10 or 20 km, or <em>along this road</em>, which is not a radius but the totems you are about to drive past, each one at the price its sign will show through the windshield, or <em>on my route</em>, the same corridor for as long as no destination is set &mdash; then <strong>tap a station and NAVIGATE</strong> to be driven there by a simulated navigator, arrow by arrow. <strong>Price history</strong> puts two years of the Italian pump price behind our own refuels: pick the window and how finely to sample it, and tap any stop to see what we paid against the market that day. <strong>Report</strong> is the view for whoever pays rather than drives: pick a week, a month or single trips, keep only the <strong>business</strong> ones or only the <strong>private</strong> ones, and the log becomes an expense claim &mdash; spend, kilometres, litres, &euro;/km, the <strong>business / private</strong> split and the recoverable VAT &mdash; ready for email, CSV, a fleet portal, an expense tool or a ride&#8209;hailing ledger. <em>The delivery is simulated: nothing leaves this page.</em></p>
       </div>
     </div>
     <button id="help-cta">Got it — hold &#8593; to drive →</button>
@@ -3616,14 +3617,21 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
 
     /* "along this road" is not a radius: it is a corridor either side of the
        road, running far ahead and only a little way back — the stations you
-       would actually pass without leaving the route. */
-    const inScope = s => scope === 'road'
+       would actually pass without leaving the route.
+       The route is the same corridor for now: with no destination set, the
+       way ahead IS the road, so the two searches can only agree. It gets its
+       own name because the day there is a navigation route they part company:
+       the road follows the tarmac under the wheels, the route follows the
+       turns the navigator has planned. */
+    const corridor = () => scope === 'road' || scope === 'route';
+    const inScope = s => corridor()
       ? (Math.abs(s.x) <= CORRIDOR && s.y > -1200 && s.y <= AHEAD)
       : distOf(s) <= scope;
     const scopeLabel = () => scope === 'road' ? 'STATIONS ALONG THIS ROAD'
+      : scope === 'route' ? 'STATIONS ON MY ROUTE'
       : 'STATIONS WITHIN ' + (scope / 1000).toFixed(scope % 1000 ? 1 : 0) + ' KM';
     /* how far the mini map sees, in metres of half-height */
-    const mapReach = () => scope === 'road' ? AHEAD * 0.62 : scope * 1.14;
+    const mapReach = () => corridor() ? AHEAD * 0.62 : scope * 1.14;
 
     /* green -> amber -> red across the price range on screen */
     function priceColor(t) {
@@ -3672,7 +3680,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     const scopeBtns = Array.prototype.slice.call(root.querySelectorAll('.mp-scope .sc'));
     scopeBtns.forEach(b => b.addEventListener('click', () => {
       const v = b.dataset.r;
-      scope = v === 'road' ? 'road' : +v;
+      scope = (v === 'road' || v === 'route') ? v : +v;
       scopeBtns.forEach(o => o.classList.toggle('on', o === b));
       if (sel && !inScope(sel)) sel = null;
       paintList(); drawMap(performance.now()); b.blur();
@@ -3747,7 +3755,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
 
       /* the search decides the framing: a radius puts the car in the middle
          of its circle, the road puts it at the bottom with the way ahead */
-      const along = scope === 'road';
+      const along = corridor();
       const cx = cw / 2, cy = along ? ch * 0.86 : ch * 0.5;
       const reach = mapReach();
       const k = (along ? ch * 0.82 : ch * 0.46) / reach;   // px per metre
