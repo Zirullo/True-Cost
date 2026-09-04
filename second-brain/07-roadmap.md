@@ -27,10 +27,17 @@
 
 ## Fatto
 
-- ✅ **L'app True Cost sul display centrale** (2026-09-04): due schede cliccabili,
-  *Cost history* (viaggio in corso dal vivo + viaggi precedenti) e *Local pump map*
-  (stazioni colorate per prezzo, verde la più conveniente); via i tasti clima per
-  fare spazio — [11-plancia-estesa.md](11-plancia-estesa.md)
+- ✅ **La pump map e il parabrezza dicono lo stesso prezzo** (2026-09-04): sotto
+  «lungo questa strada» ci sono i cartelloni veri, non stazioni inventate, e la
+  demo si apre su quella vista — [11-plancia-estesa.md](11-plancia-estesa.md)
+
+- ✅ **L'app True Cost sul display centrale** (2026-09-04): quattro viste
+  cliccabili, *Cost history* (viaggio in corso dal vivo + un mese di viaggi
+  passati), *Pump map* (stazioni colorate per prezzo, verde la più conveniente,
+  entro 5 / 10 / 20 km o lungo la strada), *Price history* e **Report** (nota spese
+  con divisione business / privato e IVA recuperabile, invio simulato verso email,
+  CSV, portale di flotta, expense o ride-hailing); via i tasti clima per fare
+  spazio — [11-plancia-estesa.md](11-plancia-estesa.md)
 
 - ✅ Visuale allargata a 1720 fino al display centrale (2026-09-04) —
   [11-plancia-estesa.md](11-plancia-estesa.md)

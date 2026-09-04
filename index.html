@@ -229,16 +229,20 @@ body{
 .ap-now em{font-style:normal;font-size:9px;color:#7f9bb1;letter-spacing:1px;margin-left:3px}
 .ap-clock{font-size:11px;color:#9fb6c9;letter-spacing:.6px}
 
-/* ── the three view buttons ──────────────────────────
+/* ── the four view buttons ───────────────────────────
    They have to read as BUTTONS, not as a menu bar. Until 2026-09-04 they
    were joined tabs sharing a border with the pane below: one object, and
    nobody thought to touch it. Now each one is detached — its own gap, its
    own rounded box, a light on the top edge and a shadow underneath — and
-   it sinks 2px when pressed. The view you are in stays pressed and lit. */
-.ap-tabs{flex:none;height:46px;display:flex;gap:9px;padding:5px 11px 3px}
+   it sinks 2px when pressed. The view you are in stays pressed and lit.
+
+   REPORT made them four, and four times "Price history" does not fit at
+   the old type size: the label loses a little size and most of its letter
+   spacing, so the longest one still sits inside its button. */
+.ap-tabs{flex:none;height:46px;display:flex;gap:7px;padding:5px 11px 3px}
 #app .ap-tab{
-  flex:1;border-radius:9px;display:flex;align-items:center;justify-content:center;gap:6px;
-  font-size:9.4px;letter-spacing:1.15px;font-weight:600;white-space:nowrap;
+  flex:1;border-radius:9px;display:flex;align-items:center;justify-content:center;gap:5px;
+  font-size:8.5px;letter-spacing:.7px;font-weight:600;white-space:nowrap;
   text-transform:uppercase;color:#9ab3c7;
   background:linear-gradient(180deg,#1d3042,#111c27);
   border:1px solid rgba(140,190,225,.22);
@@ -246,7 +250,7 @@ body{
              inset 0 1px 0 rgba(255,255,255,.11);
   transition:transform .09s, box-shadow .09s, color .12s, background .12s;
 }
-#app .ap-tab svg{width:14px;height:14px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8}
+#app .ap-tab svg{width:13px;height:13px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8}
 #app .ap-tab:hover{color:#dbecf8;background:linear-gradient(180deg,#24394d,#16232f)}
 #app .ap-tab:active{transform:translateY(2px);
   box-shadow:0 0 0 rgba(0,0,0,.5), 0 1px 3px rgba(0,0,0,.45),
@@ -309,8 +313,14 @@ body{
 .ch-axis{position:absolute;left:8px;right:8px;bottom:1px;display:flex;
          justify-content:space-between;font-size:8px;color:#68829a}
 
-.ch-hist{flex:1;min-height:0;margin-top:7px}
-.ch-hist .hd{font-size:8.5px;letter-spacing:1.5px;color:#7f9bb1;margin-bottom:2px}
+/* a month of trips does not fit in the box, and truncating the log would be
+   a lie about what the app knows: the list scrolls instead. */
+.ch-hist{flex:1;min-height:0;margin-top:7px;display:flex;flex-direction:column}
+.ch-hist .hd{flex:none;font-size:8.5px;letter-spacing:1.5px;color:#7f9bb1;margin-bottom:2px}
+#ap-trips{flex:1;min-height:0;overflow-y:auto;
+          scrollbar-width:thin;scrollbar-color:rgba(120,170,210,.3) transparent}
+#ap-trips::-webkit-scrollbar{width:3px}
+#ap-trips::-webkit-scrollbar-thumb{background:rgba(120,170,210,.3);border-radius:3px}
 .ch-row{display:grid;grid-template-columns:42px 1fr 48px 54px 50px;align-items:center;
         height:21px;font-size:11px;color:#c8d8e6;cursor:pointer;
         padding:0 4px;margin:0 -4px;border-radius:4px;
@@ -454,6 +464,130 @@ body{
 .pv-foot .up{color:#ff8f6d}
 .pv-foot .dn{color:#3ddc84}
 
+/* ── REPORT ───────────────────────────────────────────
+   The pane a fleet manager reads, so it is laid out like a claim form and
+   not like a dashboard: what was selected on the left, what it adds up to
+   on the right, and the way out along the bottom. */
+.rp-ctl{flex:none;height:20px;display:flex;align-items:center;gap:5px}
+.rp-ctl .gap{flex:1}
+.rp-cnt{font-size:8.2px;letter-spacing:1.2px;color:#7f9bb1}
+.rp-body{flex:1;min-height:0;display:flex;gap:8px;margin-top:6px}
+/* the log and the filter that drives it, one column: the card on the right
+   is already as tall as the pane allows, so the four chips are paid for out
+   of the list — one row of trips fewer — and not out of the claim */
+.rp-col{width:208px;flex:none;min-height:0;display:flex;flex-direction:column}
+.rp-use{flex:none;height:18px;display:flex;align-items:center;gap:4px;margin-bottom:4px}
+
+/* the log, ticked trip by trip */
+.rp-list{flex:1;min-height:0;overflow-y:auto;
+         scrollbar-width:thin;scrollbar-color:rgba(120,170,210,.3) transparent}
+.rp-list::-webkit-scrollbar{width:3px}
+.rp-list::-webkit-scrollbar-thumb{background:rgba(120,170,210,.3);border-radius:3px}
+.rp-r{display:grid;grid-template-columns:11px 30px 1fr 40px;gap:5px;align-items:center;
+      height:21px;padding:0 4px;border-radius:4px;cursor:pointer;
+      font-size:10px;color:#c8d8e6;border-top:1px solid rgba(120,170,210,.09)}
+.rp-r:hover{background:rgba(255,255,255,.05)}
+.rp-r .bx{position:relative;width:11px;height:11px;border-radius:3px;
+          border:1px solid rgba(120,170,210,.45);background:rgba(255,255,255,.04)}
+.rp-r.on .bx{background:var(--blue);border-color:var(--blue);
+             box-shadow:0 0 7px rgba(0,174,239,.5)}
+.rp-r.on .bx::after{content:'';position:absolute;left:3.2px;top:.8px;width:2.4px;height:5.4px;
+                    transform:rotate(45deg);
+                    border:solid #04151f;border-width:0 1.6px 1.6px 0}
+.rp-r .d{font-size:8.6px;color:#8fa6ba;letter-spacing:.2px;white-space:nowrap}
+.rp-r .r{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:#9fb6c9}
+.rp-r.on .r{color:#e6f0f8}
+.rp-r .v{text-align:right;font-weight:600;color:#fff;font-size:10.5px}
+/* the one mark that says whose money it is */
+.rp-r .r b{font-style:normal;font-weight:600;font-size:8px;letter-spacing:1px;
+           color:#8fd8f5;margin-right:4px}
+.rp-r.prv .r b{color:#c9a4e8}
+
+/* what the selection adds up to */
+.rp-card{flex:1;min-width:0;display:flex;flex-direction:column;padding:7px 9px;
+         border-radius:8px;background:rgba(255,255,255,.035);
+         border:1px solid rgba(120,170,210,.12)}
+.rp-hd{flex:none;display:flex;justify-content:space-between;align-items:baseline;
+       font-size:8.4px;letter-spacing:1.4px;color:#7f9bb1}
+.rp-hd b{color:#eaf6ff;font-weight:600;letter-spacing:1.6px}
+.rp-who{flex:none;font-size:8.4px;letter-spacing:.6px;color:#68829a;margin-top:2px;
+        white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rp-grid{flex:none;margin-top:6px;display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.rp-grid div{background:rgba(255,255,255,.05);border:1px solid rgba(120,170,210,.10);
+             border-radius:6px;padding:3px 6px;display:flex;flex-direction:column}
+.rp-grid b{font-size:13px;font-weight:600;color:#fff;line-height:1.2}
+.rp-grid i{font-style:normal;font-size:7.2px;letter-spacing:1px;color:#7f9bb1}
+.rp-split{flex:none;margin-top:7px}
+.rp-split .hd{display:flex;justify-content:space-between;
+              font-size:7.8px;letter-spacing:1.2px;color:#7f9bb1}
+.rp-split .bar{height:7px;margin-top:3px;border-radius:4px;overflow:hidden;
+               background:rgba(201,164,232,.30)}
+.rp-split .bar i{display:block;height:100%;width:0;border-radius:4px;
+                 background:linear-gradient(90deg,#0d8fc4,#37c6f5);
+                 box-shadow:0 0 9px rgba(0,174,239,.45);transition:width .25s}
+.rp-split .lg{display:flex;justify-content:space-between;margin-top:2px;
+              font-size:8.4px;color:#8fd8f5}
+.rp-split .lg span:last-child{color:#c9a4e8}
+/* the line an accountant looks for first */
+/* it sits on the bottom edge of the card, whatever is above it */
+.rp-vat{flex:none;margin-top:auto;padding:5px 7px;border-radius:6px;
+        font-size:8.8px;line-height:1.45;color:#bff4d8;
+        background:rgba(61,220,132,.09);border:1px solid rgba(61,220,132,.28)}
+.rp-vat b{color:#fff;font-weight:600}
+
+.rp-dest{flex:none;height:20px;margin-top:6px;display:flex;align-items:center;gap:5px}
+.rp-foot{flex:none;height:28px;margin-top:6px;display:flex;align-items:center;gap:8px;
+         padding:0 9px;border-radius:7px;background:rgba(0,174,239,.08);
+         border:1px solid rgba(0,174,239,.30)}
+.rp-env{flex:1;min-width:0;font-size:9px;letter-spacing:.4px;color:#a8c2d6;
+        white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rp-env b{color:#eaf6ff;font-weight:600}
+#app .rp-foot .go{
+  flex:none;height:20px;padding:0 11px;border-radius:10px;
+  font-size:9px;letter-spacing:1.3px;font-weight:600;color:#04151f;
+  background:linear-gradient(180deg,#63d8ff,#0f9fd4);
+  box-shadow:0 0 12px rgba(0,174,239,.5);
+}
+#app .rp-foot .go:hover{background:linear-gradient(180deg,#8ae6ff,#19b3ea)}
+#app .rp-foot .go[disabled]{opacity:.35;cursor:default;box-shadow:none}
+
+/* ── the send, over the pane ── */
+#rp-out{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;
+        padding:9px 11px 8px;background:#080f17}
+#rp-out[hidden]{display:none}
+.ro-top{flex:none;height:15px;display:flex;align-items:center;gap:7px;
+        font-size:8.6px;letter-spacing:1.3px;color:#7f9bb1}
+.ro-top b{color:#eaf6ff;font-weight:600;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#app #ro-x{margin-left:auto;flex:none;font-size:8px;letter-spacing:1.2px;padding:2px 7px;
+      border-radius:9px;color:#ffb0a0;border:1px solid rgba(255,120,90,.45);
+      background:rgba(255,120,90,.12)}
+#app #ro-x:hover{color:#fff;background:rgba(255,120,90,.26)}
+.ro-main{flex:none;height:104px;display:flex;align-items:center;gap:14px;
+         margin-top:7px;padding:0 16px;border-radius:10px;
+         background:linear-gradient(180deg,rgba(0,174,239,.12),rgba(0,174,239,.03));
+         border:1px solid rgba(0,174,239,.28)}
+.ro-mark{flex:none;width:78px;height:78px}
+.ro-mark svg{width:100%;height:100%;fill:none;stroke:#eaf9ff;stroke-width:5;
+             stroke-linecap:round;stroke-linejoin:round}
+.ro-txt{min-width:0}
+.ro-st{font-size:20px;font-weight:600;color:#fff;letter-spacing:-.2px}
+.ro-sub{font-size:10px;color:#9fb6c9;margin-top:3px}
+.ro-bar{flex:none;height:4px;margin-top:7px;border-radius:2px;
+        background:rgba(255,255,255,.07);overflow:hidden}
+.ro-bar i{display:block;height:100%;width:0;border-radius:2px;
+          background:linear-gradient(90deg,#0d8fc4,#63d8ff);transition:width .3s}
+.ro-log{flex:1;min-height:0;margin-top:7px;overflow:hidden;
+        font-size:9px;line-height:1.55;color:#8fa6ba}
+.ro-log .r{display:flex;gap:6px}
+.ro-log .r .g{color:#3ddc84}
+.ro-log .r b{color:#dbe9f5;font-weight:600}
+.ro-note{flex:none;height:14px;font-size:8px;letter-spacing:1.1px;color:#55708a}
+/* delivered: the whole box turns green and the arrow becomes a tick */
+#rp-out.done .ro-main{background:linear-gradient(180deg,rgba(61,220,132,.16),rgba(61,220,132,.04));
+                      border-color:rgba(61,220,132,.5)}
+#rp-out.done .ro-mark svg{stroke:#7dffb8;filter:drop-shadow(0 0 10px rgba(61,220,132,.6))}
+#rp-out.done .ro-bar i{width:100%;background:linear-gradient(90deg,#27b96c,#7dffb8)}
+
 /* cluster typography */
 #cluster text{font-family:"Segoe UI",Roboto,Arial,sans-serif;fill:#fff}
 .lbl{font-size:17px;letter-spacing:.6px;fill:#cfe0ee}
@@ -578,6 +712,24 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     border-color:#ff5f4d;
   }
 }
+/* the same nudge for the centre display: until the first tap it wears a halo
+   and a line above it, because nothing else on the screen says it is live. */
+#stack.untouched #bezel{animation:screenCall 2.4s ease-in-out infinite}
+@keyframes screenCall{
+  0%,100%{box-shadow:0 10px 26px rgba(0,0,0,.75), inset 0 1px 0 rgba(255,255,255,.10),
+                     0 0 0 2px rgba(0,174,239,.30), 0 0 16px 3px rgba(0,174,239,.15)}
+  50%    {box-shadow:0 10px 26px rgba(0,0,0,.75), inset 0 1px 0 rgba(255,255,255,.10),
+                     0 0 0 6px rgba(0,174,239,.55), 0 0 34px 10px rgba(0,174,239,.38)}
+}
+#display-hint{
+  position:absolute;left:50%;bottom:100%;transform:translateX(-50%);
+  margin-bottom:10px;white-space:nowrap;z-index:7;
+  font-size:11px;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;
+  color:var(--blue);text-shadow:0 2px 10px #000, 0 0 18px rgba(0,0,0,.9);
+  transition:opacity .5s;pointer-events:none;
+}
+#stack:not(.untouched) #display-hint{opacity:0}
+
 #pedal-hint{
   position:absolute;left:50%;bottom:100%;transform:translateX(-50%);
   margin-bottom:9px;white-space:nowrap;
@@ -780,7 +932,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
                stroke="rgba(90,255,180,.42)" stroke-width="5" filter="url(#soft)"/>
       <text x="864" y="240" text-anchor="middle" font-size="18" letter-spacing="1.1" fill="#e4f1ea">VEHICLE STATUS</text>
       <text x="864" y="266" text-anchor="middle" font-size="16" fill="#cfe4d9">Last Refuel Price:</text>
-      <text id="refuel" x="864" y="292" text-anchor="middle" font-size="25" font-weight="600">1.91 €/L</text>
+      <text id="refuel" x="864" y="292" text-anchor="middle" font-size="25" font-weight="600">1.83 €/L</text>
       <line x1="797" y1="302" x2="931" y2="302" stroke="#7fd6ae" stroke-width=".8" opacity=".35"/>
       <text x="864" y="319" text-anchor="middle" font-size="16" fill="#cfe4d9">Local Price:</text>
       <text x="864" y="344" text-anchor="middle" font-size="25" font-weight="600"><tspan id="local">1.92 €</tspan><tspan id="localDist" dx="7" font-size="13" font-weight="400" fill="#8fd3b4">· 2.0 km</tspan></text>
@@ -876,7 +1028,8 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     <ellipse cx="1450" cy="310" rx="308" ry="222" fill="rgba(70,150,220,.07)" filter="url(#extBlur14)"/>
   </svg>
 
-  <div id="stack">
+  <div id="stack" class="untouched">
+    <div id="display-hint">Click the display &mdash; it is live</div>
     <div id="bezel">
       <div id="glass">
         <!-- the True Cost app. Fixed 454x382 design space, scaled onto the
@@ -884,24 +1037,28 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         <div id="app">
           <div class="ap-top">
             <div class="ap-brand">TRUE<span>COST</span></div>
-            <div class="ap-chip">BENZINA</div>
+            <div class="ap-chip">GASOLINE</div>
             <div class="ap-sp"></div>
             <div class="ap-now"><span id="ap-eurkm">0.14</span><em>&euro;/KM</em></div>
             <div class="ap-clock" id="ap-clock">--:--</div>
           </div>
 
           <div class="ap-tabs">
-            <button class="ap-tab on" type="button" data-v="history">
+            <button class="ap-tab" type="button" data-v="history">
               <svg viewBox="0 0 16 16"><path d="M2 13.2h12M3.4 11V6.4M6.7 11V3.2M10 11V8.2M13.3 11V5.2" stroke-linecap="round"/></svg>
               Cost history
             </button>
-            <button class="ap-tab" type="button" data-v="map">
+            <button class="ap-tab on" type="button" data-v="map">
               <svg viewBox="0 0 16 16"><path d="M8 14.2s4.5-4.4 4.5-7.5a4.5 4.5 0 1 0-9 0C3.5 9.8 8 14.2 8 14.2Z"/><circle cx="8" cy="6.6" r="1.7"/></svg>
               Pump map
             </button>
             <button class="ap-tab" type="button" data-v="price">
               <svg viewBox="0 0 16 16"><path d="M1.8 11.4 5.4 7l3 2.6L14.2 3" stroke-linecap="round" stroke-linejoin="round"/><path d="M10.6 3h3.6v3.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
               Price history
+            </button>
+            <button class="ap-tab" type="button" data-v="report">
+              <svg viewBox="0 0 16 16"><path d="M4.2 1.8h5l3 3v9.4h-8z" stroke-linejoin="round"/><path d="M9.2 1.8v3h3M6.2 8h4M6.2 10.6h4" stroke-linecap="round"/></svg>
+              Report
             </button>
           </div>
 
@@ -921,7 +1078,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
                   <div class="ch-cell"><b id="ap-c1">0.14</b><i id="ap-l1">&euro;/KM NOW</i></div>
                   <div class="ch-cell"><b id="ap-c2">0.20</b><i id="ap-l2">&euro;/KM AVG</i></div>
                   <div class="ch-cell"><b id="ap-c3">7.1</b><i id="ap-l3">L / 100 KM</i></div>
-                  <div class="ch-cell"><b id="ap-c4">1.91</b><i id="ap-l4">TANK &euro;/L</i></div>
+                  <div class="ch-cell"><b id="ap-c4">1.83</b><i id="ap-l4">TANK &euro;/L</i></div>
                 </div>
               </div>
 
@@ -941,15 +1098,15 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
             <!-- ── LOCAL PUMP MAP ── -->
             <div class="ap-pane" id="pane-map" hidden>
               <div class="mp-head">
-                <span><b id="ap-nst">8</b> <span id="ap-scopelab">STATIONS WITHIN 2.5 KM</span></span>
+                <span><b id="ap-nst">8</b> <span id="ap-scopelab">STATIONS WITHIN 10 KM</span></span>
                 <span>SORTED BY PRICE</span>
               </div>
               <div class="mp-scope">
                 <span class="lb">SEARCH</span>
-                <button class="sc" type="button" data-r="1000">1 km</button>
-                <button class="sc on" type="button" data-r="2500">2.5 km</button>
                 <button class="sc" type="button" data-r="5000">5 km</button>
-                <button class="sc" type="button" data-r="road">Along this road</button>
+                <button class="sc" type="button" data-r="10000">10 km</button>
+                <button class="sc" type="button" data-r="20000">20 km</button>
+                <button class="sc on" type="button" data-r="road">Along this road</button>
               </div>
               <div class="mp-body">
                 <div class="mp-list" id="ap-stations"><div class="mp-empty" id="ap-none" hidden>No station in range.<br>Widen the search.</div></div>
@@ -1003,6 +1160,94 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
                 <div><b id="pv-avg">1.79</b><i>WE PAID AVG</i></div>
               </div>
               <div class="pv-foot" id="pv-foot">&mdash;</div>
+            </div>
+
+            <!-- ── REPORT ──────────────────────────────────
+                 What the other three panes are for, once the car is not
+                 yours alone: pick the trips, see the claim they add up to,
+                 and send it where the money is actually accounted for. -->
+            <div class="ap-pane" id="pane-report" hidden>
+              <div class="rp-ctl">
+                <span class="lb">PERIOD</span>
+                <button class="sc" type="button" data-w="7">THIS WEEK</button>
+                <button class="sc on" type="button" data-w="30">THIS MONTH</button>
+                <button class="sc" type="button" data-w="0">CUSTOM</button>
+                <span class="gap"></span>
+                <span class="rp-cnt" id="rp-cnt">18 TRIPS SELECTED</span>
+              </div>
+
+              <div class="rp-body">
+                <!-- the second axis, and it belongs to the log and not to the
+                     card: a claim is rarely the whole month, it is the
+                     company's half of it. These four are commands, not a
+                     view — they tick and untick inside the period above. -->
+                <div class="rp-col">
+                  <div class="rp-use">
+                    <button class="sc" type="button" data-u="biz">BUSINESS</button>
+                    <button class="sc" type="button" data-u="prv">PRIVATE</button>
+                    <button class="sc on" type="button" data-u="all">ALL</button>
+                    <button class="sc" type="button" data-u="none">NONE</button>
+                  </div>
+                  <div class="rp-list" id="rp-list"></div>
+                </div>
+
+                <div class="rp-card">
+                  <div class="rp-hd">
+                    <b>EXPENSE REPORT</b>
+                    <span id="rp-id">TC-2609-0001</span>
+                  </div>
+                  <div class="rp-who" id="rp-who">
+                    R. PIERSANTI &middot; AB&nbsp;123&nbsp;CD &middot; CC OPS&#8209;04
+                  </div>
+                  <div class="rp-grid">
+                    <div><b id="rp-eur">0.00</b><i>TOTAL &euro;</i></div>
+                    <div><b id="rp-km">0</b><i>KM</i></div>
+                    <div><b id="rp-lit">0.0</b><i>LITRES</i></div>
+                    <div><b id="rp-epk">0.000</b><i>&euro; / KM</i></div>
+                    <div><b id="rp-l100">0.0</b><i>L / 100 KM</i></div>
+                    <div><b id="rp-paid">0.00</b><i>&euro;/L PAID</i></div>
+                  </div>
+                  <div class="rp-split">
+                    <div class="hd"><span>BUSINESS / PRIVATE</span><span id="rp-splitpc">0%</span></div>
+                    <div class="bar"><i id="rp-splitbar"></i></div>
+                    <div class="lg"><span id="rp-biz">business &euro; 0.00</span>
+                         <span id="rp-prv">private &euro; 0.00</span></div>
+                  </div>
+                  <div class="rp-vat" id="rp-vat">&mdash;</div>
+                </div>
+              </div>
+
+              <div class="rp-dest">
+                <span class="lb">SEND TO</span>
+                <button class="sc on" type="button" data-d="mail">EMAIL</button>
+                <button class="sc" type="button" data-d="csv">CSV</button>
+                <button class="sc" type="button" data-d="fleet">FLEET PORTAL</button>
+                <button class="sc" type="button" data-d="expense">EXPENSE</button>
+                <button class="sc" type="button" data-d="ride">RIDE&#8209;HAIL</button>
+              </div>
+
+              <div class="rp-foot">
+                <div class="rp-env" id="rp-env">&mdash;</div>
+                <button class="go" type="button" id="rp-send">SEND &#9654;</button>
+              </div>
+
+              <!-- the send itself: simulated, and honest about it -->
+              <div id="rp-out" hidden>
+                <div class="ro-top"><span>SENDING REPORT</span><b id="ro-dest">&mdash;</b>
+                  <button type="button" id="ro-x">&#10005; CLOSE</button></div>
+                <div class="ro-main">
+                  <div class="ro-mark" id="ro-mark">
+                    <svg viewBox="0 0 64 64"><path id="ro-path" d="M32 8v34M18 30l14 14 14-14"/></svg>
+                  </div>
+                  <div class="ro-txt">
+                    <div class="ro-st" id="ro-st">Composing&hellip;</div>
+                    <div class="ro-sub" id="ro-sub">&nbsp;</div>
+                  </div>
+                </div>
+                <div class="ro-bar"><i id="ro-fill"></i></div>
+                <div class="ro-log" id="ro-log"></div>
+                <div class="ro-note">Simulated delivery &mdash; nothing leaves this page.</div>
+              </div>
             </div>
           </div>
         </div>
@@ -1068,7 +1313,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       </div>
       <div class="help-section" style="border-left-color:var(--blue)">
         <div class="help-section-title" style="color:var(--blue)">● Live prices</div>
-        <p><strong>Local Price</strong> is the price on the totem of the <strong>next station ahead</strong>, with the distance to it counting down — watch for it on the right of the road. Stations scatter ± 15 cents around the live local average (MIMIT open data, stations within 50 km). <strong>Last Refuel Price</strong> is what the fuel in the tank actually cost — and the trip cost is computed on that.</p>
+        <p><strong>Local Price</strong> is the price on the totem of the <strong>next station ahead</strong>, with the distance to it counting down — watch for it on the right of the road. Stations scatter about 15 cents either side of the live local average (MIMIT open data, stations within 50 km), with the motorway ones further above and the whitelabels below &mdash; and <strong>the same totem is the row you see in the pump map</strong>, under <em>along this road</em>. <strong>Last Refuel Price</strong> is what the fuel in the tank actually cost — and the trip cost is computed on that.</p>
       </div>
       <div class="help-section" style="border-left-color:var(--green);grid-column:1/-1">
         <div class="help-section-title" style="color:var(--green)">● Trip &amp; tank</div>
@@ -1077,7 +1322,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       </div>
       <div class="help-section" style="border-left-color:#8fd8f5;grid-column:1/-1">
         <div class="help-section-title" style="color:#8fd8f5">▣ Centre display</div>
-        <p>The screen on the dashboard runs the app itself, and it is <strong>touchable</strong>: <strong>Cost history</strong> charts what every kilometre has cost you — one bar per 200 m of the road you are driving — over your previous trips: <strong>tap any of them</strong> to open it, with its own cost profile, litres, average speed and the price paid at the pump. <strong>Pump map</strong> ranks the stations around the car by price, cheapest in green with the halo, dearest in red: choose how far to look &mdash; 1, 2.5 or 5 km, or <em>along this road</em> &mdash; then <strong>tap a station and NAVIGATE</strong> to be driven there by a simulated navigator, arrow by arrow. <strong>Price history</strong> puts two years of the Italian pump price behind our own refuels: pick the window and how finely to sample it, and tap any stop to see what we paid against the market that day.</p>
+        <p>The screen on the dashboard runs the app itself, and it is <strong>touchable</strong>: <strong>Cost history</strong> charts what every kilometre has cost you — one bar per 200 m of the road you are driving — over your previous trips: <strong>tap any of them</strong> to open it, with its own cost profile, litres, average speed and the price paid at the pump. <strong>Pump map</strong> &mdash; the view the demo opens on &mdash; ranks the stations around the car by price, cheapest in green with the halo, dearest in red: choose how far to look &mdash; 5, 10 or 20 km, or <em>along this road</em>, which is not a radius but the totems you are about to drive past, each one at the price its sign will show through the windshield &mdash; then <strong>tap a station and NAVIGATE</strong> to be driven there by a simulated navigator, arrow by arrow. <strong>Price history</strong> puts two years of the Italian pump price behind our own refuels: pick the window and how finely to sample it, and tap any stop to see what we paid against the market that day. <strong>Report</strong> is the view for whoever pays rather than drives: pick a week, a month or single trips, keep only the <strong>business</strong> ones or only the <strong>private</strong> ones, and the log becomes an expense claim &mdash; spend, kilometres, litres, &euro;/km, the <strong>business / private</strong> split and the recoverable VAT &mdash; ready for email, CSV, a fleet portal, an expense tool or a ride&#8209;hailing ledger. <em>The delivery is simulated: nothing leaves this page.</em></p>
       </div>
     </div>
     <button id="help-cta">Got it — hold &#8593; to drive →</button>
@@ -1141,13 +1386,128 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     targetSpeed: 128, currentSpeed: 128, currentRpm: 2250,
     gear: 5, shiftLock: 0,
     driftAngle: 0,
-    refuelPrice: 1.91,        // price of the fuel actually in the tank
+    refuelPrice: 1.83,        // replaced below, off the price history
     marketPrice: 1.85,        // live average around the vehicle: the centre the
                               // stations along the road scatter around
     tankCapacity: 45, tankLiters: 27.5,
     tripKm: 48.09, tripLiters: 5.02, tripCost: 9.55,
     instantEurKm: 0.14, instantL100: 7.14
   };
+
+  /* ══════════════════════════════════════════════════════════
+     PRICE HISTORY — one source of truth for every price shown
+     ──────────────────────────────────────────────────────────
+     Two years of the Italian national average, self-service petrol, in euro
+     per litre. It used to live inside the app module and serve only the
+     Price history chart; every other price in the demo — the totems along
+     the road, the pumps on the map, the tank in the cluster, what the past
+     trips paid — invented its own scatter around `state.marketPrice`, and
+     the four disagreed. They all read this now, so a refuel costs the same
+     kind of money wherever it is quoted.
+
+     `ANCH` is one anchor per month, oldest first: real published averages as
+     far as they go, then a plausible continuation. Whatever the anchors say,
+     the LAST SIXTY DAYS are bent onto the live market price the API returns,
+     so the whole history ends where the car actually is.
+     ══════════════════════════════════════════════════════════ */
+  const PRICES = (function () {
+    const DAYS = 731;                        // today included, two years back
+    const ANCH = [
+      1.734, 1.723, 1.727, 1.735,                          /* Sep–Dec 2024 */
+      1.782, 1.800, 1.775, 1.748, 1.719, 1.728,            /* Jan–Jun 2025 */
+      1.745, 1.738, 1.722, 1.714, 1.706, 1.699,            /* Jul–Dec 2025 */
+      1.731, 1.756, 1.771, 1.762, 1.744, 1.757,            /* Jan–Jun 2026 */
+      1.789, 1.802, 1.812                                  /* Jul–Sep 2026 */
+    ];
+
+    /* its own seeded stream, so the history is identical every run and does
+       not depend on how many random numbers the app happened to draw first */
+    let seed = 1904;
+    const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+
+    /* the same wobble every run: a slow weekly drift plus a small daily one,
+       so a DAY step looks like a market and not like a smooth curve */
+    const noise = [];
+    (function () {
+      let w = 0;
+      for (let d = 0; d < DAYS; d++) {
+        if (d % 7 === 0) w = (rnd() * 2 - 1) * 0.011;
+        noise.push(w + (rnd() * 2 - 1) * 0.005);
+      }
+    })();
+
+    /* two curves, not one: `base` is the monthly trend alone, `series` is
+       that trend plus the daily wobble. Anything compared against "the
+       market that day" is compared against `base`, because that is the line
+       a weekly or monthly chart actually draws. */
+    const base = new Array(DAYS), series = new Array(DAYS);
+    let builtOn = -1;
+
+    function build() {
+      const per = (DAYS - 1) / (ANCH.length - 1);
+      for (let d = 0; d < DAYS; d++) {
+        const t = d / per, i = Math.min(ANCH.length - 2, Math.floor(t));
+        const f = t - i, e = f * f * (3 - 2 * f);        // smoothstep between months
+        base[d] = ANCH[i] + (ANCH[i + 1] - ANCH[i]) * e;
+      }
+      /* join the live price: a ramp over the last two months, never a step */
+      const gap = state.marketPrice - (base[DAYS - 1] + noise[DAYS - 1]);
+      for (let d = DAYS - 60; d < DAYS; d++) base[d] += gap * ((d - (DAYS - 61)) / 60);
+      for (let d = 0; d < DAYS; d++) series[d] = base[d] + noise[d];
+      builtOn = state.marketPrice;
+    }
+    const ensure = () => { if (builtOn !== state.marketPrice) build(); };
+    const clamp = d => d < 0 ? 0 : d > DAYS - 1 ? DAYS - 1 : d;
+
+    /* ── what one pump asks ────────────────────────────────
+       Not a flat +/- band: real self-service prices in one province sit a
+       few cents either side of the average and then have a long tail
+       upwards — the motorway and the full-service brands — with a couple of
+       whitelabels underneath. `u` places the station in the band and `v`
+       decides which kind it is; both are stable 0..1 draws, so a station
+       keeps its price instead of shimmering while you drive up to it. */
+    function pumpOffset(u, v) {
+      let off = (u * 2 - 1) * 0.055 + 0.006;      // the band most stations sit in
+      if (v > 0.88) off += 0.055 + (v - 0.88) * 0.55;   // motorway / full service
+      else if (v < 0.12) off -= 0.038;                  // the cheap whitelabel
+      return off;
+    }
+
+    /* ── what one pump ON THE ROAD asks ────────────────────
+       Same shape as pumpOffset, only stretched. A town pump sits within a
+       few cents of the average, and a row of those read as a row of
+       identical totems at 130 km/h: nothing to choose between. The road is
+       a wider market — motorway service areas up top, whitelabels at the
+       bottom of the ramp — so its band is about three times as wide. It is
+       still an offset from the SAME live average every other price uses, so
+       a totem on the verge and a pin on the pump map can be compared. */
+    function roadOffset(u, v) {
+      let off = (u * 2 - 1) * 0.13 + 0.02;              // the band most of them sit in
+      if (v > 0.86) off += 0.05 + (v - 0.86) * 0.9;     // motorway / full service
+      else if (v < 0.14) off -= 0.05;                   // the cheap whitelabel
+      return off;
+    }
+
+    return {
+      DAYS: DAYS,
+      /* the monthly trend on day index `d` (0 = two years ago, DAYS-1 = today) */
+      base: function (d) { ensure(); return base[clamp(d)]; },
+      /* the trend `n` days before today — how every past price is dated */
+      ago: function (n) { ensure(); return base[clamp(DAYS - 1 - n)]; },
+      /* the arrays themselves, for the chart that draws all of them */
+      baseArr: function () { ensure(); return base; },
+      seriesArr: function () { ensure(); return series; },
+      pumpOffset: pumpOffset,
+      roadOffset: roadOffset,
+      /* a pump price `n` days ago, from two stable draws */
+      pumpAgo: function (n, u, v) { return this.ago(n) + pumpOffset(u, v); }
+    };
+  })();
+
+  /* the fuel in the tank right now was bought nine days ago — the same fill
+     the last dot on the price chart shows. Priced off the history from the
+     first frame, so the cluster never displays a hard-coded euro. */
+  state.refuelPrice = PRICES.pumpAgo(9, 0.30, 0.40);
 
   const $ = id => document.getElementById(id);
   const el = {
@@ -1345,11 +1705,23 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       const avg = list.reduce((a, b) => a + b, 0) / list.length;
 
       state.marketPrice = avg;
-      state.refuelPrice = avg - 0.19;    // tank filled some days ago, cheaper
+      /* the tank was filled nine days ago — the same fill the last dot on the
+         price chart shows — so price it off the history, not off today */
+      state.refuelPrice = PRICES.pumpAgo(9, 0.30, 0.40);
     } catch (e) {
       /* keep the demo prices already in state */
     }
   })();
+
+  /* The signs a station can carry. They live out here because TWO places
+     read them: the totems along the road paint them, and the pump map lists
+     them — a station passed on the verge and its row on the map have to say
+     the same name, or they are not the same station. */
+  const BRANDS = ['Eni', 'Q8', 'IP', 'Tamoil', 'Esso', 'Api', 'Repsol', 'Beyfin'];
+  const PLACES = ['Via Emilia', 'Tangenziale Ovest', 'Casello Nord', 'Corso Francia',
+                  'SS9 km 12', 'Viale Europa', 'Zona Industriale', 'Raccordo Sud',
+                  'Piazza Trento', 'Via Torino', 'Strada del Portone', 'Via Nizza',
+                  'Barriera Sud', 'Corso Unione'];
 
   /* ══════════════════════════════════════════════════════════
      WINDSHIELD — procedural road
@@ -1956,22 +2328,45 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
        a canopy on four pillars with two pumps under it, a shop, and the totem
        that carries the price. The price comes from the station's *index*
        through hash(), so it is decided once and does not shimmer while you
-       drive up to it; it scatters +/- ST_SPREAD around the live market
-       average (state.marketPrice), which is 1.85 until the API answers.
+       drive up to it — see stationPrice() below for the band it draws from.
 
        Spacing is the one number worth touching: 2 km is ~55 s at 130 km/h,
        which is often enough to be seen during a demo. The real motorway
        figure would be 5 km - a station every two and a half minutes. */
     const ST_EVERY = 2000;                    // m between stations
-    const ST_SPREAD = 0.15;                   // euro, either side of the market price
     const ST_TOTEM = RAIL + 3.6;              // the sign, just past the guardrail
     const ST_X = RAIL + 6;                    // near edge of the forecourt
 
-    const stationPrice = i => state.marketPrice + (hash(i * 97 + 13) * 2 - 1) * ST_SPREAD;
+    /* What the totems along THIS road ask. It is the live market average
+       plus PRICES.roadOffset — the wide band, not the five-cent town one,
+       so a row of totems at 130 km/h actually offers a choice. Anchoring it
+       to the market matters twice over: the cluster's Local Price is the
+       same money as the tank, and the pump map can rank a totem on this
+       road against a pump in town without comparing two invented markets.
+
+       Both draws come from the station's INDEX through hash(), so a totem
+       is decided once and does not shimmer while you drive up to it — and
+       the pump map, given the same index, gets the same price. */
+    const stationPrice = i => PRICES.ago(0) +
+      PRICES.roadOffset(hash(i * 97 + 13), hash(i * 131 + 7));
+
+    /* and its sign. NOT hashed: walked, in steps that are coprime with the
+       two lists, so no two stations in sight can end up carrying the same
+       sign — with a hash the pump map would now and then list the same
+       "Eni · Via Torino" twice, ten kilometres apart. The place turns over
+       every PLACES.length stations and the brand only then, so a repeat of
+       the PAIR takes 8 x 14 = 112 stations — 224 km, far past the horizon. */
+    const stationName = i => ({
+      b: BRANDS[(i * 3 + Math.floor(i / PLACES.length)) % BRANDS.length],
+      p: PLACES[(i * 5) % PLACES.length]
+    });
+
+    /* the index of the next station ahead — where a walk up the road starts */
+    const nextIndex = () => Math.floor(travel / ST_EVERY) + 1;
 
     /* the next station ahead: what the cluster counts down to */
     function station() {
-      const idx = Math.floor(travel / ST_EVERY) + 1;
+      const idx = nextIndex();
       return { idx: idx, dist: idx * ST_EVERY - travel, price: stationPrice(idx) };
     }
 
@@ -2040,6 +2435,14 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       ctx.strokeRect(xc - w / 2, yTop, w, h);
       ctx.fillStyle = '#3ddc84';                       // brand band across the top
       ctx.fillRect(xc - w / 2, yTop, w, h * 0.22);
+
+      if (h > 26) {                     // and the brand on it, once it can be read
+        ctx.fillStyle = '#06301b';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.font = '700 ' + (h * 0.15).toFixed(1) + 'px "Segoe UI",Arial,sans-serif';
+        ctx.fillText(stationName(idx).b.toUpperCase(), xc, yTop + h * 0.115);
+        ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+      }
 
       if (h > 12) {                                     // close enough to read the price
         ctx.fillStyle = '#ffffff';
@@ -2795,7 +3198,14 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       ctx.restore();
     }
 
-    return { frame, station };
+    /* What the PUMP MAP needs to show the stations of THIS road: where they
+       are, what they ask, what they are called. One road, read twice. */
+    return {
+      frame, station,
+      every: ST_EVERY,                 // m between stations
+      travelled: () => travel,         // m driven since the page opened
+      nextIndex, priceAt: stationPrice, nameAt: stationName
+    };
   })();
 
   /* ══════════════════════════════════════════════════════════
@@ -2810,18 +3220,41 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
                      state the cluster reads — over a list of past trips.
        PUMP MAP      stations around the car, sorted by price and drawn
                      on a north-up mini map. Cheapest is green and glows,
-                     dearest is red.
+                     dearest is red. It is what the demo OPENS on, on the
+                     'along this road' search, because that list can be
+                     checked against the windshield.
 
-     The map stations are their OWN world: they are not the stations you
-     drive past in the windshield (those live in `road`). They scroll
-     towards the car with the real distance travelled and recycle ahead
-     once they are behind, and their prices float around the same live
-     `state.marketPrice` the cluster uses — so if the API answers, map
-     and cluster move together.
+     The map holds two kinds of station and they are not the same kind of
+     thing. The ones ALONG THIS ROAD are the very totems you drive past:
+     the map does not copy or re-invent them, it asks `road` for the price,
+     the sign and the distance of each index, so the number on the verge,
+     the Local Price in the cluster and the row in the list are one number.
+     The ones off the road are invented — a town scattered around the car,
+     scrolling towards it with the real distance travelled and recycling
+     ahead once behind. Both are priced off the same live PRICES history,
+     so if the API answers, road, town and cluster move together.
      ══════════════════════════════════════════════════════════ */
   const app = (function () {
     const root = $('app'), glass = $('glass'), cv = $('ap-canvas');
     if (!root || !glass) return { frame() {} };
+
+    /* the halo and the line above the screen are a call to touch it: the first
+       press anywhere on the app answers it, and they never come back. Capture,
+       so a tab or a station that stops the event still counts as an answer,
+       and both events, so reaching a tab with the keyboard counts too. */
+    (function () {
+      const stack = $('stack');
+      if (!stack) return;
+      function done() {
+        stack.classList.remove('untouched');
+        root.removeEventListener('pointerdown', done, true);
+        root.removeEventListener('click', done, true);
+        root.removeEventListener('keydown', done, true);
+      }
+      root.addEventListener('pointerdown', done, true);
+      root.addEventListener('click', done, true);
+      root.addEventListener('keydown', done, true);
+    })();
     const ctx = cv ? cv.getContext('2d') : null;
     const TAU = Math.PI * 2;
     const DW = 454, DH = 382;                 // the design space of the CSS above
@@ -2866,17 +3299,19 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     window.addEventListener('resize', fit);
 
     /* ── tabs ──────────────────────────────────────────── */
-    const panes = { history: $('pane-history'), map: $('pane-map'), price: $('pane-price') };
+    const panes = { history: $('pane-history'), map: $('pane-map'),
+                    price: $('pane-price'), report: $('pane-report') };
     const tabs  = Array.prototype.slice.call(root.querySelectorAll('.ap-tab'));
-    let view = 'history';
+    let view = 'map';
     function show(v) {
       view = v;
       tabs.forEach(t => t.classList.toggle('on', t.dataset.v === v));
       for (const k in panes) panes[k].hidden = (k !== v);
       /* a hidden pane has no size, so its canvas can only be measured here */
-      if (v === 'map')        { fit(); paintList(); drawMap(performance.now()); }
-      else if (v === 'price') { fit(); drawPrice(); }
-      else                    paintHistory();
+      if (v === 'map')         { fit(); paintList(); drawMap(performance.now()); }
+      else if (v === 'price')  { fit(); drawPrice(); }
+      else if (v === 'report') paintReport();
+      else                     paintHistory();
     }
     tabs.forEach(t => t.addEventListener('click', () => { show(t.dataset.v); t.blur(); }));
 
@@ -2917,30 +3352,65 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     }
 
     /* ── past trips: fictional, but dated off today, and each one
-          openable. `min` and `paid` are what turns a row into a page:
-          without them a past trip could only repeat what the row says.
-          `char` is the shape of its cost profile — a motorway trip is
-          flat and cheap, a city one is spiky and dear. ────────────── */
+          openable. `min` turns a row into a page: without it a past trip
+          could only repeat what the row says. `char` is the shape of its
+          cost profile — a motorway trip is flat and cheap, a city one is
+          spiky and dear.
+
+          What a trip COST is not written down here, because a euro figure
+          typed in by hand goes stale the moment the API returns a market
+          price that is not the one it was typed against. A trip is stated
+          physically — kilometres, litres per hundred, minutes — plus the
+          two draws (`u`, `v`) that say which pump filled it and how many
+          days before the trip; PRICES turns those into the price paid, and
+          the litres and the euros fall out of that. Move the market and all
+          four rows move with it, in step with the chart and the totems.
+
+          `biz` says whether the trip is company business or private use.
+          It is not decoration: the REPORT tab splits the spend on it, and
+          an expense claim that does not separate the two is not a claim,
+          it is a guess.
+
+          The log runs a full month back, because a fleet report is asked
+          for by the month, not by the trip. Cost history scrolls them all;
+          REPORT selects, totals and sends them. ── */
     const TRIPS = [
-      { back: 1, route: 'Torino &ndash; Milano', km: 142.6, eur: 27.10, min: 95, paid: 1.79, char: 'road' },
-      { back: 2, route: 'Commute &middot; A55',  km: 38.4,  eur: 8.10,  min: 34, paid: 1.86, char: 'mix'  },
-      { back: 4, route: 'Milano &ndash; Genova', km: 118.9, eur: 21.60, min: 88, paid: 1.75, char: 'road' },
-      { back: 6, route: 'City &middot; Torino',  km: 22.7,  eur: 6.05,  min: 41, paid: 1.92, char: 'city' }
+      { back: 1,  route: 'Torino &ndash; Milano',  km: 142.6, min: 95,  l100: 6.0, char: 'road', fill: 2, u: 0.62, v: 0.93, biz: 1 },
+      { back: 2,  route: 'Commute &middot; A55',   km: 38.4,  min: 34,  l100: 7.6, char: 'mix',  fill: 5, u: 0.44, v: 0.55, biz: 0 },
+      { back: 4,  route: 'Milano &ndash; Genova',  km: 118.9, min: 88,  l100: 6.1, char: 'road', fill: 3, u: 0.28, v: 0.06, biz: 1 },
+      { back: 6,  route: 'City &middot; Torino',   km: 22.7,  min: 41,  l100: 9.4, char: 'city', fill: 4, u: 0.71, v: 0.62, biz: 0 },
+      { back: 7,  route: 'Torino &ndash; Asti',    km: 61.3,  min: 47,  l100: 6.4, char: 'road', fill: 1, u: 0.19, v: 0.77, biz: 1 },
+      { back: 8,  route: 'Client &middot; Rivoli', km: 31.8,  min: 44,  l100: 8.7, char: 'city', fill: 2, u: 0.55, v: 0.31, biz: 1 },
+      { back: 9,  route: 'Commute &middot; A55',   km: 38.1,  min: 37,  l100: 7.8, char: 'mix',  fill: 3, u: 0.83, v: 0.12, biz: 0 },
+      { back: 11, route: 'Milano &ndash; Brescia', km: 96.4,  min: 71,  l100: 6.2, char: 'road', fill: 4, u: 0.37, v: 0.68, biz: 1 },
+      { back: 12, route: 'City &middot; Milano',   km: 27.5,  min: 52,  l100: 9.9, char: 'city', fill: 5, u: 0.66, v: 0.24, biz: 1 },
+      { back: 14, route: 'Torino &ndash; Aosta',   km: 113.2, min: 82,  l100: 6.6, char: 'road', fill: 2, u: 0.08, v: 0.49, biz: 1 },
+      { back: 15, route: 'Weekend &middot; Langhe',km: 88.7,  min: 79,  l100: 7.1, char: 'mix',  fill: 3, u: 0.91, v: 0.85, biz: 0 },
+      { back: 17, route: 'Commute &middot; A55',   km: 38.6,  min: 33,  l100: 7.5, char: 'mix',  fill: 1, u: 0.23, v: 0.41, biz: 0 },
+      { back: 19, route: 'Site &middot; Novara',   km: 74.9,  min: 63,  l100: 6.9, char: 'mix',  fill: 4, u: 0.48, v: 0.17, biz: 1 },
+      { back: 21, route: 'Milano &ndash; Bergamo', km: 58.2,  min: 49,  l100: 6.5, char: 'road', fill: 2, u: 0.74, v: 0.58, biz: 1 },
+      { back: 23, route: 'City &middot; Torino',   km: 19.4,  min: 38,  l100: 10.2,char: 'city', fill: 6, u: 0.14, v: 0.72, biz: 0 },
+      { back: 25, route: 'Torino &ndash; Cuneo',   km: 101.7, min: 76,  l100: 6.3, char: 'road', fill: 3, u: 0.59, v: 0.09, biz: 1 },
+      { back: 27, route: 'Client &middot; Chivasso',km: 42.3, min: 46,  l100: 8.1, char: 'mix',  fill: 5, u: 0.33, v: 0.87, biz: 1 },
+      { back: 29, route: 'Milano &ndash; Piacenza',km: 79.5,  min: 61,  l100: 6.4, char: 'road', fill: 2, u: 0.87, v: 0.36, biz: 1 }
     ];
     const rowsT = [];
     (function buildTrips() {
       const box = $('ap-trips');
-      const ref = TRIPS.reduce((a, t) => a + t.eur, 0) / TRIPS.reduce((a, t) => a + t.km, 0);
+      /* the month is written out here rather than left to toLocaleDateString,
+         which answers "SEPT" on current browsers and breaks a 3-letter column */
+      const MON = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
+                   'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
       TRIPS.forEach(t => {
-        t.epk = t.eur / t.km;
-        t.lit = t.eur / t.paid;
-        t.l100 = t.lit / t.km * 100;
-        t.kmh = t.km / (t.min / 60);
         const d = new Date(); d.setDate(d.getDate() - t.back);
-        t.date = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }).toUpperCase();
+        t.date = ('0' + d.getDate()).slice(-2) + ' ' + MON[d.getMonth()];
+        t.lit  = t.km * t.l100 / 100;
+        t.kmh  = t.km / (t.min / 60);
 
-        /* 25 bars whose MEAN is the trip's real euro per km: the dashed
-           average then lands exactly where the row says it should */
+        /* 25 bars whose MEAN is 1: the shape of the trip, with no price in
+           it. Multiplied by the trip's euro per km at paint time, so the
+           dashed average lands exactly where the row says it should and the
+           profile survives a change of market price. */
         const shape = { road: [0.16, 0.10], mix: [0.34, 0.22], city: [0.60, 0.45] }[t.char];
         const raw = [];
         let sum = 0;
@@ -2949,21 +3419,46 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
           if (rnd() > 0.84) v += shape[1];            // a queue, a town, a climb
           raw.push(v); sum += v;
         }
-        t.bars = raw.map(v => v * t.epk / (sum / NB));
+        t.raw = raw.map(v => v / (sum / NB));
 
-        const up = t.epk > ref;
         const row = document.createElement('div');
-        row.className = 'ch-row ' + (up ? 'up' : 'dn');
+        row.className = 'ch-row';
+        row.addEventListener('click', () => { openTrip(selTrip === t ? null : t); row.blur(); });
+        box.appendChild(row); rowsT.push(row);
+      });
+    })();
+
+    /* Every euro on a past trip is derived, never typed: the pump that filled
+       it, on the day it filled it, out of the same history the chart draws.
+       So when the API answers with a market price the demo was not written
+       against, the four rows follow it instead of contradicting it. */
+    let tripsPricedOn = -1;
+    function priceTrips() {
+      if (tripsPricedOn === state.marketPrice) return;
+      tripsPricedOn = state.marketPrice;
+      TRIPS.forEach(t => {
+        t.paid = PRICES.pumpAgo(t.back + t.fill, t.u, t.v);
+        t.eur  = t.lit * t.paid;
+        t.epk  = t.eur / t.km;
+        t.bars = t.raw.map(v => v * t.epk);
+      });
+      /* the arrow compares a trip against the four together, so it can only
+         be decided once they all have a price */
+      const ref = TRIPS.reduce((a, t) => a + t.eur, 0) / TRIPS.reduce((a, t) => a + t.km, 0);
+      TRIPS.forEach((t, i) => {
+        const up = t.epk > ref;
+        const row = rowsT[i];
+        row.classList.toggle('up', up);
+        row.classList.toggle('dn', !up);
         row.innerHTML =
           '<span class="d">' + t.date + '</span>' +
           '<span class="r">' + t.route + '</span>' +
           '<span class="k">' + t.km.toFixed(1) + ' km</span>' +
           '<span class="u">' + (up ? '&#9650; ' : '&#9660; ') + t.epk.toFixed(3) + '</span>' +
           '<span class="e">' + t.eur.toFixed(2) + '</span>';
-        row.addEventListener('click', () => { openTrip(selTrip === t ? null : t); row.blur(); });
-        box.appendChild(row); rowsT.push(row);
       });
-    })();
+      rowsT.forEach((r, i) => r.classList.toggle('sel', TRIPS[i] === selTrip));
+    }
 
     /* ── opening a past trip ───────────────────────────────
        The whole top half switches to that trip: total, the four cells
@@ -3029,46 +3524,93 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     }
 
     /* ══ the pump map ══════════════════════════════════════ */
-    const BRANDS = ['Eni', 'Q8', 'IP', 'Tamoil', 'Esso', 'Api', 'Repsol', 'Beyfin'];
-    const PLACES = ['Via Emilia', 'Tangenziale Ovest', 'Casello Nord', 'Corso Francia',
-                    'SS9 km 12', 'Viale Europa', 'Zona Industriale', 'Raccordo Sud',
-                    'Piazza Trento', 'Via Torino', 'Strada del Portone', 'Via Nizza',
-                    'Barriera Sud', 'Corso Unione'];
-    const NST = 22;
-    /* The world has to be bigger than any one search: 5 km around the car, or
-       the whole road ahead, must have something to find. Roughly half the
-       stations are dropped close to the road we are on — otherwise "along this
-       road" would usually be empty — and the rest are scattered over the town.
-       They scroll towards the car with the real metres driven and are reborn
-       ahead, with a new sign and a new price, once they fall behind. */
-    const XSPAN = 3400, CORRIDOR = 550, BACK = 2200, AHEAD = 9000;
-    const SPREAD = 0.13;       // euro either side of the live market average
+    const NST = 42;
+    /* The map holds TWO kinds of station, and the difference is the whole
+       point of this panel:
+
+         OFF the road  invented pumps scattered over the town, priced off
+                       PRICES.pumpOffset like every other town pump. They are
+                       what a radius search finds. They never enter the
+                       corridor: the corridor belongs to the road.
+         ON the road   the very totems you drive past in the windshield. They
+                       are not copied or re-invented here — `road` is asked
+                       where they are, what they charge and what they are
+                       called, so the price on the sign at the roadside and
+                       the price in this list are one number. See roadSts().
+
+       The town half scrolls towards the car with the real metres driven and
+       is reborn ahead, with a new sign and a new price, once it falls behind.
+
+       These numbers are tied to the search chips: the widest search is 20 km,
+       so the world is ~26 km across and ~40 km deep, and the count is set so
+       that 5 km finds a handful, 10 km a dozen and 20 km a crowd. Change a
+       chip and these have to move with it, or two chips answer the same. */
+    const XSPAN = 13000, CORRIDOR = 1300, BACK = 7000, AHEAD = 34000;
     const DIRS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
 
-    /* the search: metres of radius, or 'road' for the corridor up the road */
-    let scope = 2500;
+    /* the search: metres of radius, or 'road' for the corridor up the road.
+       It opens on the road, because that is the search the windshield can be
+       checked against: every station in the list is a totem you are about to
+       drive past, at the price the sign will show. */
+    let scope = 'road';
 
     const sts = [];
     function spawn(s, y) {
       for (let n = 0; n < 12; n++) {          // no two identical signs on screen
         s.b = BRANDS[Math.floor(rnd() * BRANDS.length)];
         s.p = PLACES[Math.floor(rnd() * PLACES.length)];
-        if (!sts.some(o => o !== s && o.b === s.b && o.p === s.p)) break;
+        if (!sts.some(o => o !== s && o.b === s.b && o.p === s.p) &&
+            !roadSts.some(o => o.b === s.b && o.p === s.p)) break;   // nor a totem's
       }
-      s.x = (rnd() * 2 - 1) * (rnd() < 0.45 ? CORRIDOR : XSPAN);
+      /* outside the corridor, always: a pump this close to the road would
+         claim to be one of the totems, and it is not one of them */
+      s.x = (rnd() < 0.5 ? -1 : 1) * (CORRIDOR + 250 + rnd() * (XSPAN - CORRIDOR));
       s.y = y;
-      s.off = (rnd() * 2 - 1) * SPREAD;
+      s.off = PRICES.pumpOffset(rnd(), rnd());
       return s;
     }
-    /* the first handful are seeded close, so the demo opens on a list that
-       has something in it at every radius; the rest fill the world out */
+    /* ── the stations of the road itself ───────────────────
+       A fixed pool of slots, one per totem inside the window the map can
+       show. Nothing about them is stored: a slot holds an INDEX, and every
+       repaint asks `road` for that index's price and sign, so the two can
+       never drift apart. Because the totems stand every `road.every` metres,
+       slot n always carries the one index congruent to n — it keeps the same
+       station while it is in view, and takes the next one up the road the
+       moment that station is passed. That is what lets you tap a station and
+       still be navigating to it a kilometre later. */
+    const ROAD_N = Math.ceil(AHEAD / road.every) + 1;
+    const ROAD_X = 70;                       // m: the forecourt, right of the road
+    const roadSts = [];
+    for (let n = 0; n < ROAD_N; n++) roadSts.push({ road: true, idx: 0, x: ROAD_X, y: 0 });
+    function syncRoad() {
+      const i0 = road.nextIndex(), travelled = road.travelled();
+      roadSts.forEach((s, n) => {
+        s.idx = i0 + (((n - i0) % ROAD_N) + ROAD_N) % ROAD_N;
+        s.y = s.idx * road.every - travelled;
+        const nm = road.nameAt(s.idx);
+        s.b = nm.b; s.p = nm.p;
+        /* they alternate sides of the carriageway so the pins do not stack
+           into one line, but they are always within the corridor */
+        s.x = (s.idx % 2 ? 1 : -1) * ROAD_X;
+      });
+    }
+    syncRoad();
+
+    /* the town is filled in after, so it can see the signs the road has
+       already taken. The first handful are seeded close, so the demo opens
+       on a list that has something in it at every radius; the rest fill the
+       world out. */
     for (let i = 0; i < NST; i++) {
-      const s = spawn({}, i < 6 ? -900 + rnd() * 3000 : -BACK + rnd() * (BACK + AHEAD));
-      if (i < 6) s.x = (rnd() * 2 - 1) * (i < 3 ? 850 : 2100);
+      const s = spawn({}, i < 3 ? -800 + rnd() * 4000 : -BACK + rnd() * (BACK + AHEAD));
+      if (i < 3) s.x = (rnd() < 0.5 ? -1 : 1) * (CORRIDOR + 300 + rnd() * 1800);
       sts.push(s);
     }
 
-    const priceOf = s => state.marketPrice + s.off;
+    /* everything the map ranks, town and road together */
+    const world = sts.concat(roadSts);
+
+    /* a road station is priced by the road; a town pump by the town */
+    const priceOf = s => s.road ? road.priceAt(s.idx) : PRICES.ago(0) + s.off;
     const distOf  = s => Math.sqrt(s.x * s.x + s.y * s.y);
     const dirOf   = s => DIRS[(Math.round(Math.atan2(s.x, s.y) / (Math.PI / 4)) + 8) % 8];
 
@@ -3076,7 +3618,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
        road, running far ahead and only a little way back — the stations you
        would actually pass without leaving the route. */
     const inScope = s => scope === 'road'
-      ? (Math.abs(s.x) <= CORRIDOR && s.y > -400 && s.y <= AHEAD)
+      ? (Math.abs(s.x) <= CORRIDOR && s.y > -1200 && s.y <= AHEAD)
       : distOf(s) <= scope;
     const scopeLabel = () => scope === 'road' ? 'STATIONS ALONG THIS ROAD'
       : 'STATIONS WITHIN ' + (scope / 1000).toFixed(scope % 1000 ? 1 : 0) + ' KM';
@@ -3100,13 +3642,20 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         s.y -= d;
         if (s.y < -BACK) { if (s === sel) sel = null; spawn(s, AHEAD - rnd() * 600); }
       }
+      /* the road half is not moved, it is re-read: `road` owns where its
+         totems are, and a station the car has just gone past leaves the list
+         because the windshield has left it behind, not because a counter here
+         said so */
+      const wasIdx = sel && sel.road ? sel.idx : -1;
+      syncRoad();
+      if (wasIdx >= 0 && sel.idx !== wasIdx) sel = null;   // we drove past it
     }
 
     /* one row per station, built once: only text and colour change, and the
        sort order is a flexbox `order`, so nothing is ever re-created. Rows
        outside the search are hidden, not removed. */
-    const listBox = $('ap-stations'), noneBox = $('ap-none'), rows = [];
-    sts.forEach(s => {
+    const listBox = $('ap-stations'), noneBox = $('ap-none');
+    world.forEach(s => {
       const r = document.createElement('div');
       r.className = 'st';
       r.innerHTML = '<span class="bar"></span>' +
@@ -3115,7 +3664,8 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       r.addEventListener('click', () => { sel = (sel === s ? null : s); paintList(); });
       r.q = { nm: r.querySelector('.nm'), ds: r.querySelector('.ds'),
               pr: r.querySelector('.pr'), dl: r.querySelector('.dl') };
-      listBox.appendChild(r); rows.push(r);
+      listBox.appendChild(r);
+      s.row = r;                      /* the row belongs to the station itself */
     });
 
     const foot = $('ap-foot'), goBtn = $('ap-go');
@@ -3129,7 +3679,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     }));
 
     function paintList() {
-      const shown = sts.filter(inScope);
+      const shown = world.filter(inScope);
       const order = shown.slice().sort((a, b) => priceOf(a) - priceOf(b));
       T.nst.textContent = shown.length;
       T.scopelab.textContent = scopeLabel();
@@ -3141,17 +3691,20 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       const mean = prices.length ? prices.reduce((a, b) => a + b, 0) / prices.length : 0;
       const litres = Math.max(5, state.tankCapacity - state.tankLiters);
 
-      sts.forEach((s, i) => { rows[i].hidden = !inScope(s); });
+      world.forEach(s => { s.row.hidden = !inScope(s); });
       order.forEach((s, rank) => {
-        const r = rows[sts.indexOf(s)], p = priceOf(s), d = distOf(s);
+        const r = s.row, p = priceOf(s), d = distOf(s);
         const c = priceColor(max > min ? (p - min) / (max - min) : 0);
         r.style.order = rank;
         r.style.setProperty('--c', c);
         r.classList.toggle('best', rank === 0);
         r.classList.toggle('sel', s === sel);
         r.q.nm.textContent = s.b + ' · ' + s.p;
-        r.q.ds.textContent = scope === 'road'
-          ? (Math.abs(s.y) / 1000).toFixed(1) + ' km ' + (s.y >= 0 ? 'ahead' : 'behind')
+        /* a station ON the road is quoted by how far up the road it is — that
+           is the distance the cluster is already counting down — whichever
+           search found it. A town pump is quoted as the crow flies. */
+        r.q.ds.textContent = s.road
+          ? (s.y / 1000).toFixed(1) + ' km ahead · on this road'
           : (d / 1000).toFixed(1) + ' km · ' + dirOf(s);
         r.q.pr.textContent = p.toFixed(2);
         r.q.dl.textContent = rank === 0 ? 'BEST'
@@ -3166,7 +3719,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         T.best.innerHTML =
           '<b>' + sel.b + ' · ' + sel.p + '</b> &middot; ' + priceOf(sel).toFixed(2) +
           ' &euro;/L &middot; ' + (distOf(sel) / 1000).toFixed(1) + ' km ' +
-          (scope === 'road' ? 'up this road' : dirOf(sel));
+          (sel.road ? 'up this road' : dirOf(sel));
       } else if (order.length) {
         const b = order[0], save = (mean - priceOf(b)) * litres;
         T.best.innerHTML =
@@ -3198,7 +3751,11 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       const cx = cw / 2, cy = along ? ch * 0.86 : ch * 0.5;
       const reach = mapReach();
       const k = (along ? ch * 0.82 : ch * 0.46) / reach;   // px per metre
-      const G  = 420;                                      // m between streets
+      /* metres between streets. It cannot be a constant any more: the search
+         now runs from 5 to 20 km, and a 420 m grid over a 20 km view is graph
+         paper. One rung of a round ladder, picked so the map always draws
+         roughly a dozen lines across, however far it is looking. */
+      const G = [420, 1000, 2000, 4000, 8000].find(g => reach / g < 14) || 8000;
 
       /* the street grid scrolls with the real distance driven. Every third
          line is an arterial, which is what stops it reading as graph paper */
@@ -3227,9 +3784,10 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       ctx.strokeStyle = 'rgba(150,195,225,.20)';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.arc(cx - 700 * k, cy - (900 - (travelM % (G * 9))) * k, 1500 * k, 0, TAU);
-      ctx.moveTo(0, cy + (1800 - (travelM % (G * 9))) * k);
-      ctx.lineTo(cw, cy + (1800 - (travelM % (G * 9))) * k - cw * 0.75);
+      /* in blocks, not in metres, so they keep their proportion at every zoom */
+      ctx.arc(cx - 1.67 * G * k, cy - (2.14 * G - (travelM % (G * 9))) * k, 3.57 * G * k, 0, TAU);
+      ctx.moveTo(0, cy + (4.29 * G - (travelM % (G * 9))) * k);
+      ctx.lineTo(cw, cy + (4.29 * G - (travelM % (G * 9))) * k - cw * 0.75);
       ctx.stroke();
 
       /* the road we are on */
@@ -3262,7 +3820,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       vg.addColorStop(1, 'rgba(8,13,19,.62)');
       ctx.fillStyle = vg; ctx.fillRect(0, 0, cw, ch);
 
-      const shown = sts.filter(inScope);
+      const shown = world.filter(inScope);
       const prices = shown.map(priceOf);
       const min = prices.length ? Math.min.apply(null, prices) : 0;
       const max = prices.length ? Math.max.apply(null, prices) : 0;
@@ -3270,7 +3828,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
 
       /* cheapest last, and the one you picked after it: two pumps a few
          metres apart must not bury the pin the whole view is about */
-      const drawOrder = sts.slice().sort((a, b) =>
+      const drawOrder = world.slice().sort((a, b) =>
         (a === sel ? 2 : priceOf(a) === min && inScope(a) ? 1 : 0) -
         (b === sel ? 2 : priceOf(b) === min && inScope(b) ? 1 : 0));
       drawOrder.forEach(s => {
@@ -3334,7 +3892,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       ctx.fillStyle = 'rgba(190,214,232,.55)';
       ctx.textAlign = 'right'; ctx.textBaseline = 'top';
       ctx.fillText('N ▲', cw - 6, 6);
-      const unit = reach > 3500 ? 2000 : reach > 1600 ? 1000 : 500;
+      const unit = [250, 500, 1000, 2000, 5000, 10000, 20000].find(u => u * k > 34) || 20000;
       const bar = unit * k;
       ctx.fillStyle = 'rgba(8,13,19,.82)';        /* so a pin cannot sit on it */
       roundRect(4, ch - 26, bar + 12, 22, 4); ctx.fill();
@@ -3380,7 +3938,11 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     const TURNS = ['left', 'right', 'sleft', 'sright', 'round', 'straight'];
 
     let navOn = false, navSteps = null, navI = 0, navTotal = 1, navLeft = 0;
-    const NAV_V = 12.5;                       // m/s — about 45 km/h, its own speed
+    /* m/s: about 45 km/h through town. A station 18 km away is not reached
+       through town, so a long route is driven at trunk-road speed — otherwise
+       the widest search would only ever offer a forty-minute crawl. */
+    const NAV_TOWN = 12.5, NAV_ROAD = 25;
+    let navV = NAV_TOWN;
 
     /* a plausible route: the crow-flies distance stretched by the streets,
        cut into legs, each one ending in a manoeuvre and a street name */
@@ -3388,7 +3950,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       const total = Math.max(500, distOf(s) * (1.22 + rnd() * 0.28));
       const steps = [];
       let rem = total;
-      while (rem > 320 && steps.length < 7) {
+      while (rem > 320 && steps.length < (total > 8000 ? 9 : 7)) {
         const seg = Math.max(140, Math.min(rem - 240, 150 + rnd() * rem * 0.5));
         steps.push({ t: steps.length ? TURNS[Math.floor(rnd() * TURNS.length)] : 'straight',
                      m: Math.round(seg / 10) * 10,
@@ -3403,6 +3965,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       if (!s) return;
       navSteps = buildRoute(s);
       navTotal = navSteps.reduce((a, st) => a + st.m, 0);
+      navV = navTotal > 8000 ? NAV_ROAD : NAV_TOWN;
       navLeft = navTotal; navI = 0; listOn = -1;
       NAV.dest.textContent = s.b + ' · ' + s.p;
       NAV.price.textContent = priceOf(s).toFixed(2);
@@ -3420,7 +3983,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     function navFrame(dt) {
       if (!navOn || !navSteps || navLeft <= 0) return;      // arrived: frozen
       const cur = navSteps[navI];
-      const d = (cur.m < 70 ? 5.5 : NAV_V) * dt;            // slow into the turn
+      const d = (cur.m < 70 ? 5.5 : navV) * dt;             // slow into the turn
       cur.m -= d; navLeft = Math.max(0, navLeft - d);
       if (cur.m <= 0) {
         if (navI < navSteps.length - 1) navI++;
@@ -3462,7 +4025,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       }
       NAV.fill.style.width = ((1 - navLeft / navTotal) * 100).toFixed(1) + '%';
       NAV.left.textContent = (navLeft / 1000).toFixed(1);
-      const secs = navLeft / NAV_V;
+      const secs = navLeft / navV;
       NAV.min.textContent = Math.max(0, Math.ceil(secs / 60));
       const at = new Date(Date.now() + secs * 1000);
       NAV.eta.textContent = ('0' + at.getHours()).slice(-2) + ':' + ('0' + at.getMinutes()).slice(-2);
@@ -3483,53 +4046,44 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
        actually in the tank, at `state.refuelPrice`. */
     const pcv = $('ap-pcanvas'), pctx = pcv ? pcv.getContext('2d') : null;
     let pcw = 0, pch = 0;
-    const DAYS = 731;                      // today included, two years back
+    const DAYS = PRICES.DAYS;
+    let base = PRICES.baseArr(), series = PRICES.seriesArr();
 
-    /* oldest first, one per month, from 24 months ago to this month */
-    const ANCH = [
-      1.734, 1.723, 1.727, 1.735,                          /* Sep–Dec 2024 */
-      1.782, 1.800, 1.775, 1.748, 1.719, 1.728,            /* Jan–Jun 2025 */
-      1.745, 1.738, 1.722, 1.714, 1.706, 1.699,            /* Jul–Dec 2025 */
-      1.731, 1.756, 1.771, 1.762, 1.744, 1.757,            /* Jan–Jun 2026 */
-      1.789, 1.802, 1.812                                  /* Jul–Sep 2026 */
-    ];
-    /* the same wobble every run: a slow weekly drift plus a small daily one,
-       so a DAY step looks like a market and not like a smooth curve */
-    const noise = [];
-    (function () {
-      let w = 0;
-      for (let d = 0; d < DAYS; d++) {
-        if (d % 7 === 0) w = (rnd() * 2 - 1) * 0.011;
-        noise.push(w + (rnd() * 2 - 1) * 0.005);
-      }
-    })();
-
-    const series = new Array(DAYS);
+    /* the curves belong to PRICES now; what stays here is only OUR stops on
+       them, and they are re-hung whenever the live market moves the history
+       or a refuel changes the tank. */
     let builtOn = -1;
     function buildSeries() {
-      const per = (DAYS - 1) / (ANCH.length - 1);
-      for (let d = 0; d < DAYS; d++) {
-        const t = d / per, i = Math.min(ANCH.length - 2, Math.floor(t));
-        const f = t - i, e = f * f * (3 - 2 * f);          // smoothstep between months
-        series[d] = ANCH[i] + (ANCH[i + 1] - ANCH[i]) * e + noise[d];
-      }
-      /* join the live price: a ramp over the last two months, never a step */
-      const gap = state.marketPrice - series[DAYS - 1];
-      for (let d = DAYS - 60; d < DAYS; d++) series[d] += gap * ((d - (DAYS - 61)) / 60);
+      base = PRICES.baseArr(); series = PRICES.seriesArr();
       builtOn = state.marketPrice + state.refuelPrice;
-      STOPS.forEach(s => { s.eur = s.d === DAYS - 9 ? state.refuelPrice : series[s.d] + s.off; });
+      STOPS.forEach(s => {
+        s.eur = s.d === DAYS - 9 ? state.refuelPrice
+                                 : base[s.d] + PRICES.pumpOffset(s.u, s.v);
+      });
     }
 
     /* our stops. `d` is days ago counted forward: 0 is two years back,
-       DAYS-1 is today. The last one is nine days ago — the tank we are on. */
+       DAYS-1 is today. The last one is nine days ago — the tank we are on.
+       `u` and `v` are the two draws that decide which kind of pump it was;
+       PRICES.pumpOffset turns them into the cents over or under the market,
+       exactly as it does for the totems on the road and the map. */
     const STOPS = [];
     (function () {
       for (let d = 6 + Math.floor(rnd() * 12); d < DAYS - 20; d += 20 + Math.floor(rnd() * 20)) {
         STOPS.push({ d, b: BRANDS[Math.floor(rnd() * BRANDS.length)],
                      p: PLACES[Math.floor(rnd() * PLACES.length)],
-                     lit: 26 + rnd() * 17, off: (rnd() * 2 - 1) * 0.08, eur: 0 });
+                     /* Neither draw covers its whole range, and that is the
+                        point of the app rather than a thumb on the scale:
+                        this is a driver who watches what fuel costs, so `v`
+                        stops short of the motorway tail — he does not keep
+                        filling up at the dearest pump on the autostrada —
+                        and `u` sits in the lower part of the band. Over two
+                        years it comes to about a cent under the national
+                        average, which is what shopping around actually
+                        buys you, and the footer can say so. */
+                     lit: 26 + rnd() * 17, u: rnd() * 0.8, v: rnd() * 0.85, eur: 0 });
       }
-      STOPS.push({ d: DAYS - 9, b: 'Eni', p: 'Via Emilia', lit: 41.2, off: 0, eur: 0 });
+      STOPS.push({ d: DAYS - 9, b: 'Eni', p: 'Via Emilia', lit: 41.2, u: 0, v: 0, eur: 0 });
     })();
 
     const dayDate = d => new Date(Date.now() - (DAYS - 1 - d) * 86400000);
@@ -3620,7 +4174,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       pHit = [];
       stops.forEach(s => {
         const x = X(s.d), y = Y(s.eur);
-        const over = s.eur > series[s.d];
+        const over = s.eur > base[s.d];
         const col = over ? '#ff8f6d' : '#3ddc84';
         pHit.push({ x, y, s });
         if (s === pSel) {
@@ -3666,7 +4220,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     function paintStop(s) {
       pSel = s;
       if (!s) { drawPrice(); return; }
-      const dd = s.eur - series[s.d], cls = dd > 0 ? 'up' : 'dn';
+      const dd = s.eur - base[s.d], cls = dd > 0 ? 'up' : 'dn';
       PV.foot.innerHTML =
         '<b>' + fmtDay(s.d) + '</b> &middot; ' + s.b + ' · ' + s.p + ' &middot; ' +
         s.lit.toFixed(1) + ' L &middot; <b>' + s.eur.toFixed(3) + ' &euro;/L</b> &middot; ' +
@@ -3686,12 +4240,276 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       paintStop(best === pSel ? null : best);
     });
 
+    /* ══ REPORT ════════════════════════════════════════════
+       The other three panes are for the person driving. This one is for the
+       person paying: it turns the trip log into a claim — what was driven,
+       what it cost, how much of it was the company's — and sends it where
+       fuel actually gets accounted for.
+
+       Nothing here is typed in either. Every euro comes from the same
+       `priceTrips()` figures the history rows show, so the report can never
+       disagree with the app it was exported from. The delivery is simulated
+       from end to end, and the pane says so on its own footer: no mail is
+       composed, no request leaves the page. What is real is the SHAPE of
+       the thing — the fields a portal asks for, the split an expense claim
+       needs, the VAT line an accountant looks for first. */
+    const RP = {
+      list: $('rp-list'), cnt: $('rp-cnt'), id: $('rp-id'),
+      eur: $('rp-eur'), km: $('rp-km'), lit: $('rp-lit'), epk: $('rp-epk'),
+      l100: $('rp-l100'), paid: $('rp-paid'),
+      splitpc: $('rp-splitpc'), splitbar: $('rp-splitbar'),
+      biz: $('rp-biz'), prv: $('rp-prv'), vat: $('rp-vat'),
+      env: $('rp-env'), send: $('rp-send'),
+      out: $('rp-out'), oDest: $('ro-dest'), oSt: $('ro-st'), oSub: $('ro-sub'),
+      oFill: $('ro-fill'), oLog: $('ro-log'), oPath: $('ro-path')
+    };
+    /* Italian petrol carries 22% VAT, and a company car in mixed use can take
+       40% of it back (art. 19-bis1 DPR 633/72). Both live here, not in the
+       string that prints them. */
+    const VAT_RATE = 0.22, VAT_RECOV = 0.40;
+
+    const picked = new Set();
+    /* Two axes, and they are not the same kind of thing. `period` is WHEN —
+       a window of days back. `useF` is WHOSE — business, private, both, or
+       nothing at all. The selection is their intersection, recomputed from
+       scratch every time either one is touched, so the two chips on screen
+       always describe the set that is actually ticked. Touching a single
+       row breaks out of both: period becomes CUSTOM and useF goes empty,
+       and no chip claims a selection it did not make. */
+    let period = 30, useF = 'all', dest = 'mail';
+
+    const REPORT_ID = (function () {
+      const d = new Date();
+      return 'TC-' + String(d.getFullYear()).slice(2) +
+             ('0' + (d.getMonth() + 1)).slice(-2) + '-' +
+             ('000' + (1 + Math.floor(rnd() * 900))).slice(-4);
+    })();
+    RP.id.textContent = REPORT_ID;
+
+    const rpRows = [];
+    TRIPS.forEach(t => {
+      const r = document.createElement('div');
+      r.className = 'rp-r';
+      r.innerHTML = '<span class="bx"></span><span class="d"></span>' +
+                    '<span class="r"></span><span class="v"></span>';
+      r.q = { d: r.querySelector('.d'), r: r.querySelector('.r'), v: r.querySelector('.v') };
+      r.addEventListener('click', () => {
+        if (picked.has(t)) picked.delete(t); else picked.add(t);
+        period = 0; useF = '';         /* hand-picked: no chip can still claim the set */
+        paintReport();
+        r.blur();
+      });
+      RP.list.appendChild(r); rpRows.push(r);
+    });
+
+    /* is this trip inside the window the chips describe? period 0 is CUSTOM,
+       which as a window means "the whole log" — the use chips have to have
+       something to filter even when no period is named. */
+    const inWindow = t => !period || t.back <= period;
+    const inUse    = t => useF === 'biz' ? t.biz : useF === 'prv' ? !t.biz : true;
+
+    function applySel() {
+      picked.clear();
+      if (useF === 'none') return;                 /* DESELECT ALL: an empty claim */
+      TRIPS.forEach(t => { if (inWindow(t) && inUse(t)) picked.add(t); });
+    }
+    applySel();
+
+    /* every figure the card shows, derived from the ticked trips alone */
+    function totals() {
+      const sel = TRIPS.filter(t => picked.has(t));
+      const o = { n: sel.length, km: 0, lit: 0, eur: 0, bizEur: 0, bizKm: 0 };
+      sel.forEach(t => {
+        o.km += t.km; o.lit += t.lit; o.eur += t.eur;
+        if (t.biz) { o.bizEur += t.eur; o.bizKm += t.km; }
+      });
+      o.prvEur = o.eur - o.bizEur;
+      o.epk    = o.km ? o.eur / o.km : 0;
+      o.l100   = o.km ? o.lit / o.km * 100 : 0;
+      o.paid   = o.lit ? o.eur / o.lit : 0;
+      o.vat    = o.bizEur * (VAT_RATE / (1 + VAT_RATE));
+      o.recov  = o.vat * VAT_RECOV;
+      /* the period the claim covers, taken from the trips and not from the chip */
+      const backs = sel.map(t => t.back);
+      o.from = sel.length ? TRIPS.find(t => t.back === Math.max.apply(null, backs)).date : '—';
+      o.to   = sel.length ? TRIPS.find(t => t.back === Math.min.apply(null, backs)).date : '—';
+      o.range = o.from + ' – ' + o.to;
+      return o;
+    }
+
+    /* what each destination wants, and what sending to it looks like. The
+       lines are precompiled from the selection: a fleet manager should see
+       his own numbers in the envelope before he presses anything. */
+    const DESTS = {
+      mail: { name: 'EMAIL &middot; fleet.admin@company.it',
+        env: o => 'to <b>fleet.admin@company.it</b> &middot; subject <b>True Cost expense report ' +
+                  o.range + '</b> &middot; 2 attachments',
+        steps: o => ['Composing message',
+                     'Attaching ' + REPORT_ID + '.pdf &middot; 148 KB',
+                     'Attaching trips.csv &middot; ' + o.n + ' rows',
+                     'Handing over to the mail server'],
+        done: o => 'Report delivered to <b>fleet.admin@company.it</b>' },
+      csv: { name: 'CSV EXPORT',
+        env: o => 'file <b>truecost-' + REPORT_ID.toLowerCase() + '.csv</b> &middot; ' + o.n +
+                  ' rows &middot; date, route, km, litres, &euro;/L, &euro;, use, cost centre',
+        steps: o => ['Flattening ' + o.n + ' trips',
+                     'Writing 11 columns',
+                     'Encoding UTF-8, semicolon separated',
+                     'File ready'],
+        done: o => '<b>truecost-' + REPORT_ID.toLowerCase() + '.csv</b> written &middot; ' +
+                   (3 + o.n * 0.1).toFixed(1) + ' KB' },
+      fleet: { name: 'FLEET PORTAL &middot; org TC&#8209;4471',
+        env: o => 'POST <b>fleet.company.it/api/v2/fuel-reports</b> &middot; org TC&#8209;4471 &middot; ' +
+                  'vehicle AB&nbsp;123&nbsp;CD &middot; token &bull;&bull;&bull;&bull;8ac2',
+        steps: o => ['Authenticating &middot; token &bull;&bull;&bull;&bull;8ac2',
+                     'Uploading ' + o.n + ' fuel records',
+                     'Portal matching vehicle AB 123 CD',
+                     'Posting to cost centre OPS-04'],
+        done: o => 'Accepted by the portal &middot; batch <b>' + REPORT_ID + '</b>' },
+      expense: { name: 'EXPENSE CLAIM',
+        env: o => 'claim <b>&euro; ' + o.bizEur.toFixed(2) + '</b> reimbursable &middot; category FUEL &middot; ' +
+                  'VAT recoverable &euro; ' + o.recov.toFixed(2) + ' &middot; approver M. Conti',
+        steps: o => ['Splitting business from private',
+                     'Claiming &euro; ' + o.bizEur.toFixed(2) + ' over ' + o.bizKm.toFixed(0) + ' km',
+                     'Attaching VAT line &euro; ' + o.vat.toFixed(2),
+                     'Routing to approver M. Conti'],
+        done: o => 'Claim <b>&euro; ' + o.bizEur.toFixed(2) + '</b> submitted for approval' },
+      ride: { name: 'RIDE&#8209;HAIL SYNC',
+        env: o => 'driver <b>TC&#8209;88213</b> &middot; cost per km <b>&euro; ' + o.epk.toFixed(3) +
+                  '</b> &middot; ' + o.km.toFixed(0) + ' km &middot; fuel &euro; ' + o.eur.toFixed(2),
+        steps: o => ['Signing driver TC-88213',
+                     'Pushing ' + o.km.toFixed(0) + ' km of fuel cost',
+                     'Cost per km &euro; ' + o.epk.toFixed(3) + ' recorded',
+                     'Net margin recalculated'],
+        done: o => 'Driver ledger updated &middot; <b>&euro; ' + o.epk.toFixed(3) + ' / km</b> of fuel' }
+    };
+
+    const perBtns = Array.prototype.slice.call(root.querySelectorAll('.rp-ctl .sc'));
+    const useBtns = Array.prototype.slice.call(root.querySelectorAll('.rp-use .sc'));
+    const destBtns = Array.prototype.slice.call(root.querySelectorAll('.rp-dest .sc'));
+    perBtns.forEach(b => b.addEventListener('click', () => {
+      const w = +b.dataset.w;
+      if (w) {
+        period = w;
+        /* naming a period is an act of selecting: it cannot leave the pane on
+           DESELECT ALL, or on the nothing a hand-picked list leaves behind */
+        if (!useF || useF === 'none') useF = 'all';
+        applySel();
+      } else { period = 0; }           /* CUSTOM only widens the window: the ticks stay */
+      paintReport(); b.blur();
+    }));
+    useBtns.forEach(b => b.addEventListener('click', () => {
+      useF = b.dataset.u;
+      applySel();
+      paintReport(); b.blur();
+    }));
+    destBtns.forEach(b => b.addEventListener('click', () => {
+      dest = b.dataset.d;
+      destBtns.forEach(o => o.classList.toggle('on', o === b));
+      paintReport(); b.blur();
+    }));
+
+    function paintReport() {
+      priceTrips();
+      const o = totals();
+
+      perBtns.forEach(b => b.classList.toggle('on', +b.dataset.w === period));
+      useBtns.forEach(b => b.classList.toggle('on', b.dataset.u === useF));
+      RP.cnt.textContent = o.n
+        ? o.n + (o.n === 1 ? ' TRIP' : ' TRIPS') + ' · ' + o.range
+        : 'NOTHING SELECTED';
+
+      TRIPS.forEach((t, i) => {
+        const r = rpRows[i], on = picked.has(t);
+        r.classList.toggle('on', on);
+        r.classList.toggle('prv', !t.biz);
+        r.q.d.textContent = t.date;
+        r.q.r.innerHTML = '<b>' + (t.biz ? 'B' : 'P') + '</b>' + t.route;
+        r.q.v.textContent = t.eur.toFixed(2);
+      });
+
+      RP.eur.textContent  = o.eur.toFixed(2);
+      RP.km.textContent   = o.km.toFixed(0);
+      RP.lit.textContent  = o.lit.toFixed(1);
+      RP.epk.textContent  = o.epk.toFixed(3);
+      RP.l100.textContent = o.l100.toFixed(1);
+      RP.paid.textContent = o.paid.toFixed(2);
+
+      const pc = o.eur ? o.bizEur / o.eur * 100 : 0;
+      RP.splitpc.textContent = pc.toFixed(0) + '% BUSINESS';
+      RP.splitbar.style.width = pc.toFixed(1) + '%';
+      RP.biz.innerHTML = 'business &euro; ' + o.bizEur.toFixed(2);
+      RP.prv.innerHTML = 'private &euro; ' + o.prvEur.toFixed(2);
+
+      RP.vat.innerHTML = o.n
+        ? 'VAT 22% in the business spend <b>&euro; ' + o.vat.toFixed(2) +
+          '</b> &middot; recoverable at 40% <b>&euro; ' + o.recov.toFixed(2) + '</b>'
+        : 'Nothing selected &mdash; tick a trip, or pick a period and a use.';
+
+      RP.env.innerHTML = o.n ? DESTS[dest].env(o)
+                             : '<span style="color:#68829a">nothing to send</span>';
+      RP.send.disabled = !o.n;
+    }
+
+    /* ── the send: four stages, a second apart, then the receipt ── */
+    let sendOn = false, sendStage = 0, sendT = 0, sendSteps = null, sendTot = null;
+    const SEND_STEP = 0.9;                      // seconds a stage is on screen
+    const ARROW = 'M32 8v34M18 30l14 14 14-14', TICK = 'M14 33l12 13 24-27';
+
+    RP.send.addEventListener('click', () => {
+      const o = totals();
+      if (!o.n) return;
+      sendTot = o; sendSteps = DESTS[dest].steps(o);
+      sendStage = 0; sendT = 0; sendOn = true;
+      RP.out.classList.remove('done');
+      RP.oPath.setAttribute('d', ARROW);
+      RP.oDest.innerHTML = DESTS[dest].name;
+      RP.oLog.innerHTML = '';
+      RP.oFill.style.width = '0%';
+      RP.oSt.innerHTML = sendSteps[0];
+      RP.oSub.innerHTML = o.n + ' trips &middot; ' + o.km.toFixed(0) + ' km &middot; &euro; ' +
+                          o.eur.toFixed(2) + ' &middot; ' + REPORT_ID;
+      RP.out.hidden = false;
+      RP.send.blur();
+    });
+    $('ro-x').addEventListener('click', () => { sendOn = false; RP.out.hidden = true; });
+
+    function sendFrame(dt) {
+      if (!sendOn || RP.out.hidden) return;
+      sendT += dt;
+      if (sendT < SEND_STEP) return;
+      sendT = 0;
+      /* the stage that just finished drops into the log with its tick */
+      const doneLine = sendSteps[sendStage];
+      RP.oLog.insertAdjacentHTML('beforeend',
+        '<div class="r"><span class="g">&#10003;</span><span>' + doneLine + '</span></div>');
+      sendStage++;
+      if (sendStage < sendSteps.length) {
+        RP.oSt.innerHTML = sendSteps[sendStage];
+        RP.oFill.style.width = (sendStage / sendSteps.length * 100).toFixed(0) + '%';
+      } else {
+        sendOn = false;                                   /* arrived: frozen, like the navigator */
+        RP.out.classList.add('done');
+        RP.oPath.setAttribute('d', TICK);
+        RP.oSt.textContent = 'DELIVERED';
+        RP.oSub.innerHTML = DESTS[dest].done(sendTot);
+        RP.oFill.style.width = '100%';
+        const at = new Date();
+        RP.oLog.insertAdjacentHTML('beforeend',
+          '<div class="r"><span class="g">&#10003;</span><span><b>' + REPORT_ID + '</b> &middot; ' +
+          ('0' + at.getHours()).slice(-2) + ':' + ('0' + at.getMinutes()).slice(-2) +
+          ' &middot; ' + sendTot.n + ' trips &middot; &euro; ' + sendTot.eur.toFixed(2) +
+          ' &middot; VAT recoverable &euro; ' + sendTot.recov.toFixed(2) + '</span></div>');
+      }
+    }
+
     /* ── the beat ──────────────────────────────────────── */
     let accSlow = 0, accMap = 0, lastMkt = state.marketPrice;
     function frame(dt) {
       const dKm = sampleTrip();
       moveStations(dKm);
       navFrame(dt);                    // its own clock: it runs whatever is on screen
+      sendFrame(dt);                   // and so does the report going out
       T.eurkm.textContent = state.instantEurKm.toFixed(2);
 
       accSlow += dt;
@@ -3702,8 +4520,16 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         /* a past trip is a still picture: it is painted when it is opened,
            not four times a second */
         if (view === 'map') paintList(); else if (view === 'history' && !selTrip) paintTrip();
-        /* the price chart is history: it only moves when the API answers */
-        if (view === 'price' && state.marketPrice !== lastMkt) { lastMkt = state.marketPrice; drawPrice(); }
+        /* the market only moves when the API answers, and when it does every
+           derived euro in the app has to move with it: the past trips are
+           repriced off the new history, and the chart redrawn under them */
+        if (state.marketPrice !== lastMkt) {
+          lastMkt = state.marketPrice;
+          priceTrips();
+          if (view === 'history') paintHistory();
+          if (view === 'price') drawPrice();
+          if (view === 'report') paintReport();
+        }
       }
       if (view === 'map' && !navOn) {
         accMap += dt;
@@ -3711,7 +4537,8 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       }
     }
 
-    fit(); paintTrip(); buildSeries(); paintList();
+    fit(); priceTrips(); paintTrip(); buildSeries(); paintReport();
+    show('map');                       // the demo opens on the pump map
     requestAnimationFrame(fit);        // once more after the first layout pass
     return { frame, show };
   })();

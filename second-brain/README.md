@@ -57,7 +57,10 @@ scorre alla velocità reale della vettura (vedi [09-strada.md](09-strada.md)). S
 tenendo premuti i **pedali** sul bordo del cockpit (o le frecce), e ogni 2 km si
 incontra una **stazione** il cui prezzo si legge sul cartellone e sul cluster.
 Dal 2026-09-04 la visuale è **larga 1720**: oltre il cluster c'è la plancia
-ricostruita a mano col **display centrale**, dove gira l'**app True Cost** — due
-schede cliccabili, *Cost history* (il viaggio in corso, dal vivo) e *Local pump map*
-(le stazioni intorno, colorate per prezzo) — vedi
+ricostruita a mano col **display centrale**, dove gira l'**app True Cost** — quattro
+viste cliccabili: *Cost history* (il viaggio in corso, dal vivo, e un mese di viaggi
+passati), *Pump map* (le stazioni intorno, colorate per prezzo, entro 5 / 10 / 20 km
+o lungo la strada — e quelle **lungo la strada sono i cartelloni veri** del
+parabrezza, allo stesso prezzo; è la vista su cui la demo si apre), *Price history* (due anni di prezzi sotto i nostri pieni) e
+*Report* (la nota spese da mandare al fleet manager) — vedi
 [11-plancia-estesa.md](11-plancia-estesa.md).

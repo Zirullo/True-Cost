@@ -5,6 +5,86 @@ Ordine cronologico inverso (la più recente in alto). Ogni voce: **cosa**, **per
 
 ---
 
+## 2026-09-04 · «Lungo questa strada» sono i cartelloni veri, e la demo ci si apre
+
+**Scelta**: le stazioni che la pump map elenca sotto «lungo questa strada» non
+sono più inventate: **sono i cartelloni che si incontrano nel parabrezza**, con
+il prezzo scritto sopra. E l'app **si apre su quella vista**, non più su Cost
+history.
+
+**Perché**: era la bugia più visibile della demo. Si passava accanto a un
+cartellone da 2.05 € e la riga della mappa, per la stessa strada, ne diceva
+un'altra — due mondi paralleli che il primo sguardo dal finestrino smentiva.
+True Cost vende una cosa sola, che i numeri **non si contraddicano mai**: qui si
+contraddicevano davanti agli occhi. E si apre sulla pump map perché è l'unica
+vista che chi guarda può **verificare da sé**, senza fidarsi.
+
+**Come**: `road` espone i suoi cartelloni (`every`, `travelled()`, `nextIndex`,
+`priceAt`, `nameAt`); l'app non li copia, tiene 18 caselle che portano solo un
+**indice** e a ogni ripittura richiedono il dato. Due copie possono divergere,
+una domanda no.
+
+**Cosa comporta**:
+
+- **il prezzo del cartellone cambia banda**: non più un mercato suo a 2.10 € ±
+  25 centesimi, ma `PRICES.ago(0) + PRICES.roadOffset(...)` — lo stesso storico
+  di cluster, pieni e report, con una banda circa tre volte più larga di quella
+  cittadina (a 130 km/h con ±5 centesimi i cartelli si somigliano tutti). Local
+  Price, cartello e riga della lista sono ora **un numero solo**;
+- **le pompe inventate escono dal corridoio** e scendono da 54 a 42: una pompa
+  finta a fianco della carreggiata direbbe di essere uno dei cartelloni. Al boot
+  la ricerca trova 7 / 15 / 29 stazioni ai tre raggi e 17 lungo la strada;
+- sul cartellone compare il **marchio**, e le insegne non sono più sorteggiate ma
+  camminate con passi coprimi: due stazioni in vista non possono chiamarsi uguale;
+- la riga di una stazione della strada dice sempre «**x km ahead · on this road**»,
+  anche dentro una ricerca a raggio: è la distanza che il cluster sta già contando.
+
+---
+
+## 2026-09-04 · Il raggio di ricerca sale a 5 / 10 / 20 km, e nasce REPORT
+
+**Scelta**: due cose insieme, sulla stessa app del display centrale.
+
+**I raggi della pump map** passano da 1 / 2.5 / 5 km a **5 / 10 / 20 km** (il
+quarto chip, «lungo questa strada», resta). Non è un cambio di etichette: il mondo
+delle stazioni era largo ±3400 m e profondo 11 km, quindi la stazione più lontana
+possibile stava a 9.6 km — a 20 km ci sarebbero state *tutte*, e il terzo chip
+avrebbe risposto lo stesso numero del secondo. Il mondo cresce a **±13 km × 41 km**
+con **54** stazioni, e la semina è ritarata perché la ricerca trovi circa 11 / 20 /
+35 stazioni ai tre raggi. Si adeguano il passo della griglia della mini-mappa (una
+scala tonda scelta sullo zoom, non più 420 m fissi), la barra di scala, e il
+navigatore, che oltre gli 8 km guida a 25 m/s invece di 12,5.
+
+**REPORT** è il quarto bottone: si scelgono i viaggi — questa settimana, questo
+mese, o a spunta — e si vede la nota spese che ne esce (euro, km, litri, €/km,
+divisione **business / privato**, IVA 22 % e il 40 % recuperabile), da mandare a
+una fra cinque destinazioni: email, CSV, portale di flotta, nota spese,
+ride-hailing.
+
+**Perché**: i raggi vecchi erano da città, e chi guida in autostrada non trova
+niente entro 2.5 km; ma soprattutto REPORT è la vista che parla ai **fleet
+manager**. Il resto dell'app risponde a «quanto mi costa questo km» — una domanda
+del guidatore. Un responsabile di flotta compra un'altra cosa: la spesa
+rendicontata, divisa fra aziendale e privato, con l'IVA recuperabile già contata,
+pronta da mandare dove il carburante viene contabilizzato.
+
+**Cosa comporta**:
+
+- il registro dei viaggi cresce da **4 a 18** su 30 giorni (un report si chiede al
+  mese) e la lista della cronologia adesso **scorre**; ogni viaggio porta un campo
+  `biz`;
+- nessun euro è scritto a mano nemmeno nel report: i totali escono dagli stessi
+  `priceTrips()` delle righe della cronologia, quindi report e app non possono
+  contraddirsi;
+- **l'invio è simulato per intero**, e il pannello lo dichiara sul proprio piede
+  («Simulated delivery — nothing leaves this page»). Vera è la *forma*: campi,
+  divisione, riga IVA, busta precompilata coi numeri della selezione. Se un giorno
+  servirà un invio reale, il posto dove attaccarlo è `DESTS`;
+- quattro bottoni invece di tre: le etichette scendono a 8.5 px e perdono
+  l'`letter-spacing`, ma nessuna è stata accorciata.
+
+---
+
 ## 2026-09-03 · La visuale si allarga fino al display centrale, ricostruito a mano
 
 **Scelta**: per ospitare un'app nel display centrale la scena passa da **1147** a

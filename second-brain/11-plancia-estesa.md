@@ -99,14 +99,25 @@ store segue i pixel veri (`pxRatio = scala × devicePixelRatio`).
 >    senza la regola `.ap-pane[hidden]{display:none}` le due viste si disegnavano
 >    una sopra l'altra.
 
-### Le tre viste, e perché sono tre bottoni
+### Le quattro viste, e perché sono quattro bottoni
 
 Fino al 2026-09-04 le viste erano due e si sceglievano con delle **linguette
 unite**, attaccate fra loro e al pannello sotto. Era un oggetto solo: si leggeva
 come una barra di titolo, non come due comandi, e in demo nessuno pensava di
-toccarle. Ora sono **tre bottoni staccati** — gap fra loro, angoli tondi su tutti
+toccarle. Ora sono **bottoni staccati** — gap fra loro, angoli tondi su tutti
 e quattro i lati, una luce sul bordo alto e un'ombra sotto — e **si abbassano di
 2 px quando si premono**. Quello aperto resta abbassato e acceso di blu.
+
+Dal 2026-09-04 la demo **si apre su PUMP MAP, sul chip «lungo questa strada»**,
+non più su Cost history: è l'unica vista che si può verificare guardando fuori
+dal parabrezza, e chi apre la pagina vede subito che la lista e i cartelloni
+dicono lo stesso prezzo. Le altre restano a un tocco.
+
+Dal 2026-09-04 sono **quattro**: si è aggiunto REPORT. A quattro, «Price history»
+non ci stava più nel suo bottone: l'etichetta scende a **8.5 px** e perde quasi
+tutto l'`letter-spacing` (da 1.15 a 0.7 px), l'icona da 14 a 13, il gap fra i
+bottoni da 9 a 7. Nessuna etichetta è stata accorciata: un bottone che dice
+«Prices» non dice cosa fa.
 
 > **Trappola**: `#app button{font:inherit}` ha specificità `(1,0,1)` e **batte**
 > qualunque regola di classe. Ogni regola che tocca un bottone dentro l'app deve
@@ -124,7 +135,7 @@ La fila dei bottoni è alta **46 px** invece di 34: il corpo delle viste scende 
 | Testata | costo del viaggio in euro, km, litri | `state.tripCost / tripKm / tripLiters` |
 | Quattro celle | €/km ora, €/km medi, L/100 km, €/L nel serbatoio | `state` — gli stessi numeri del cluster |
 | Grafico a barre | **una barra ogni 200 m** di strada vera, 25 barre = ultimi 5 km | campionato in `sampleTrip()` dai delta di `tripKm`/`tripCost` |
-| Viaggi precedenti | 4 righe fittizie **cliccabili**, con freccia verde/rossa rispetto alla media | `TRIPS` nel modulo, **date calcolate da oggi** |
+| Viaggi precedenti | **18 righe** fittizie **cliccabili** e scorrevoli, con freccia verde/rossa rispetto alla media | `TRIPS` nel modulo, **date calcolate da oggi** |
 
 Le 25 barre sono **precaricate** a valori plausibili: il contachilometri parte già
 da 48 km, un grafico vuoto direbbe che l'auto non ha mai camminato. La riga
@@ -163,28 +174,64 @@ il pin sulla mappa usano lo stesso valore, quindi lista e mappa non possono
 contraddirsi. **L'alone e il pin selezionato si disegnano per ultimi**: due pompe a
 pochi metri l'una dall'altra seppellivano il pin di cui parla tutta la vista.
 
-**Le stazioni della mappa sono un mondo a sé**, diverso da quelle che si incontrano
-nel parabrezza (`road`, ogni 2 km). Sono **22**, in un mondo largo ±3400 m e lungo
-da 2200 m dietro a 9000 m davanti; il prezzo è `state.marketPrice + offset`, quindi
-quando l'API dei prezzi risponde **mappa e cluster si muovono insieme**. Scorrono
-verso l'auto con i **metri veri percorsi** e, quando restano indietro, rinascono
-davanti con nome e prezzo nuovi.
+#### Due specie di stazione, e una sola è inventata
 
-Due dettagli di semina, entrambi per non mostrare una lista vuota:
+Fino al 2026-09-04 le stazioni della mappa erano **un mondo a sé**, diverso da
+quelle che si incontrano nel parabrezza. Era la bugia più visibile della demo:
+si passava accanto a un cartellone da 2.05 e la riga «lungo questa strada» ne
+diceva un'altra. Adesso la mappa ne tiene **due specie**, e la differenza è il
+senso stesso del pannello.
 
-- **il 45 % nasce dentro il corridoio** (`|x| ≤ 550`), altrimenti «lungo questa
-  strada» non trovava quasi niente;
-- **le prime 6 nascono vicine** (entro ±850 / ±2100 m e fra −900 e +2100 m), così
-  la demo si apre su una lista piena a qualunque raggio. Dopo il primo riciclo
-  contano solo le regole generali.
+| | **lungo la strada** | **in città** |
+|---|---|---|
+| chi sono | i cartelloni veri di `road`, uno ogni 2 km | pompe inventate, sparse intorno |
+| prezzo | `road.priceAt(idx)` — **lo stesso numero scritto sul cartello** | `PRICES.ago(0) + offset` |
+| dove stanno | nel corridoio (a 70 m dall’asse, alternate ai due lati) | **sempre fuori** dal corridoio |
+| come si muovono | non si muovono: si **richiede** a `road` dove sono | scorrono coi metri veri e rinascono davanti |
+
+Le stazioni della strada **non sono copiate**: l'app tiene 18 caselle, ognuna
+porta solo un **indice**, e a ogni ripittura chiede a `road` prezzo, insegna e
+distanza di quell'indice. Due copie possono divergere, una domanda no. Poiché i
+cartelloni stanno ogni `road.every` metri, la casella *n* porta sempre l'unico
+indice congruo a *n*: la stazione scelta **resta la stessa** mentre si guida, e
+sparisce dalla lista nel momento esatto in cui la si supera davvero.
+
+Le pompe di città sono **42**, in un mondo largo ±13 000 m e lungo da 7000 m
+dietro a 34 000 m davanti, e nascono **sempre oltre il corridoio**: una pompa
+inventata così vicina alla carreggiata direbbe di essere uno dei cartelloni, e
+non lo è. Le prime 3 nascono vicine (fra −800 e +3200 m), così la demo si apre
+su una lista piena anche a 5 km.
+
+Al boot la ricerca trova **7 stazioni a 5 km, 15 a 10 km, 29 a 20 km e 17 lungo
+la strada**. Se un chip o `NST` cambiano, questi numeri vanno rimisurati: due
+chip che rispondono lo stesso numero sono due chip che non servono a niente.
+
+> **Il prezzo del cartellone non è più un mercato suo.** Valeva 2.10 € ± 25
+> centesimi, inventati: contro le pompe di città (che stanno intorno alla media
+> vera) la strada sarebbe sembrata sempre carissima. Adesso è
+> `PRICES.ago(0) + PRICES.roadOffset(...)`, lo **stesso storico** di cluster,
+> pieni e report — solo con una banda circa **tre volte più larga** di quella
+> cittadina, altrimenti a 130 km/h i cartelli si somigliano tutti e non c'è
+> niente da scegliere. Local Price nel cluster, cartello nel parabrezza e riga
+> nella lista sono **un numero solo**.
+
+E perché lo si veda senza doverci credere: sul cartellone c'è ora anche il
+**marchio**, scritto sulla fascia verde quando è abbastanza vicino da leggersi.
+Le insegne non sono sorteggiate ma **camminate** con passi coprimi con le due
+liste (`i·5` sui luoghi, `i·3 + i/14` sui marchi): due stazioni in vista non
+possono portare lo stesso nome, mentre con un hash ogni tanto la lista mostrava
+due «Eni · Via Torino» a dieci chilometri di distanza.
 
 #### Il raggio di ricerca
 
-Quattro chip: **1 km · 2.5 km · 5 km · lungo questa strada**. I primi tre sono un
-raggio (`distOf(s) ≤ scope`); il quarto **non è un raggio** ma un corridoio —
-`|x| ≤ 550 m`, da 400 m dietro a 9000 m davanti: le stazioni che incontreresti
-senza uscire dal percorso. In quel caso la distanza nella riga smette di essere
-una bussola (sarebbe sempre «N») e diventa **«3.8 km ahead»**.
+Quattro chip: **5 km · 10 km · 20 km · lungo questa strada** (fino al 2026-09-04
+erano 1 / 2.5 / 5 km, su un mondo quattro volte più piccolo: a 20 km avrebbero
+contenuto *tutte* le stazioni, e il terzo chip sarebbe stato una copia del
+secondo). I primi tre sono un raggio (`distOf(s) ≤ scope`); il quarto **non è un
+raggio** ma un corridoio — `|x| ≤ 1300 m`, da 1200 m dietro a 34 000 m davanti: le
+stazioni che incontreresti senza uscire dal percorso. In quel caso la distanza
+nella riga smette di essere una bussola (sarebbe sempre «N») e diventa
+**«3.8 km ahead»**.
 
 La ricerca **si vede sulla mappa**, altrimenti i chip cambierebbero la lista senza
 un motivo visibile:
@@ -192,12 +239,26 @@ un motivo visibile:
 | | raggio | lungo la strada |
 |---|---|---|
 | l'auto sta | al centro (`cy = ch/2`) | in basso (`cy = 0.86·ch`) |
-| si vede fin a | `scope × 1.14` | 5580 m |
+| si vede fin a | `scope × 1.14` | 21 080 m |
 | disegnato | cerchio tratteggiato + velo blu | due linee tratteggiate ai lati |
 
 Le stazioni **fuori ricerca restano disegnate**, ma grigie e piccole: la ricerca
-decide cosa classificare, non dichiara che intorno non ci sia altro. La barra di
-scala segue lo zoom (500 m / 1 km / 2 km), così resta un numero tondo.
+decide cosa classificare, non dichiara che intorno non ci sia altro.
+
+Con raggi fino a 20 km **due costanti non potevano più restare fisse**:
+
+- **il passo della griglia** non è più 420 m ma un gradino di una scala tonda
+  (420 / 1000 / 2000 / 4000 / 8000 m), scelto perché sullo schermo cadano sempre
+  una dozzina di linee: a 420 m una vista da 20 km era carta millimetrata. La
+  circonvallazione e la diagonale sono espresse **in isolati** (`3.57·G`, …), così
+  tengono la proporzione a ogni zoom;
+- **la barra di scala** prende il primo gradino di 250 m → 20 km che sullo schermo
+  supera i 34 px, invece delle tre soglie scritte a mano di prima.
+
+Anche il navigatore ha dovuto adeguarsi: una stazione a 18 km non ci si arriva in
+città, quindi un percorso oltre **8 km** viene guidato a **25 m/s** invece di 12,5
+e può avere **9 manovre** invece di 7. Senza questo, il chip più largo offriva solo
+camminate da quaranta minuti.
 
 Il risparmio in fondo è `(prezzo medio − migliore) × litri mancanti al pieno`: un
 numero che **cresce col serbatoio che si svuota**, come nella realtà. Ma appena
@@ -269,6 +330,52 @@ insegna, litri, €/L, totale, e lo scarto dal mercato di quel giorno.
 >    sono nello spazio locale non trasformato dell'elemento — cioè esattamente
 >    quello in cui il grafico è disegnato.
 
+### Vista 4 — Report
+
+Le altre tre viste sono per chi guida. Questa è **per chi paga**: trasforma il
+registro dei viaggi in una nota spese — cosa è stato percorso, quanto è costato,
+quanta parte è dell'azienda — e la manda dove il carburante viene davvero
+contabilizzato. È la vista che parla ai **fleet manager**, ed è il motivo per cui
+esiste: senza di lei True Cost è un bel numero sul cruscotto e basta.
+
+| Blocco | Cosa mostra |
+|---|---|
+| Chip periodo | `THIS WEEK` (≤ 7 giorni), `THIS MONTH` (≤ 30), `CUSTOM` |
+| Lista a sinistra | i 18 viaggi del registro, con spunta, data, **B/P**, euro |
+| Scheda a destra | totale €, km, litri, €/km, L/100 km, €/L pagati |
+| Barra split | business / privato in euro e in percentuale |
+| Riga IVA | IVA 22 % dentro la spesa business, e il **40 % recuperabile** |
+| Chip destinazione | EMAIL · CSV · FLEET PORTAL · EXPENSE · RIDE-HAIL |
+| Busta + SEND | l'anteprima **precompilata** di quella destinazione |
+
+**Nessun euro è scritto a mano**, neanche qui: i totali escono dagli stessi
+`priceTrips()` che disegnano le righe della cronologia, quindi il report non può
+contraddire l'app da cui è stato esportato. Toccare una spunta porta i chip su
+`CUSTOM` da solo: un chip che dice «questo mese» mentre la selezione è un'altra
+sarebbe una bugia.
+
+Perché il periodo abbia senso il registro è cresciuto da **4 a 18 viaggi su 30
+giorni** (un report di flotta si chiede al mese, non al viaggio), e la lista della
+cronologia adesso **scorre**: troncare il registro sarebbe stato mentire su cosa
+l'app sa. Ogni viaggio porta un campo `biz`: senza la divisione fra aziendale e
+privato una nota spese non è una nota spese, è una stima.
+
+#### L'invio è simulato, e lo dice
+
+Nessuna mail parte, nessuna richiesta esce dalla pagina — c'è scritto **sul piede
+del pannello**, non nelle note del progetto. Quello che è vero è la **forma**: i
+campi che un portale chiede davvero (org, targa, centro di costo, token), la
+divisione che una nota spese pretende, la riga IVA che un amministrativo cerca per
+prima. L'invio è una macchina a stadi guidata da `dt` come il navigatore — quattro
+tappe da 0.9 s, ognuna che cade nel log con la sua spunta — e finisce in una
+ricevuta verde con id del report, ora, viaggi, euro e IVA recuperabile.
+
+Le cinque destinazioni non sono cinque bottoni uguali con un nome diverso: ognuna
+**precompila una busta con i numeri della selezione** (l'indirizzo e gli allegati
+per la mail, l'endpoint e il token per il portale, l'importo rimborsabile per la
+nota spese, i €/km per il ride-hailing). Un fleet manager in demo deve vedere i
+*suoi* numeri prima di premere qualcosa.
+
 ### Ritmi
 
 Testo dei numeri 4 volte al secondo, canvas ~16 volte, e il `€/km` in alto a ogni
@@ -279,7 +386,8 @@ sempre, così cambiando scheda non c'è mai un buco nella storia.
 Le due viste «ferme» costano quasi niente: un viaggio passato è una fotografia, e
 **il grafico dei prezzi è storia** — si ridisegna a evento, e nel tick lento solo
 se `state.marketPrice` è cambiato, cioè quando l'API risponde. Il navigatore
-invece gira sempre, anche mentre guardi un'altra vista.
+invece gira sempre, anche mentre guardi un'altra vista, e così l'invio del report:
+`sendFrame(dt)` sta accanto a `navFrame(dt)` nel battito dell'app.
 
 ## Cosa è cambiato nella strada
 
