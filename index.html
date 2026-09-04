@@ -229,18 +229,46 @@ body{
 .ap-now em{font-style:normal;font-size:9px;color:#7f9bb1;letter-spacing:1px;margin-left:3px}
 .ap-clock{font-size:11px;color:#9fb6c9;letter-spacing:.6px}
 
-/* ── the two tabs ── */
-.ap-tabs{flex:none;height:34px;display:flex;gap:6px;padding:6px 10px 0}
-.ap-tab{
-  flex:1;height:28px;border-radius:7px 7px 0 0;display:flex;align-items:center;
-  justify-content:center;gap:6px;font-size:10.5px;letter-spacing:1.1px;
-  text-transform:uppercase;color:#7f9bb1;background:rgba(255,255,255,.035);
-  border:1px solid rgba(120,170,210,.10);border-bottom:0;transition:background .12s,color .12s;
+/* ── the three view buttons ──────────────────────────
+   They have to read as BUTTONS, not as a menu bar. Until 2026-09-04 they
+   were joined tabs sharing a border with the pane below: one object, and
+   nobody thought to touch it. Now each one is detached — its own gap, its
+   own rounded box, a light on the top edge and a shadow underneath — and
+   it sinks 2px when pressed. The view you are in stays pressed and lit. */
+.ap-tabs{flex:none;height:46px;display:flex;gap:9px;padding:5px 11px 3px}
+#app .ap-tab{
+  flex:1;border-radius:9px;display:flex;align-items:center;justify-content:center;gap:6px;
+  font-size:9.4px;letter-spacing:1.15px;font-weight:600;white-space:nowrap;
+  text-transform:uppercase;color:#9ab3c7;
+  background:linear-gradient(180deg,#1d3042,#111c27);
+  border:1px solid rgba(140,190,225,.22);
+  box-shadow:0 2px 0 rgba(0,0,0,.5), 0 5px 10px rgba(0,0,0,.42),
+             inset 0 1px 0 rgba(255,255,255,.11);
+  transition:transform .09s, box-shadow .09s, color .12s, background .12s;
 }
-.ap-tab:hover{color:#cfe3f2;background:rgba(255,255,255,.06)}
-.ap-tab.on{color:#eaf6ff;background:rgba(0,174,239,.15);border-color:rgba(0,174,239,.42);
-           box-shadow:inset 0 -2px 0 var(--blue)}
-.ap-tab svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.7}
+#app .ap-tab svg{width:14px;height:14px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8}
+#app .ap-tab:hover{color:#dbecf8;background:linear-gradient(180deg,#24394d,#16232f)}
+#app .ap-tab:active{transform:translateY(2px);
+  box-shadow:0 0 0 rgba(0,0,0,.5), 0 1px 3px rgba(0,0,0,.45),
+             inset 0 1px 0 rgba(255,255,255,.06)}
+#app .ap-tab.on{
+  color:#eaf9ff;background:linear-gradient(180deg,#1e6a92,#0c3d5a);
+  border-color:rgba(0,174,239,.85);transform:translateY(2px);
+  box-shadow:0 0 0 rgba(0,0,0,.5), 0 0 15px rgba(0,174,239,.45),
+             inset 0 1px 0 rgba(255,255,255,.17);
+}
+
+/* ── the chips used by both the map scope and the price controls ── */
+#app .sc{
+  flex:none;height:18px;padding:0 7px;border-radius:9px;
+  font-size:8.4px;letter-spacing:1.05px;font-weight:600;text-transform:uppercase;
+  color:#8fa8bc;background:rgba(255,255,255,.05);
+  border:1px solid rgba(120,170,210,.18);
+}
+#app .sc:hover{color:#dbecf8;background:rgba(255,255,255,.10)}
+#app .sc.on{color:#eaf9ff;background:rgba(0,174,239,.26);border-color:rgba(0,174,239,.75);
+       box-shadow:0 0 9px rgba(0,174,239,.28)}
+.lb{font-size:7.6px;letter-spacing:1.4px;color:#5f7a92;flex:none}
 
 .ap-body{flex:1;position:relative;min-height:0}
 .ap-pane{position:absolute;inset:0;padding:9px 11px 8px;display:flex;flex-direction:column}
@@ -249,7 +277,12 @@ body{
 /* ── COST HISTORY ── */
 .ch-hero{flex:none;display:flex;gap:9px;height:74px}
 .ch-cost{flex:1;display:flex;flex-direction:column;justify-content:center}
-.ch-lab{font-size:8.5px;letter-spacing:1.6px;color:#7f9bb1}
+.ch-lab{font-size:8.5px;letter-spacing:1.6px;color:#7f9bb1;
+        display:flex;align-items:center;gap:7px;height:12px}
+/* only there while a past trip is open: the way back to the live trip */
+#app #ap-back{font-size:7.5px;letter-spacing:1.2px;padding:2px 6px;border-radius:8px;
+         color:#8fd8f5;border:1px solid rgba(0,174,239,.45);background:rgba(0,174,239,.12)}
+#app #ap-back:hover{color:#eaf6ff;background:rgba(0,174,239,.24)}
 .ch-big{font-size:33px;font-weight:600;color:#fff;line-height:1.1;letter-spacing:-.6px}
 .ch-big em{font-style:normal;font-size:14px;color:#9fb6c9;margin-right:5px;letter-spacing:0}
 .ch-sub{font-size:10px;color:#9fb6c9}
@@ -279,8 +312,15 @@ body{
 .ch-hist{flex:1;min-height:0;margin-top:7px}
 .ch-hist .hd{font-size:8.5px;letter-spacing:1.5px;color:#7f9bb1;margin-bottom:2px}
 .ch-row{display:grid;grid-template-columns:42px 1fr 48px 54px 50px;align-items:center;
-        height:21px;font-size:11px;color:#c8d8e6;
+        height:21px;font-size:11px;color:#c8d8e6;cursor:pointer;
+        padding:0 4px;margin:0 -4px;border-radius:4px;
         border-top:1px solid rgba(120,170,210,.09)}
+.ch-row:hover{background:rgba(255,255,255,.05)}
+/* the trip you are reading: the same blue the tabs use for "you are here" */
+.ch-row.sel{background:rgba(0,174,239,.16);border-top-color:transparent;
+            box-shadow:inset 2px 0 0 var(--blue)}
+.ch-row.sel .d,.ch-row.sel .k{color:#cfe3f2}
+.ch-row.sel .r{color:#fff}
 .ch-row .d{font-size:9.5px;color:#8fa6ba;letter-spacing:.4px}
 .ch-row .r{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .ch-row .k{text-align:right;color:#9fb6c9;font-size:10px}
@@ -319,6 +359,100 @@ body{
 .mp-foot .dot{width:7px;height:7px;flex:none;border-radius:50%;background:var(--green);
               box-shadow:0 0 8px rgba(61,220,132,.9)}
 .mp-foot b{color:#fff;font-weight:600}
+
+/* the scope row: how far around the car we are looking, or the road itself.
+   It sits between the head and the map because it changes both of them. */
+.mp-scope{flex:none;height:20px;margin-top:4px;display:flex;align-items:center;gap:5px}
+.mp-empty{margin:auto;text-align:center;font-size:9px;letter-spacing:1.1px;color:#5f7a92;padding:0 10px}
+.st[hidden]{display:none}
+/* the footer stops being a caption and becomes the way into the navigator */
+#app .mp-foot .go{
+  flex:none;margin-left:auto;height:20px;padding:0 10px;border-radius:10px;
+  font-size:9px;letter-spacing:1.3px;font-weight:600;color:#04150c;
+  background:linear-gradient(180deg,#5df0a2,#27b96c);
+  box-shadow:0 0 12px rgba(61,220,132,.5);
+}
+#app .mp-foot .go:hover{background:linear-gradient(180deg,#7bffb8,#31cd79)}
+.mp-foot.pick{color:#bcd6e8;background:rgba(0,174,239,.10);border-color:rgba(0,174,239,.40)}
+.mp-foot.pick .dot{background:var(--blue);box-shadow:0 0 8px rgba(0,174,239,.9)}
+
+/* ── THE NAVIGATOR ────────────────────────────────────
+   A demo inside the demo: it drives its own car, at its own speed, to the
+   station you picked. Nothing here touches `state` — the trip going on
+   underneath keeps running, and closing the navigator leaves it untouched. */
+#ap-nav{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;
+        padding:9px 11px 8px;background:#080f17}
+#ap-nav[hidden]{display:none}
+.nv-top{flex:none;height:15px;display:flex;align-items:center;gap:7px;
+        font-size:8.6px;letter-spacing:1.3px;color:#7f9bb1}
+.nv-top b{color:#eaf6ff;font-weight:600;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#app #nv-x{margin-left:auto;flex:none;font-size:8px;letter-spacing:1.2px;padding:2px 7px;
+      border-radius:9px;color:#ffb0a0;border:1px solid rgba(255,120,90,.45);
+      background:rgba(255,120,90,.12)}
+#app #nv-x:hover{color:#fff;background:rgba(255,120,90,.26)}
+/* the manoeuvre band: the only thing you should be able to read in a glance */
+.nv-main{flex:none;height:116px;display:flex;align-items:center;gap:14px;
+         margin-top:7px;padding:0 14px;border-radius:10px;
+         background:linear-gradient(180deg,rgba(0,174,239,.12),rgba(0,174,239,.03));
+         border:1px solid rgba(0,174,239,.28)}
+.nv-arrow{flex:none;width:100px;height:100px}
+.nv-arrow svg{width:100%;height:100%;fill:none;stroke:#eaf9ff;stroke-width:5;
+              stroke-linecap:round;stroke-linejoin:round;
+              filter:drop-shadow(0 0 9px rgba(0,174,239,.55))}
+.nv-txt{flex:1;min-width:0}
+.nv-m{display:flex;align-items:baseline;gap:5px;color:#fff}
+.nv-m b{font-size:40px;font-weight:600;line-height:1;letter-spacing:-1px}
+.nv-m em{font-style:normal;font-size:14px;color:#9fb6c9}
+.nv-street{font-size:14px;color:#eaf6ff;margin-top:3px;
+           white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nv-then{font-size:9.5px;letter-spacing:.9px;color:#7f9bb1;margin-top:3px;
+         white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* what is left of the route: the steps you have not driven yet */
+.nv-list{flex:1;min-height:0;margin-top:7px;overflow:hidden}
+.nv-list .hd{font-size:8px;letter-spacing:1.4px;color:#5f7a92;margin-bottom:2px}
+.nv-list div.r{display:grid;grid-template-columns:16px 1fr 46px;align-items:center;
+               height:19px;font-size:10px;color:#9fb6c9;
+               border-top:1px solid rgba(120,170,210,.09)}
+.nv-list .g{color:#7fd0f0;font-size:12px;text-align:center}
+.nv-list .s{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.nv-list .m{text-align:right;color:#7f9bb1;font-size:9.5px}
+.nv-bar{flex:none;height:4px;margin-top:7px;border-radius:2px;
+        background:rgba(255,255,255,.07);overflow:hidden}
+.nv-bar i{display:block;height:100%;width:0;border-radius:2px;
+          background:linear-gradient(90deg,#00AEEF,#3ddc84);transition:width .25s linear}
+.nv-foot{flex:none;height:40px;margin-top:8px;display:grid;
+         grid-template-columns:repeat(4,1fr);gap:6px}
+.nv-foot div{background:rgba(255,255,255,.045);border:1px solid rgba(120,170,210,.10);
+             border-radius:6px;display:flex;flex-direction:column;justify-content:center;
+             align-items:center;gap:1px}
+.nv-foot b{font-size:14px;font-weight:600;color:#fff;line-height:1}
+.nv-foot i{font-style:normal;font-size:7.6px;letter-spacing:1.1px;color:#7f9bb1}
+/* arrived: the same box, green, and it says what the stop will cost */
+#ap-nav.done .nv-main{background:linear-gradient(180deg,rgba(61,220,132,.16),rgba(61,220,132,.04));
+                      border-color:rgba(61,220,132,.5)}
+#ap-nav.done .nv-arrow svg{stroke:#7dffb8;filter:drop-shadow(0 0 10px rgba(61,220,132,.6))}
+#ap-nav.done .nv-bar i{width:100%}
+
+/* ── PRICE HISTORY ────────────────────────────────── */
+.pv-ctl{flex:none;height:20px;display:flex;align-items:center;gap:5px}
+.pv-ctl .gap{flex:1}
+.pv-chart{flex:1;min-height:0;position:relative;margin-top:6px;border-radius:8px;
+          overflow:hidden;background:rgba(255,255,255,.03);
+          border:1px solid rgba(120,170,210,.10)}
+.pv-chart canvas{position:absolute;inset:0;width:100%;height:100%}
+.pv-stats{flex:none;height:38px;margin-top:6px;display:grid;
+          grid-template-columns:repeat(4,1fr);gap:5px}
+.pv-stats div{background:rgba(255,255,255,.045);border:1px solid rgba(120,170,210,.10);
+              border-radius:6px;display:flex;flex-direction:column;justify-content:center;
+              padding:0 7px}
+.pv-stats b{font-size:13px;font-weight:600;color:#fff;line-height:1.15}
+.pv-stats i{font-style:normal;font-size:7.6px;letter-spacing:1.1px;color:#7f9bb1}
+.pv-foot{flex:none;height:19px;line-height:19px;margin-top:5px;
+         font-size:9px;letter-spacing:.5px;color:#8fa6ba;
+         white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pv-foot b{color:#eaf6ff;font-weight:600}
+.pv-foot .up{color:#ff8f6d}
+.pv-foot .dn{color:#3ddc84}
 
 /* cluster typography */
 #cluster text{font-family:"Segoe UI",Roboto,Arial,sans-serif;fill:#fff}
@@ -763,7 +897,11 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
             </button>
             <button class="ap-tab" type="button" data-v="map">
               <svg viewBox="0 0 16 16"><path d="M8 14.2s4.5-4.4 4.5-7.5a4.5 4.5 0 1 0-9 0C3.5 9.8 8 14.2 8 14.2Z"/><circle cx="8" cy="6.6" r="1.7"/></svg>
-              Local pump map
+              Pump map
+            </button>
+            <button class="ap-tab" type="button" data-v="price">
+              <svg viewBox="0 0 16 16"><path d="M1.8 11.4 5.4 7l3 2.6L14.2 3" stroke-linecap="round" stroke-linejoin="round"/><path d="M10.6 3h3.6v3.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Price history
             </button>
           </div>
 
@@ -772,27 +910,30 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
             <div class="ap-pane" id="pane-history">
               <div class="ch-hero">
                 <div class="ch-cost">
-                  <div class="ch-lab">THIS TRIP &middot; COST SO FAR</div>
+                  <div class="ch-lab">
+                    <span id="ap-lab">THIS TRIP &middot; COST SO FAR</span>
+                    <button type="button" id="ap-back" hidden>&#9664; LIVE</button>
+                  </div>
                   <div class="ch-big"><em>EUR</em><span id="ap-total">9.55</span></div>
-                  <div class="ch-sub"><span id="ap-km">48.1</span> km &middot; <span id="ap-lit">5.02</span> L burned</div>
+                  <div class="ch-sub" id="ap-sub">48.1 km &middot; 5.02 L burned</div>
                 </div>
                 <div class="ch-grid">
-                  <div class="ch-cell"><b id="ap-c1">0.14</b><i>&euro;/KM NOW</i></div>
-                  <div class="ch-cell"><b id="ap-c2">0.20</b><i>&euro;/KM AVG</i></div>
-                  <div class="ch-cell"><b id="ap-c3">7.1</b><i>L / 100 KM</i></div>
-                  <div class="ch-cell"><b id="ap-c4">1.91</b><i>TANK &euro;/L</i></div>
+                  <div class="ch-cell"><b id="ap-c1">0.14</b><i id="ap-l1">&euro;/KM NOW</i></div>
+                  <div class="ch-cell"><b id="ap-c2">0.20</b><i id="ap-l2">&euro;/KM AVG</i></div>
+                  <div class="ch-cell"><b id="ap-c3">7.1</b><i id="ap-l3">L / 100 KM</i></div>
+                  <div class="ch-cell"><b id="ap-c4">1.91</b><i id="ap-l4">TANK &euro;/L</i></div>
                 </div>
               </div>
 
               <div class="ch-chart">
-                <div class="hd"><span>COST PER KM &middot; LAST 5 KM</span><span id="ap-peak"></span></div>
+                <div class="hd"><span id="ap-ctitle">COST PER KM &middot; LAST 5 KM</span><span id="ap-peak"></span></div>
                 <div class="ch-bars" id="ap-bars"></div>
                 <div class="ch-avg" id="ap-avg"></div>
-                <div class="ch-axis"><span>&minus;5.0 km</span><span>now</span></div>
+                <div class="ch-axis"><span id="ap-ax0">&minus;5.0 km</span><span id="ap-ax1">now</span></div>
               </div>
 
               <div class="ch-hist">
-                <div class="hd">PREVIOUS TRIPS</div>
+                <div class="hd">PREVIOUS TRIPS &middot; <span style="color:#5f7a92">TAP ONE</span></div>
                 <div id="ap-trips"></div>
               </div>
             </div>
@@ -800,14 +941,68 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
             <!-- ── LOCAL PUMP MAP ── -->
             <div class="ap-pane" id="pane-map" hidden>
               <div class="mp-head">
-                <span><b id="ap-nst">8</b> STATIONS NEARBY</span>
+                <span><b id="ap-nst">8</b> <span id="ap-scopelab">STATIONS WITHIN 2.5 KM</span></span>
                 <span>SORTED BY PRICE</span>
               </div>
+              <div class="mp-scope">
+                <span class="lb">SEARCH</span>
+                <button class="sc" type="button" data-r="1000">1 km</button>
+                <button class="sc on" type="button" data-r="2500">2.5 km</button>
+                <button class="sc" type="button" data-r="5000">5 km</button>
+                <button class="sc" type="button" data-r="road">Along this road</button>
+              </div>
               <div class="mp-body">
-                <div class="mp-list" id="ap-stations"></div>
+                <div class="mp-list" id="ap-stations"><div class="mp-empty" id="ap-none" hidden>No station in range.<br>Widen the search.</div></div>
                 <div class="mp-map"><canvas id="ap-canvas"></canvas></div>
               </div>
-              <div class="mp-foot"><span class="dot"></span><span id="ap-best">&mdash;</span></div>
+              <div class="mp-foot" id="ap-foot"><span class="dot"></span><span id="ap-best">&mdash;</span>
+                <button class="go" type="button" id="ap-go" hidden>NAVIGATE &#9654;</button></div>
+
+              <!-- the simulated navigator: opens over the map, drives itself -->
+              <div id="ap-nav" hidden>
+                <div class="nv-top"><span>NAVIGATING TO</span><b id="nv-dest">&mdash;</b>
+                  <button type="button" id="nv-x">&#10005; END</button></div>
+                <div class="nv-main">
+                  <div class="nv-arrow"><svg id="nv-ico" viewBox="0 0 64 64"><path d="M32 56V14M20 26 32 12l12 14"/></svg></div>
+                  <div class="nv-txt">
+                    <div class="nv-m"><b id="nv-dist">300</b><em id="nv-unit">m</em></div>
+                    <div class="nv-street" id="nv-street">&mdash;</div>
+                    <div class="nv-then" id="nv-then">&nbsp;</div>
+                  </div>
+                </div>
+                <div class="nv-list" id="nv-list"></div>
+                <div class="nv-bar"><i id="nv-fill"></i></div>
+                <div class="nv-foot">
+                  <div><b id="nv-eta">--:--</b><i>ARRIVAL</i></div>
+                  <div><b id="nv-left">0.0</b><i>KM LEFT</i></div>
+                  <div><b id="nv-min">0</b><i>MIN LEFT</i></div>
+                  <div><b id="nv-price">0.00</b><i>&euro;/L THERE</i></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── PRICE HISTORY ── -->
+            <div class="ap-pane" id="pane-price" hidden>
+              <div class="pv-ctl">
+                <span class="lb">RANGE</span>
+                <button class="sc" type="button" data-p="3">3M</button>
+                <button class="sc" type="button" data-p="6">6M</button>
+                <button class="sc on" type="button" data-p="12">1Y</button>
+                <button class="sc" type="button" data-p="24">2Y</button>
+                <span class="gap"></span>
+                <span class="lb">STEP</span>
+                <button class="sc" type="button" data-s="1">DAY</button>
+                <button class="sc on" type="button" data-s="7">WEEK</button>
+                <button class="sc" type="button" data-s="30">MONTH</button>
+              </div>
+              <div class="pv-chart"><canvas id="ap-pcanvas"></canvas></div>
+              <div class="pv-stats">
+                <div><b id="pv-now">1.85</b><i>MARKET NOW</i></div>
+                <div><b id="pv-min">1.70</b><i>PERIOD LOW</i></div>
+                <div><b id="pv-max">1.95</b><i>PERIOD HIGH</i></div>
+                <div><b id="pv-avg">1.79</b><i>WE PAID AVG</i></div>
+              </div>
+              <div class="pv-foot" id="pv-foot">&mdash;</div>
             </div>
           </div>
         </div>
@@ -882,7 +1077,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       </div>
       <div class="help-section" style="border-left-color:#8fd8f5;grid-column:1/-1">
         <div class="help-section-title" style="color:#8fd8f5">▣ Centre display</div>
-        <p>The screen on the dashboard runs the app itself, and it is <strong>touchable</strong>: <strong>Cost history</strong> charts what every kilometre has cost you — one bar per 200 m of the road you are driving — over your previous trips. <strong>Local pump map</strong> ranks the stations around the car by price, cheapest in green with the halo, dearest in red, with what you would save on this tank.</p>
+        <p>The screen on the dashboard runs the app itself, and it is <strong>touchable</strong>: <strong>Cost history</strong> charts what every kilometre has cost you — one bar per 200 m of the road you are driving — over your previous trips: <strong>tap any of them</strong> to open it, with its own cost profile, litres, average speed and the price paid at the pump. <strong>Pump map</strong> ranks the stations around the car by price, cheapest in green with the halo, dearest in red: choose how far to look &mdash; 1, 2.5 or 5 km, or <em>along this road</em> &mdash; then <strong>tap a station and NAVIGATE</strong> to be driven there by a simulated navigator, arrow by arrow. <strong>Price history</strong> puts two years of the Italian pump price behind our own refuels: pick the window and how finely to sample it, and tap any stop to see what we paid against the market that day.</p>
       </div>
     </div>
     <button id="help-cta">Got it — hold &#8593; to drive →</button>
@@ -2643,12 +2838,22 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
        own the moment it starts observing — so this only ever touches the
        backing store when it really changed, and repaints straight after. */
     function sizeCanvas() {
-      if (!cv || !cv.clientWidth) return;
-      const w = Math.round(cv.clientWidth * pxRatio), h = Math.round(cv.clientHeight * pxRatio);
-      if (cv.width === w && cv.height === h) return;
-      cw = cv.clientWidth; ch = cv.clientHeight;
-      cv.width = w; cv.height = h;
-      if (view === 'map') drawMap(performance.now());
+      if (cv && cv.clientWidth) {
+        const w = Math.round(cv.clientWidth * pxRatio), h = Math.round(cv.clientHeight * pxRatio);
+        if (cv.width !== w || cv.height !== h) {
+          cw = cv.clientWidth; ch = cv.clientHeight;
+          cv.width = w; cv.height = h;
+          if (view === 'map') drawMap(performance.now());
+        }
+      }
+      if (pcv && pcv.clientWidth) {
+        const w = Math.round(pcv.clientWidth * pxRatio), h = Math.round(pcv.clientHeight * pxRatio);
+        if (pcv.width !== w || pcv.height !== h) {
+          pcw = pcv.clientWidth; pch = pcv.clientHeight;
+          pcv.width = w; pcv.height = h;
+          if (view === 'price') drawPrice();
+        }
+      }
     }
     function fit() {
       const w = glass.clientWidth, h = glass.clientHeight;
@@ -2661,23 +2866,28 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     window.addEventListener('resize', fit);
 
     /* ── tabs ──────────────────────────────────────────── */
-    const panes = { history: $('pane-history'), map: $('pane-map') };
+    const panes = { history: $('pane-history'), map: $('pane-map'), price: $('pane-price') };
     const tabs  = Array.prototype.slice.call(root.querySelectorAll('.ap-tab'));
     let view = 'history';
     function show(v) {
       view = v;
       tabs.forEach(t => t.classList.toggle('on', t.dataset.v === v));
       for (const k in panes) panes[k].hidden = (k !== v);
-      if (v === 'map') { fit(); paintList(); drawMap(performance.now()); }
-      else paintTrip();
+      /* a hidden pane has no size, so its canvas can only be measured here */
+      if (v === 'map')        { fit(); paintList(); drawMap(performance.now()); }
+      else if (v === 'price') { fit(); drawPrice(); }
+      else                    paintHistory();
     }
     tabs.forEach(t => t.addEventListener('click', () => { show(t.dataset.v); t.blur(); }));
 
     const T = {
-      total: $('ap-total'), km: $('ap-km'), lit: $('ap-lit'),
+      lab: $('ap-lab'), total: $('ap-total'), sub: $('ap-sub'),
       c1: $('ap-c1'), c2: $('ap-c2'), c3: $('ap-c3'), c4: $('ap-c4'),
+      l1: $('ap-l1'), l2: $('ap-l2'), l3: $('ap-l3'), l4: $('ap-l4'),
+      ctitle: $('ap-ctitle'), ax0: $('ap-ax0'), ax1: $('ap-ax1'),
       peak: $('ap-peak'), avg: $('ap-avg'), eurkm: $('ap-eurkm'),
-      clock: $('ap-clock'), best: $('ap-best'), nst: $('ap-nst')
+      clock: $('ap-clock'), best: $('ap-best'), nst: $('ap-nst'),
+      scopelab: $('ap-scopelab')
     };
 
     /* ── the live bar chart: one bar per 200 m ─────────────
@@ -2706,67 +2916,137 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       return dKm;
     }
 
-    /* ── past trips: fictional, but dated off today ────── */
+    /* ── past trips: fictional, but dated off today, and each one
+          openable. `min` and `paid` are what turns a row into a page:
+          without them a past trip could only repeat what the row says.
+          `char` is the shape of its cost profile — a motorway trip is
+          flat and cheap, a city one is spiky and dear. ────────────── */
+    const TRIPS = [
+      { back: 1, route: 'Torino &ndash; Milano', km: 142.6, eur: 27.10, min: 95, paid: 1.79, char: 'road' },
+      { back: 2, route: 'Commute &middot; A55',  km: 38.4,  eur: 8.10,  min: 34, paid: 1.86, char: 'mix'  },
+      { back: 4, route: 'Milano &ndash; Genova', km: 118.9, eur: 21.60, min: 88, paid: 1.75, char: 'road' },
+      { back: 6, route: 'City &middot; Torino',  km: 22.7,  eur: 6.05,  min: 41, paid: 1.92, char: 'city' }
+    ];
+    const rowsT = [];
     (function buildTrips() {
-      const list = [
-        { back: 1, route: 'Torino &ndash; Milano', km: 142.6, eur: 27.10 },
-        { back: 2, route: 'Commute &middot; A55',  km: 38.4,  eur: 8.10  },
-        { back: 4, route: 'Milano &ndash; Genova', km: 118.9, eur: 21.60 },
-        { back: 6, route: 'City &middot; Torino',  km: 22.7,  eur: 6.05  }
-      ];
       const box = $('ap-trips');
-      const ref = list.reduce((a, t) => a + t.eur, 0) / list.reduce((a, t) => a + t.km, 0);
-      list.forEach(t => {
-        const epk = t.eur / t.km, up = epk > ref;
+      const ref = TRIPS.reduce((a, t) => a + t.eur, 0) / TRIPS.reduce((a, t) => a + t.km, 0);
+      TRIPS.forEach(t => {
+        t.epk = t.eur / t.km;
+        t.lit = t.eur / t.paid;
+        t.l100 = t.lit / t.km * 100;
+        t.kmh = t.km / (t.min / 60);
         const d = new Date(); d.setDate(d.getDate() - t.back);
+        t.date = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }).toUpperCase();
+
+        /* 25 bars whose MEAN is the trip's real euro per km: the dashed
+           average then lands exactly where the row says it should */
+        const shape = { road: [0.16, 0.10], mix: [0.34, 0.22], city: [0.60, 0.45] }[t.char];
+        const raw = [];
+        let sum = 0;
+        for (let i = 0; i < NB; i++) {
+          let v = 1 + (rnd() - 0.5) * shape[0];
+          if (rnd() > 0.84) v += shape[1];            // a queue, a town, a climb
+          raw.push(v); sum += v;
+        }
+        t.bars = raw.map(v => v * t.epk / (sum / NB));
+
+        const up = t.epk > ref;
         const row = document.createElement('div');
         row.className = 'ch-row ' + (up ? 'up' : 'dn');
         row.innerHTML =
-          '<span class="d">' +
-            d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }).toUpperCase() +
-          '</span>' +
+          '<span class="d">' + t.date + '</span>' +
           '<span class="r">' + t.route + '</span>' +
           '<span class="k">' + t.km.toFixed(1) + ' km</span>' +
-          '<span class="u">' + (up ? '&#9650; ' : '&#9660; ') + epk.toFixed(3) + '</span>' +
+          '<span class="u">' + (up ? '&#9650; ' : '&#9660; ') + t.epk.toFixed(3) + '</span>' +
           '<span class="e">' + t.eur.toFixed(2) + '</span>';
-        box.appendChild(row);
+        row.addEventListener('click', () => { openTrip(selTrip === t ? null : t); row.blur(); });
+        box.appendChild(row); rowsT.push(row);
       });
     })();
 
-    function paintTrip() {
-      const avg = state.tripKm > 0.05 ? state.tripCost / state.tripKm : 0;
-      T.total.textContent = state.tripCost.toFixed(2);
-      T.km.textContent    = state.tripKm.toFixed(1);
-      T.lit.textContent   = state.tripLiters.toFixed(2);
-      T.c1.textContent    = state.instantEurKm.toFixed(2);
-      T.c2.textContent    = avg.toFixed(2);
-      T.c3.textContent    = state.instantL100.toFixed(1);
-      T.c4.textContent    = state.refuelPrice.toFixed(2);
+    /* ── opening a past trip ───────────────────────────────
+       The whole top half switches to that trip: total, the four cells
+       (which change meaning, so their labels change too), the chart and
+       its axis. The live trip keeps accumulating underneath — nothing
+       here touches `state` — and `LIVE` brings it back. */
+    let selTrip = null;
+    const back = $('ap-back');
+    function openTrip(t) {
+      selTrip = t;
+      rowsT.forEach((r, i) => r.classList.toggle('sel', TRIPS[i] === t));
+      back.hidden = !t;
+      paintHistory();
+    }
+    back.addEventListener('click', () => { openTrip(null); back.blur(); });
 
+    function paintHistory() { selTrip ? paintPast(selTrip) : paintTrip(); }
+
+    /* draw one series into the chart: heights, colours, average line */
+    function paintBars(series, avg, hotAt) {
       let peak = 0;
-      for (let i = 0; i < NB; i++) if (bars[i] > peak) peak = bars[i];
+      for (let i = 0; i < NB; i++) if (series[i] > peak) peak = series[i];
       const top = Math.max(peak, avg, 0.06) * 1.12;      // headroom above the tallest
       T.peak.innerHTML = '<em>AVG ' + avg.toFixed(2) + '</em> &middot; PEAK ' + peak.toFixed(2);
       for (let i = 0; i < NB; i++) {
-        const v = bars[i];
+        const v = series[i];
         barEl[i].style.height = Math.max(2, (v / top) * BARS_H).toFixed(1) + 'px';
-        barEl[i].className = i === NB - 1 ? 'now' : (v > avg * 1.12 ? 'hot' : '');
+        barEl[i].className = i === hotAt ? 'now' : (v > avg * 1.12 ? 'hot' : '');
       }
       T.avg.style.top = (23 + BARS_H * (1 - avg / top)).toFixed(1) + 'px';
+    }
+
+    function paintPast(t) {
+      const h = Math.floor(t.min / 60), m = t.min % 60;
+      T.lab.innerHTML   = t.route + ' &middot; ' + t.date;
+      T.total.textContent = t.eur.toFixed(2);
+      T.sub.innerHTML   = t.km.toFixed(1) + ' km &middot; ' + t.lit.toFixed(2) +
+                          ' L &middot; ' + (h ? h + 'h ' + m + 'm' : m + ' min');
+      T.c1.textContent = t.epk.toFixed(2);  T.l1.innerHTML = '&euro;/KM AVG';
+      T.c2.textContent = t.l100.toFixed(1); T.l2.innerHTML = 'L / 100 KM';
+      T.c3.textContent = Math.round(t.kmh); T.l3.innerHTML = 'AVG KM/H';
+      T.c4.textContent = t.paid.toFixed(2); T.l4.innerHTML = 'PAID &euro;/L';
+      T.ctitle.innerHTML = 'COST PER KM &middot; ' + t.date;
+      T.ax0.textContent = 'start';
+      T.ax1.textContent = t.km.toFixed(0) + ' km';
+      paintBars(t.bars, t.epk, -1);
+    }
+
+    function paintTrip() {
+      const avg = state.tripKm > 0.05 ? state.tripCost / state.tripKm : 0;
+      T.lab.innerHTML     = 'THIS TRIP &middot; COST SO FAR';
+      T.total.textContent = state.tripCost.toFixed(2);
+      T.sub.innerHTML     = state.tripKm.toFixed(1) + ' km &middot; ' +
+                            state.tripLiters.toFixed(2) + ' L burned';
+      T.c1.textContent = state.instantEurKm.toFixed(2); T.l1.innerHTML = '&euro;/KM NOW';
+      T.c2.textContent = avg.toFixed(2);                T.l2.innerHTML = '&euro;/KM AVG';
+      T.c3.textContent = state.instantL100.toFixed(1);  T.l3.innerHTML = 'L / 100 KM';
+      T.c4.textContent = state.refuelPrice.toFixed(2);  T.l4.innerHTML = 'TANK &euro;/L';
+      T.ctitle.innerHTML = 'COST PER KM &middot; LAST 5 KM';
+      T.ax0.innerHTML = '&minus;5.0 km';
+      T.ax1.textContent = 'now';
+      paintBars(bars, avg, NB - 1);
     }
 
     /* ══ the pump map ══════════════════════════════════════ */
     const BRANDS = ['Eni', 'Q8', 'IP', 'Tamoil', 'Esso', 'Api', 'Repsol', 'Beyfin'];
     const PLACES = ['Via Emilia', 'Tangenziale Ovest', 'Casello Nord', 'Corso Francia',
                     'SS9 km 12', 'Viale Europa', 'Zona Industriale', 'Raccordo Sud',
-                    'Piazza Trento', 'Via Torino'];
-    const NST = 7;
-    /* The world is cut to what the map can show, so every row in the list has
-       a pin you can point at: 1500 m either side, from 1800 m behind the car
-       to 2400 m ahead, and MAPR is the half-height the mini map draws. */
-    const XSPAN = 1500, BACK = 1800, AHEAD = 2400, MAPR = 2500;
+                    'Piazza Trento', 'Via Torino', 'Strada del Portone', 'Via Nizza',
+                    'Barriera Sud', 'Corso Unione'];
+    const NST = 22;
+    /* The world has to be bigger than any one search: 5 km around the car, or
+       the whole road ahead, must have something to find. Roughly half the
+       stations are dropped close to the road we are on — otherwise "along this
+       road" would usually be empty — and the rest are scattered over the town.
+       They scroll towards the car with the real metres driven and are reborn
+       ahead, with a new sign and a new price, once they fall behind. */
+    const XSPAN = 3400, CORRIDOR = 550, BACK = 2200, AHEAD = 9000;
     const SPREAD = 0.13;       // euro either side of the live market average
     const DIRS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+
+    /* the search: metres of radius, or 'road' for the corridor up the road */
+    let scope = 2500;
 
     const sts = [];
     function spawn(s, y) {
@@ -2775,16 +3055,33 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         s.p = PLACES[Math.floor(rnd() * PLACES.length)];
         if (!sts.some(o => o !== s && o.b === s.b && o.p === s.p)) break;
       }
-      s.x = (rnd() * 2 - 1) * XSPAN;
+      s.x = (rnd() * 2 - 1) * (rnd() < 0.45 ? CORRIDOR : XSPAN);
       s.y = y;
       s.off = (rnd() * 2 - 1) * SPREAD;
       return s;
     }
-    for (let i = 0; i < NST; i++) sts.push(spawn({}, -BACK + rnd() * (BACK + AHEAD)));
+    /* the first handful are seeded close, so the demo opens on a list that
+       has something in it at every radius; the rest fill the world out */
+    for (let i = 0; i < NST; i++) {
+      const s = spawn({}, i < 6 ? -900 + rnd() * 3000 : -BACK + rnd() * (BACK + AHEAD));
+      if (i < 6) s.x = (rnd() * 2 - 1) * (i < 3 ? 850 : 2100);
+      sts.push(s);
+    }
 
     const priceOf = s => state.marketPrice + s.off;
     const distOf  = s => Math.sqrt(s.x * s.x + s.y * s.y);
     const dirOf   = s => DIRS[(Math.round(Math.atan2(s.x, s.y) / (Math.PI / 4)) + 8) % 8];
+
+    /* "along this road" is not a radius: it is a corridor either side of the
+       road, running far ahead and only a little way back — the stations you
+       would actually pass without leaving the route. */
+    const inScope = s => scope === 'road'
+      ? (Math.abs(s.x) <= CORRIDOR && s.y > -400 && s.y <= AHEAD)
+      : distOf(s) <= scope;
+    const scopeLabel = () => scope === 'road' ? 'STATIONS ALONG THIS ROAD'
+      : 'STATIONS WITHIN ' + (scope / 1000).toFixed(scope % 1000 ? 1 : 0) + ' KM';
+    /* how far the mini map sees, in metres of half-height */
+    const mapReach = () => scope === 'road' ? AHEAD * 0.62 : scope * 1.14;
 
     /* green -> amber -> red across the price range on screen */
     function priceColor(t) {
@@ -2801,13 +3098,14 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       travelM += d;
       for (const s of sts) {
         s.y -= d;
-        if (s.y < -BACK) { if (s === sel) sel = null; spawn(s, AHEAD - rnd() * 300); }
+        if (s.y < -BACK) { if (s === sel) sel = null; spawn(s, AHEAD - rnd() * 600); }
       }
     }
 
     /* one row per station, built once: only text and colour change, and the
-       sort order is a flexbox `order`, so nothing is ever re-created */
-    const listBox = $('ap-stations'), rows = [];
+       sort order is a flexbox `order`, so nothing is ever re-created. Rows
+       outside the search are hidden, not removed. */
+    const listBox = $('ap-stations'), noneBox = $('ap-none'), rows = [];
     sts.forEach(s => {
       const r = document.createElement('div');
       r.className = 'st';
@@ -2819,15 +3117,31 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
               pr: r.querySelector('.pr'), dl: r.querySelector('.dl') };
       listBox.appendChild(r); rows.push(r);
     });
-    T.nst.textContent = NST;
+
+    const foot = $('ap-foot'), goBtn = $('ap-go');
+    const scopeBtns = Array.prototype.slice.call(root.querySelectorAll('.mp-scope .sc'));
+    scopeBtns.forEach(b => b.addEventListener('click', () => {
+      const v = b.dataset.r;
+      scope = v === 'road' ? 'road' : +v;
+      scopeBtns.forEach(o => o.classList.toggle('on', o === b));
+      if (sel && !inScope(sel)) sel = null;
+      paintList(); drawMap(performance.now()); b.blur();
+    }));
 
     function paintList() {
-      const prices = sts.map(priceOf);
-      const min = Math.min.apply(null, prices), max = Math.max.apply(null, prices);
-      const mean = prices.reduce((a, b) => a + b, 0) / prices.length;
-      const order = sts.slice().sort((a, b) => priceOf(a) - priceOf(b));
+      const shown = sts.filter(inScope);
+      const order = shown.slice().sort((a, b) => priceOf(a) - priceOf(b));
+      T.nst.textContent = shown.length;
+      T.scopelab.textContent = scopeLabel();
+      noneBox.hidden = shown.length > 0;
+
+      const prices = shown.map(priceOf);
+      const min = prices.length ? Math.min.apply(null, prices) : 0;
+      const max = prices.length ? Math.max.apply(null, prices) : 0;
+      const mean = prices.length ? prices.reduce((a, b) => a + b, 0) / prices.length : 0;
       const litres = Math.max(5, state.tankCapacity - state.tankLiters);
 
+      sts.forEach((s, i) => { rows[i].hidden = !inScope(s); });
       order.forEach((s, rank) => {
         const r = rows[sts.indexOf(s)], p = priceOf(s), d = distOf(s);
         const c = priceColor(max > min ? (p - min) / (max - min) : 0);
@@ -2836,16 +3150,32 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         r.classList.toggle('best', rank === 0);
         r.classList.toggle('sel', s === sel);
         r.q.nm.textContent = s.b + ' · ' + s.p;
-        r.q.ds.textContent = (d / 1000).toFixed(1) + ' km · ' + dirOf(s);
+        r.q.ds.textContent = scope === 'road'
+          ? (Math.abs(s.y) / 1000).toFixed(1) + ' km ' + (s.y >= 0 ? 'ahead' : 'behind')
+          : (d / 1000).toFixed(1) + ' km · ' + dirOf(s);
         r.q.pr.textContent = p.toFixed(2);
-        r.q.dl.textContent = rank === 0 ? 'BEST' : '+' + (p - min).toFixed(2) + ' €/L';
+        r.q.dl.textContent = rank === 0 ? 'BEST'
+          : (p - min) < 0.005 ? 'SAME' : '+' + (p - min).toFixed(2) + ' €/L';
       });
 
-      const b = order[0], save = (mean - priceOf(b)) * litres;
-      T.best.innerHTML =
-        '<b>' + b.b + ' · ' + b.p + '</b> &middot; ' + priceOf(b).toFixed(2) +
-        ' &euro;/L &middot; ' + (distOf(b) / 1000).toFixed(1) + ' km ' + dirOf(b) +
-        ' &middot; save <b>' + save.toFixed(2) + ' &euro;</b> on this tank';
+      /* the footer is the way into the navigator: it shows the best price
+         until you pick a station, then it shows yours and offers to go */
+      foot.classList.toggle('pick', !!sel);
+      goBtn.hidden = !sel;
+      if (sel) {
+        T.best.innerHTML =
+          '<b>' + sel.b + ' · ' + sel.p + '</b> &middot; ' + priceOf(sel).toFixed(2) +
+          ' &euro;/L &middot; ' + (distOf(sel) / 1000).toFixed(1) + ' km ' +
+          (scope === 'road' ? 'up this road' : dirOf(sel));
+      } else if (order.length) {
+        const b = order[0], save = (mean - priceOf(b)) * litres;
+        T.best.innerHTML =
+          '<b>' + b.b + ' · ' + b.p + '</b> &middot; ' + priceOf(b).toFixed(2) +
+          ' &euro;/L &middot; save <b>' + save.toFixed(2) + ' &euro;</b> on this tank' +
+          ' &middot; <span style="color:#8fa6ba">tap a station to navigate</span>';
+      } else {
+        T.best.innerHTML = '<span style="color:#8fa6ba">Nothing in range &mdash; widen the search</span>';
+      }
     }
 
     /* ── the mini map: north up, the car on its road ────── */
@@ -2862,13 +3192,18 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       ctx.fillStyle = '#080d13';
       ctx.fillRect(0, 0, cw, ch);
 
-      const cx = cw / 2, cy = ch * 0.56;      // the car sits low: more road ahead
-      const k  = (ch * 0.56) / MAPR;          // px per metre
-      const G  = 420;                          // m between streets: a town block
+      /* the search decides the framing: a radius puts the car in the middle
+         of its circle, the road puts it at the bottom with the way ahead */
+      const along = scope === 'road';
+      const cx = cw / 2, cy = along ? ch * 0.86 : ch * 0.5;
+      const reach = mapReach();
+      const k = (along ? ch * 0.82 : ch * 0.46) / reach;   // px per metre
+      const G  = 420;                                      // m between streets
 
       /* the street grid scrolls with the real distance driven. Every third
          line is an arterial, which is what stops it reading as graph paper */
-      const n0 = Math.floor((travelM - MAPR) / G), n1 = Math.ceil((travelM + MAPR) / G);
+      const span = Math.max(ch / k, cw / k);
+      const n0 = Math.floor((travelM - span) / G), n1 = Math.ceil((travelM + span) / G);
       const cols = Math.ceil(cw / (G * k)) + 2;
       for (let pass = 0; pass < 2; pass++) {
         ctx.beginPath();
@@ -2877,6 +3212,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         for (let n = n0; n <= n1; n++) {
           if ((((n % 3) + 3) % 3 === 0) !== !!pass) continue;
           const y = cy - (n * G - travelM) * k;
+          if (y < -2 || y > ch + 2) continue;
           ctx.moveTo(0, y); ctx.lineTo(cw, y);
         }
         for (let i = -cols; i <= cols; i++) {
@@ -2902,20 +3238,54 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       ctx.strokeStyle = 'rgba(0,174,239,.80)'; ctx.lineWidth = 2.2;
       ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, ch); ctx.stroke();
 
+      /* THE SEARCH ITSELF, drawn: the circle you asked for, or the two edges
+         of the corridor. Without this the chips would change the list for no
+         visible reason. */
+      ctx.save();
+      ctx.setLineDash([5, 4]);
+      ctx.strokeStyle = 'rgba(0,174,239,.55)'; ctx.lineWidth = 1.3;
+      if (along) {
+        ctx.beginPath();
+        ctx.moveTo(cx - CORRIDOR * k, 0); ctx.lineTo(cx - CORRIDOR * k, ch);
+        ctx.moveTo(cx + CORRIDOR * k, 0); ctx.lineTo(cx + CORRIDOR * k, ch);
+        ctx.stroke();
+      } else {
+        ctx.beginPath(); ctx.arc(cx, cy, scope * k, 0, TAU);
+        ctx.fillStyle = 'rgba(0,174,239,.05)'; ctx.fill();
+        ctx.stroke();
+      }
+      ctx.restore();
+
       /* the edges fall away, so the map reads as a window on a bigger place */
-      const vg = ctx.createRadialGradient(cx, cy, ch * 0.22, cx, cy, ch * 0.78);
+      const vg = ctx.createRadialGradient(cx, cy, ch * 0.22, cx, cy, ch * 0.85);
       vg.addColorStop(0, 'rgba(8,13,19,0)');
       vg.addColorStop(1, 'rgba(8,13,19,.62)');
       ctx.fillStyle = vg; ctx.fillRect(0, 0, cw, ch);
 
-      const prices = sts.map(priceOf);
-      const min = Math.min.apply(null, prices), max = Math.max.apply(null, prices);
+      const shown = sts.filter(inScope);
+      const prices = shown.map(priceOf);
+      const min = prices.length ? Math.min.apply(null, prices) : 0;
+      const max = prices.length ? Math.max.apply(null, prices) : 0;
       const pulse = 0.5 + 0.5 * Math.sin(now / 420);
 
-      sts.forEach(s => {
-        const p = priceOf(s);
+      /* cheapest last, and the one you picked after it: two pumps a few
+         metres apart must not bury the pin the whole view is about */
+      const drawOrder = sts.slice().sort((a, b) =>
+        (a === sel ? 2 : priceOf(a) === min && inScope(a) ? 1 : 0) -
+        (b === sel ? 2 : priceOf(b) === min && inScope(b) ? 1 : 0));
+      drawOrder.forEach(s => {
+        const here = inScope(s), p = priceOf(s);
         const x = cx + s.x * k, y = cy - s.y * k;
         if (x < -30 || x > cw + 30 || y < -30 || y > ch + 30) return;
+
+        /* outside the search: still drawn, but grey and small. The search is
+           a choice about what to rank, not a claim that nothing else is there */
+        if (!here) {
+          ctx.beginPath(); ctx.arc(x, y, 2.6, 0, TAU);
+          ctx.fillStyle = 'rgba(150,180,205,.30)'; ctx.fill();
+          return;
+        }
+
         const best = (p === min);
         const col = priceColor(max > min ? (p - min) / (max - min) : 0);
 
@@ -2958,12 +3328,14 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       ctx.closePath();
       ctx.fillStyle = '#eaf6ff'; ctx.fill();
 
-      /* compass and scale */
+      /* compass and scale — the bar follows the zoom, so it stays a round
+         number of metres however far the search reaches */
       ctx.font = '600 9px "Segoe UI",Roboto,Arial,sans-serif';
       ctx.fillStyle = 'rgba(190,214,232,.55)';
       ctx.textAlign = 'right'; ctx.textBaseline = 'top';
       ctx.fillText('N ▲', cw - 6, 6);
-      const bar = 1000 * k;
+      const unit = reach > 3500 ? 2000 : reach > 1600 ? 1000 : 500;
+      const bar = unit * k;
       ctx.fillStyle = 'rgba(8,13,19,.82)';        /* so a pin cannot sit on it */
       roundRect(4, ch - 26, bar + 12, 22, 4); ctx.fill();
       ctx.fillStyle = 'rgba(190,214,232,.55)';
@@ -2974,14 +3346,352 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       ctx.moveTo(8 + bar, ch - 15); ctx.lineTo(8 + bar, ch - 9);
       ctx.stroke();
       ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
-      ctx.fillText('1 km', 8, ch - 14);
+      ctx.fillText(unit >= 1000 ? (unit / 1000) + ' km' : unit + ' m', 8, ch - 14);
     }
 
+    /* ══ the navigator ═════════════════════════════════════
+       A demo inside the demo, and deliberately cut off from the rest: it
+       drives its own car at its own speed to the station you picked, and it
+       never reads or writes `state`. The trip underneath keeps running, the
+       windshield keeps going, and ENDing it leaves nothing behind. */
+    const NAV = {
+      box: $('ap-nav'), ico: $('nv-ico'), dist: $('nv-dist'), unit: $('nv-unit'),
+      street: $('nv-street'), then: $('nv-then'), dest: $('nv-dest'),
+      fill: $('nv-fill'), eta: $('nv-eta'), left: $('nv-left'),
+      min: $('nv-min'), price: $('nv-price'), list: $('nv-list')
+    };
+    /* one path per manoeuvre, in a 64 box, stroked and not filled */
+    const ICONS = {
+      straight: 'M32 56V13M19 26 32 12l13 14',
+      left:     'M46 56V33a12 12 0 0 0-12-12H19M31 8 17 21l14 13',
+      right:    'M18 56V33a12 12 0 0 1 12-12h15M33 8l14 13-14 13',
+      sleft:    'M42 56V36c0-7-1-11-5-16L24 8M21 22 24 6l15 4',
+      sright:   'M22 56V36c0-7 1-11 5-16L40 8M43 22 40 6l-15 4',
+      round:    'M32 56V40M32 40a11 11 0 1 1 11-11h9M45 22l8 7-8 7',
+      arrive:   'M32 56V34M32 34a9 9 0 1 0 0-18 9 9 0 0 0 0 18M23 25h18'
+    };
+    const NAMES = { straight: 'continue', left: 'turn left', right: 'turn right',
+                    sleft: 'keep left', sright: 'keep right',
+                    round: 'take the roundabout', arrive: 'arrive' };
+    /* the itinerary uses glyphs, not the big SVG: at 19 px a row it only has
+       to say which way, and a second icon set would have to be maintained */
+    const GLYPH = { straight: '↑', left: '↰', right: '↱', sleft: '↖',
+                    sright: '↗', round: '⟳', arrive: '⚑' };
+    const TURNS = ['left', 'right', 'sleft', 'sright', 'round', 'straight'];
+
+    let navOn = false, navSteps = null, navI = 0, navTotal = 1, navLeft = 0;
+    const NAV_V = 12.5;                       // m/s — about 45 km/h, its own speed
+
+    /* a plausible route: the crow-flies distance stretched by the streets,
+       cut into legs, each one ending in a manoeuvre and a street name */
+    function buildRoute(s) {
+      const total = Math.max(500, distOf(s) * (1.22 + rnd() * 0.28));
+      const steps = [];
+      let rem = total;
+      while (rem > 320 && steps.length < 7) {
+        const seg = Math.max(140, Math.min(rem - 240, 150 + rnd() * rem * 0.5));
+        steps.push({ t: steps.length ? TURNS[Math.floor(rnd() * TURNS.length)] : 'straight',
+                     m: Math.round(seg / 10) * 10,
+                     st: PLACES[Math.floor(rnd() * PLACES.length)] });
+        rem -= seg;
+      }
+      steps.push({ t: 'arrive', m: Math.round(rem), st: s.b + ' · ' + s.p });
+      return steps;
+    }
+
+    function startNav(s) {
+      if (!s) return;
+      navSteps = buildRoute(s);
+      navTotal = navSteps.reduce((a, st) => a + st.m, 0);
+      navLeft = navTotal; navI = 0; listOn = -1;
+      NAV.dest.textContent = s.b + ' · ' + s.p;
+      NAV.price.textContent = priceOf(s).toFixed(2);
+      NAV.box.classList.remove('done');
+      NAV.box.hidden = false;
+      navOn = true;
+      paintNav();
+    }
+    function stopNav() {
+      navOn = false; NAV.box.hidden = true; NAV.box.classList.remove('done');
+    }
+    goBtn.addEventListener('click', () => { startNav(sel); goBtn.blur(); });
+    $('nv-x').addEventListener('click', () => { stopNav(); });
+
+    function navFrame(dt) {
+      if (!navOn || !navSteps || navLeft <= 0) return;      // arrived: frozen
+      const cur = navSteps[navI];
+      const d = (cur.m < 70 ? 5.5 : NAV_V) * dt;            // slow into the turn
+      cur.m -= d; navLeft = Math.max(0, navLeft - d);
+      if (cur.m <= 0) {
+        if (navI < navSteps.length - 1) navI++;
+        else { cur.m = 0; navLeft = 0; NAV.box.classList.add('done'); }
+      }
+      paintNav();
+    }
+
+    /* the rest of the route, redrawn only when a step is actually crossed */
+    let listOn = -1;
+    function paintList2() {
+      if (listOn === navI) return;
+      listOn = navI;
+      const rest = navSteps.slice(navI + 1);
+      NAV.list.innerHTML = '<div class="hd">THEN &middot; ' + rest.length + ' MORE</div>' +
+        rest.slice(0, 4).map(st =>
+          '<div class="r"><span class="g">' + GLYPH[st.t] + '</span>' +
+          '<span class="s">' + NAMES[st.t] + ' &middot; ' + st.st + '</span>' +
+          '<span class="m">' + (st.m >= 1000 ? (st.m / 1000).toFixed(1) + ' km'
+                                             : Math.round(st.m) + ' m') + '</span></div>').join('');
+    }
+
+    function paintNav() {
+      const cur = navSteps[navI], done = navLeft <= 0;
+      paintList2();
+      NAV.ico.innerHTML = '<path d="' + ICONS[done ? 'arrive' : cur.t] + '"/>';
+      if (done) {
+        NAV.dist.textContent = 'ARRIVED';
+        NAV.unit.textContent = '';
+        NAV.street.textContent = cur.st;
+        NAV.then.innerHTML = 'pull in and fill up &middot; ' + NAV.price.textContent + ' &euro;/L';
+      } else {
+        const m = Math.max(0, cur.m);
+        NAV.dist.textContent = m >= 1000 ? (m / 1000).toFixed(1) : Math.round(m / 10) * 10;
+        NAV.unit.textContent = m >= 1000 ? 'km' : 'm';
+        NAV.street.textContent = (cur.t === 'arrive' ? 'destination · ' : '') + cur.st;
+        const nx = navSteps[navI + 1];
+        NAV.then.textContent = nx ? 'then ' + NAMES[nx.t] + ' · ' + nx.st : '';
+      }
+      NAV.fill.style.width = ((1 - navLeft / navTotal) * 100).toFixed(1) + '%';
+      NAV.left.textContent = (navLeft / 1000).toFixed(1);
+      const secs = navLeft / NAV_V;
+      NAV.min.textContent = Math.max(0, Math.ceil(secs / 60));
+      const at = new Date(Date.now() + secs * 1000);
+      NAV.eta.textContent = ('0' + at.getHours()).slice(-2) + ':' + ('0' + at.getMinutes()).slice(-2);
+    }
+
+    /* ══ price history ═════════════════════════════════════
+       Two years of petrol, and where we stopped in them.
+
+       The line is the Italian national average, self-service petrol, in
+       euro per litre. The monthly anchors below are the real published
+       averages as far as they go; the tail is a plausible continuation, and
+       whatever happens the LAST sixty days are bent onto the live market
+       price the cluster is showing, so the chart ends where the car is.
+
+       The dots are our own refuels: same seed every time, one every three or
+       four weeks, each a little above or below the market that day — which
+       is the whole point of the view. The most recent dot is the fuel
+       actually in the tank, at `state.refuelPrice`. */
+    const pcv = $('ap-pcanvas'), pctx = pcv ? pcv.getContext('2d') : null;
+    let pcw = 0, pch = 0;
+    const DAYS = 731;                      // today included, two years back
+
+    /* oldest first, one per month, from 24 months ago to this month */
+    const ANCH = [
+      1.734, 1.723, 1.727, 1.735,                          /* Sep–Dec 2024 */
+      1.782, 1.800, 1.775, 1.748, 1.719, 1.728,            /* Jan–Jun 2025 */
+      1.745, 1.738, 1.722, 1.714, 1.706, 1.699,            /* Jul–Dec 2025 */
+      1.731, 1.756, 1.771, 1.762, 1.744, 1.757,            /* Jan–Jun 2026 */
+      1.789, 1.802, 1.812                                  /* Jul–Sep 2026 */
+    ];
+    /* the same wobble every run: a slow weekly drift plus a small daily one,
+       so a DAY step looks like a market and not like a smooth curve */
+    const noise = [];
+    (function () {
+      let w = 0;
+      for (let d = 0; d < DAYS; d++) {
+        if (d % 7 === 0) w = (rnd() * 2 - 1) * 0.011;
+        noise.push(w + (rnd() * 2 - 1) * 0.005);
+      }
+    })();
+
+    const series = new Array(DAYS);
+    let builtOn = -1;
+    function buildSeries() {
+      const per = (DAYS - 1) / (ANCH.length - 1);
+      for (let d = 0; d < DAYS; d++) {
+        const t = d / per, i = Math.min(ANCH.length - 2, Math.floor(t));
+        const f = t - i, e = f * f * (3 - 2 * f);          // smoothstep between months
+        series[d] = ANCH[i] + (ANCH[i + 1] - ANCH[i]) * e + noise[d];
+      }
+      /* join the live price: a ramp over the last two months, never a step */
+      const gap = state.marketPrice - series[DAYS - 1];
+      for (let d = DAYS - 60; d < DAYS; d++) series[d] += gap * ((d - (DAYS - 61)) / 60);
+      builtOn = state.marketPrice + state.refuelPrice;
+      STOPS.forEach(s => { s.eur = s.d === DAYS - 9 ? state.refuelPrice : series[s.d] + s.off; });
+    }
+
+    /* our stops. `d` is days ago counted forward: 0 is two years back,
+       DAYS-1 is today. The last one is nine days ago — the tank we are on. */
+    const STOPS = [];
+    (function () {
+      for (let d = 6 + Math.floor(rnd() * 12); d < DAYS - 20; d += 20 + Math.floor(rnd() * 20)) {
+        STOPS.push({ d, b: BRANDS[Math.floor(rnd() * BRANDS.length)],
+                     p: PLACES[Math.floor(rnd() * PLACES.length)],
+                     lit: 26 + rnd() * 17, off: (rnd() * 2 - 1) * 0.08, eur: 0 });
+      }
+      STOPS.push({ d: DAYS - 9, b: 'Eni', p: 'Via Emilia', lit: 41.2, off: 0, eur: 0 });
+    })();
+
+    const dayDate = d => new Date(Date.now() - (DAYS - 1 - d) * 86400000);
+    const fmtDay = d => dayDate(d).toLocaleDateString('en-GB',
+      { day: '2-digit', month: 'short', year: '2-digit' }).toUpperCase();
+
+    let pRange = 12, pStep = 7, pSel = null;      // months shown, days per point
+    const PV = { now: $('pv-now'), min: $('pv-min'), max: $('pv-max'),
+                 avg: $('pv-avg'), foot: $('pv-foot') };
+
+    const ctlBtns = Array.prototype.slice.call(root.querySelectorAll('.pv-ctl .sc'));
+    ctlBtns.forEach(b => b.addEventListener('click', () => {
+      if (b.dataset.p) { pRange = +b.dataset.p; pSel = null; }
+      else { pStep = +b.dataset.s; }
+      const group = b.dataset.p ? 'p' : 's';
+      ctlBtns.forEach(o => { if ((o.dataset.p ? 'p' : 's') === group) o.classList.toggle('on', o === b); });
+      drawPrice(); b.blur();
+    }));
+
+    /* the window, resampled: every point is the mean of its `pStep` days, so
+       DAY / WEEK / MONTH really are three readings of the same series */
+    function resample() {
+      const from = Math.max(0, DAYS - Math.round(pRange * 30.44));
+      const pts = [];
+      for (let d = from; d < DAYS; d += pStep) {
+        let sum = 0, n = 0;
+        for (let i = d; i < Math.min(DAYS, d + pStep); i++) { sum += series[i]; n++; }
+        pts.push({ d: Math.min(DAYS - 1, d + Math.floor(n / 2)), v: sum / n });
+      }
+      return { from, pts };
+    }
+
+    let pHit = [];          /* where the stop dots landed, for the tap test */
+    function drawPrice() {
+      if (!pctx || !pcw) return;
+      if (builtOn !== state.marketPrice + state.refuelPrice) buildSeries();
+      pctx.setTransform(pcv.width / pcw, 0, 0, pcv.height / pch, 0, 0);
+      pctx.clearRect(0, 0, pcw, pch);
+
+      const L = 30, R = 8, TOP = 10, BOT = 16;             // the plot box
+      const w = pcw - L - R, h = pch - TOP - BOT;
+      const { from, pts } = resample();
+      const stops = STOPS.filter(s => s.d >= from);
+
+      let lo = Infinity, hi = -Infinity;
+      pts.forEach(p => { if (p.v < lo) lo = p.v; if (p.v > hi) hi = p.v; });
+      stops.forEach(s => { if (s.eur < lo) lo = s.eur; if (s.eur > hi) hi = s.eur; });
+      const pad = Math.max(0.02, (hi - lo) * 0.18);
+      lo -= pad; hi += pad;
+
+      const X = d => L + ((d - from) / (DAYS - 1 - from)) * w;
+      const Y = v => TOP + (1 - (v - lo) / (hi - lo)) * h;
+
+      /* price gridlines, on round five-cent steps */
+      const stepY = (hi - lo) > 0.32 ? 0.10 : (hi - lo) > 0.16 ? 0.05 : 0.02;
+      pctx.font = '8px "Segoe UI",Roboto,Arial,sans-serif';
+      pctx.textAlign = 'right'; pctx.textBaseline = 'middle';
+      for (let v = Math.ceil(lo / stepY) * stepY; v <= hi; v += stepY) {
+        const y = Y(v);
+        pctx.strokeStyle = 'rgba(120,170,210,.13)'; pctx.lineWidth = 1;
+        pctx.beginPath(); pctx.moveTo(L, y); pctx.lineTo(pcw - R, y); pctx.stroke();
+        pctx.fillStyle = 'rgba(150,180,205,.62)';
+        pctx.fillText(v.toFixed(2), L - 5, y);
+      }
+
+      /* the area under the national average, then the line itself */
+      const g = pctx.createLinearGradient(0, TOP, 0, TOP + h);
+      g.addColorStop(0, 'rgba(0,174,239,.28)');
+      g.addColorStop(1, 'rgba(0,174,239,0)');
+      pctx.beginPath();
+      pts.forEach((p, i) => { const x = X(p.d), y = Y(p.v); i ? pctx.lineTo(x, y) : pctx.moveTo(x, y); });
+      pctx.lineTo(X(pts[pts.length - 1].d), TOP + h);
+      pctx.lineTo(X(pts[0].d), TOP + h);
+      pctx.closePath(); pctx.fillStyle = g; pctx.fill();
+
+      pctx.beginPath();
+      pts.forEach((p, i) => { const x = X(p.d), y = Y(p.v); i ? pctx.lineTo(x, y) : pctx.moveTo(x, y); });
+      pctx.strokeStyle = '#4fc8f5'; pctx.lineWidth = 1.6;
+      pctx.lineJoin = 'round'; pctx.stroke();
+
+      /* one tick per point when there are few enough to see */
+      if (pts.length <= 30) {
+        pctx.fillStyle = '#4fc8f5';
+        pts.forEach(p => { pctx.beginPath(); pctx.arc(X(p.d), Y(p.v), 1.7, 0, TAU); pctx.fill(); });
+      }
+
+      /* our stops: green under the market that day, red over it */
+      pHit = [];
+      stops.forEach(s => {
+        const x = X(s.d), y = Y(s.eur);
+        const over = s.eur > series[s.d];
+        const col = over ? '#ff8f6d' : '#3ddc84';
+        pHit.push({ x, y, s });
+        if (s === pSel) {
+          pctx.strokeStyle = 'rgba(255,255,255,.85)'; pctx.lineWidth = 1.2;
+          pctx.beginPath(); pctx.arc(x, y, 7, 0, TAU); pctx.stroke();
+          pctx.beginPath(); pctx.moveTo(x, TOP); pctx.lineTo(x, TOP + h);
+          pctx.setLineDash([3, 3]); pctx.strokeStyle = 'rgba(255,255,255,.35)';
+          pctx.stroke(); pctx.setLineDash([]);
+        }
+        pctx.beginPath(); pctx.arc(x, y, 3.4, 0, TAU);
+        pctx.fillStyle = col; pctx.fill();
+        pctx.lineWidth = 1.1; pctx.strokeStyle = 'rgba(4,8,12,.9)'; pctx.stroke();
+      });
+
+      /* the date axis: four labels, whatever the window */
+      pctx.textBaseline = 'bottom'; pctx.fillStyle = 'rgba(150,180,205,.62)';
+      for (let i = 0; i < 4; i++) {
+        const d = Math.round(from + (DAYS - 1 - from) * (i / 3));
+        const x = X(d);
+        pctx.textAlign = i === 0 ? 'left' : i === 3 ? 'right' : 'center';
+        pctx.fillText(dayDate(d).toLocaleDateString('en-GB',
+          { month: 'short', year: '2-digit' }).toUpperCase(), x, pch - 3);
+      }
+
+      /* the four numbers under the chart */
+      const paid = stops.length ? stops.reduce((a, s) => a + s.eur, 0) / stops.length : 0;
+      const mkt  = pts.reduce((a, p) => a + p.v, 0) / pts.length;
+      PV.now.textContent = state.marketPrice.toFixed(2);
+      PV.min.textContent = Math.min.apply(null, pts.map(p => p.v)).toFixed(2);
+      PV.max.textContent = Math.max.apply(null, pts.map(p => p.v)).toFixed(2);
+      PV.avg.textContent = paid ? paid.toFixed(2) : '—';
+
+      if (!pSel) {
+        const dd = paid - mkt, cls = dd > 0 ? 'up' : 'dn';
+        PV.foot.innerHTML = stops.length
+          ? '<b>' + stops.length + ' stops</b> in this window &middot; we paid <span class="' + cls + '">' +
+            (dd > 0 ? '+' : '') + dd.toFixed(3) + ' &euro;/L</span> against the national average &middot; ' +
+            '<span style="color:#5f7a92">tap a dot</span>'
+          : '<span style="color:#5f7a92">No stop in this window &mdash; widen the range</span>';
+      }
+    }
+
+    function paintStop(s) {
+      pSel = s;
+      if (!s) { drawPrice(); return; }
+      const dd = s.eur - series[s.d], cls = dd > 0 ? 'up' : 'dn';
+      PV.foot.innerHTML =
+        '<b>' + fmtDay(s.d) + '</b> &middot; ' + s.b + ' · ' + s.p + ' &middot; ' +
+        s.lit.toFixed(1) + ' L &middot; <b>' + s.eur.toFixed(3) + ' &euro;/L</b> &middot; ' +
+        (s.lit * s.eur).toFixed(2) + ' &euro; &middot; <span class="' + cls + '">' +
+        (dd > 0 ? '+' : '') + dd.toFixed(3) + '</span> vs market';
+      drawPrice();
+      /* drawPrice() rewrites the footer only when nothing is selected */
+    }
+
+    if (pcv) pcv.addEventListener('click', ev => {
+      const x = ev.offsetX, y = ev.offsetY;
+      let best = null, bd = 15 * 15;
+      pHit.forEach(h => {
+        const d = (h.x - x) * (h.x - x) + (h.y - y) * (h.y - y);
+        if (d < bd) { bd = d; best = h.s; }
+      });
+      paintStop(best === pSel ? null : best);
+    });
+
     /* ── the beat ──────────────────────────────────────── */
-    let accSlow = 0, accMap = 0;
+    let accSlow = 0, accMap = 0, lastMkt = state.marketPrice;
     function frame(dt) {
       const dKm = sampleTrip();
       moveStations(dKm);
+      navFrame(dt);                    // its own clock: it runs whatever is on screen
       T.eurkm.textContent = state.instantEurKm.toFixed(2);
 
       accSlow += dt;
@@ -2989,15 +3699,19 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         accSlow = 0;
         const d = new Date();
         T.clock.textContent = ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
-        if (view === 'history') paintTrip(); else paintList();
+        /* a past trip is a still picture: it is painted when it is opened,
+           not four times a second */
+        if (view === 'map') paintList(); else if (view === 'history' && !selTrip) paintTrip();
+        /* the price chart is history: it only moves when the API answers */
+        if (view === 'price' && state.marketPrice !== lastMkt) { lastMkt = state.marketPrice; drawPrice(); }
       }
-      if (view === 'map') {
+      if (view === 'map' && !navOn) {
         accMap += dt;
         if (accMap >= 0.06) { accMap = 0; drawMap(performance.now()); }
       }
     }
 
-    fit(); paintTrip(); paintList();
+    fit(); paintTrip(); buildSeries(); paintList();
     requestAnimationFrame(fit);        // once more after the first layout pass
     return { frame, show };
   })();

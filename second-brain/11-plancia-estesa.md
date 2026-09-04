@@ -99,6 +99,24 @@ store segue i pixel veri (`pxRatio = scala × devicePixelRatio`).
 >    senza la regola `.ap-pane[hidden]{display:none}` le due viste si disegnavano
 >    una sopra l'altra.
 
+### Le tre viste, e perché sono tre bottoni
+
+Fino al 2026-09-04 le viste erano due e si sceglievano con delle **linguette
+unite**, attaccate fra loro e al pannello sotto. Era un oggetto solo: si leggeva
+come una barra di titolo, non come due comandi, e in demo nessuno pensava di
+toccarle. Ora sono **tre bottoni staccati** — gap fra loro, angoli tondi su tutti
+e quattro i lati, una luce sul bordo alto e un'ombra sotto — e **si abbassano di
+2 px quando si premono**. Quello aperto resta abbassato e acceso di blu.
+
+> **Trappola**: `#app button{font:inherit}` ha specificità `(1,0,1)` e **batte**
+> qualunque regola di classe. Ogni regola che tocca un bottone dentro l'app deve
+> portarsi dietro `#app` (`#app .ap-tab`, `#app .sc`, …), altrimenti il
+> `font-size` torna a quello ereditato e le etichette vanno a capo. `#ap-back` ci
+> era già cascato prima.
+
+La fila dei bottoni è alta **46 px** invece di 34: il corpo delle viste scende da
+318 a 306 righe, e ci sta lo stesso tutto quello che c'era.
+
 ### Vista 1 — Cost history (quella aperta all'avvio)
 
 | Blocco | Cosa mostra | Da dove |
@@ -106,7 +124,7 @@ store segue i pixel veri (`pxRatio = scala × devicePixelRatio`).
 | Testata | costo del viaggio in euro, km, litri | `state.tripCost / tripKm / tripLiters` |
 | Quattro celle | €/km ora, €/km medi, L/100 km, €/L nel serbatoio | `state` — gli stessi numeri del cluster |
 | Grafico a barre | **una barra ogni 200 m** di strada vera, 25 barre = ultimi 5 km | campionato in `sampleTrip()` dai delta di `tripKm`/`tripCost` |
-| Viaggi precedenti | 4 righe fittizie, con freccia verde/rossa rispetto alla media | costanti nel modulo, **date calcolate da oggi** |
+| Viaggi precedenti | 4 righe fittizie **cliccabili**, con freccia verde/rossa rispetto alla media | `TRIPS` nel modulo, **date calcolate da oggi** |
 
 Le 25 barre sono **precaricate** a valori plausibili: il contachilometri parte già
 da 48 km, un grafico vuoto direbbe che l'auto non ha mai camminato. La riga
@@ -114,34 +132,154 @@ tratteggiata verde è la media del viaggio, l'ultima barra (bianca) è l'adesso.
 Se il viaggio viene azzerato con RESET, `sampleTrip()` vede un `dKm` negativo e
 riparte senza sporcare la serie.
 
-### Vista 2 — Local pump map
+#### Aprire un viaggio passato
+
+Cliccando una riga (`openTrip()`) **tutta la metà alta cambia soggetto**: totale,
+sottotitolo, le quattro celle — che cambiando significato cambiano anche
+**etichetta** — il grafico, il titolo e gli estremi dell'asse. La riga si accende
+di blu, compare il pillolo `◀ LIVE` accanto al titolo, e un secondo clic sulla
+stessa riga o sul pillolo riporta al viaggio in corso.
+
+Sotto non succede niente: `state` non viene toccato, il campionamento continua,
+e la media del viaggio in corso al ritorno è quella giusta. Per questo il ridisegno
+è **a evento e non a 4 Hz** (`paintHistory()` smista, e il tick veloce salta la
+vista quando `selTrip` è aperto): un viaggio finito è una fotografia.
+
+Ogni viaggio porta anche `min` (durata) e `paid` (€/L pagati al pieno): senza quei
+due numeri una scheda di dettaglio non direbbe niente di più della riga. Da lì
+escono litri, L/100 km e velocità media. Le **25 barre di ogni viaggio** sono
+generate una volta al boot con una forma legata al carattere del percorso —
+`road` piatta e bassa, `city` alta e a denti — e poi **normalizzate perché la loro
+media sia esattamente gli €/km del viaggio**: così la riga tratteggiata cade dove
+la riga della lista dice che deve cadere.
+
+### Vista 2 — Pump map
 
 Lista ordinata per prezzo a sinistra, mini-mappa a destra, e in fondo la riga del
 risparmio. Il colore è **una sola scala** verde → ambra → rosso (`priceColor()`)
 calcolata sull'intervallo dei prezzi presenti: la più conveniente è verde con
 l'alone pulsante, la più cara è rossa. La barra colorata a sinistra di ogni riga e
 il pin sulla mappa usano lo stesso valore, quindi lista e mappa non possono
-contraddirsi.
+contraddirsi. **L'alone e il pin selezionato si disegnano per ultimi**: due pompe a
+pochi metri l'una dall'altra seppellivano il pin di cui parla tutta la vista.
 
 **Le stazioni della mappa sono un mondo a sé**, diverso da quelle che si incontrano
-nel parabrezza (`road`, ogni 2 km). Sette stazioni entro ±1500 m di lato, da 1800 m
-dietro a 2400 m davanti: scorrono verso l'auto con i **metri veri percorsi** e,
-quando restano indietro, rinascono davanti con nome e prezzo nuovi. Il prezzo è
-`state.marketPrice + offset`, quindi quando l'API dei prezzi risponde **mappa e
-cluster si muovono insieme**.
+nel parabrezza (`road`, ogni 2 km). Sono **22**, in un mondo largo ±3400 m e lungo
+da 2200 m dietro a 9000 m davanti; il prezzo è `state.marketPrice + offset`, quindi
+quando l'API dei prezzi risponde **mappa e cluster si muovono insieme**. Scorrono
+verso l'auto con i **metri veri percorsi** e, quando restano indietro, rinascono
+davanti con nome e prezzo nuovi.
 
-Il mondo è ritagliato apposta su quello che la mappa inquadra (`MAPR` 2500 m): ogni
-riga della lista ha un pin che si può indicare col dito durante una demo.
+Due dettagli di semina, entrambi per non mostrare una lista vuota:
+
+- **il 45 % nasce dentro il corridoio** (`|x| ≤ 550`), altrimenti «lungo questa
+  strada» non trovava quasi niente;
+- **le prime 6 nascono vicine** (entro ±850 / ±2100 m e fra −900 e +2100 m), così
+  la demo si apre su una lista piena a qualunque raggio. Dopo il primo riciclo
+  contano solo le regole generali.
+
+#### Il raggio di ricerca
+
+Quattro chip: **1 km · 2.5 km · 5 km · lungo questa strada**. I primi tre sono un
+raggio (`distOf(s) ≤ scope`); il quarto **non è un raggio** ma un corridoio —
+`|x| ≤ 550 m`, da 400 m dietro a 9000 m davanti: le stazioni che incontreresti
+senza uscire dal percorso. In quel caso la distanza nella riga smette di essere
+una bussola (sarebbe sempre «N») e diventa **«3.8 km ahead»**.
+
+La ricerca **si vede sulla mappa**, altrimenti i chip cambierebbero la lista senza
+un motivo visibile:
+
+| | raggio | lungo la strada |
+|---|---|---|
+| l'auto sta | al centro (`cy = ch/2`) | in basso (`cy = 0.86·ch`) |
+| si vede fin a | `scope × 1.14` | 5580 m |
+| disegnato | cerchio tratteggiato + velo blu | due linee tratteggiate ai lati |
+
+Le stazioni **fuori ricerca restano disegnate**, ma grigie e piccole: la ricerca
+decide cosa classificare, non dichiara che intorno non ci sia altro. La barra di
+scala segue lo zoom (500 m / 1 km / 2 km), così resta un numero tondo.
 
 Il risparmio in fondo è `(prezzo medio − migliore) × litri mancanti al pieno`: un
-numero che **cresce col serbatoio che si svuota**, come nella realtà.
+numero che **cresce col serbatoio che si svuota**, come nella realtà. Ma appena
+selezioni una stazione **il piede della vista cambia mestiere**: da didascalia
+diventa la porta del navigatore, con il bottone verde `NAVIGATE ▶`.
+
+### Il navigatore — una demo dentro la demo
+
+Si apre **sopra** la mappa (`#ap-nav`, dentro `#pane-map`) ed è **volutamente
+scollegato da tutto il resto**: ha la sua strada, la sua velocità (`NAV_V`,
+12.5 m/s ≈ 45 km/h) e **non legge né scrive `state`**. Il viaggio sotto continua,
+il parabrezza pure, e `✕ END` non lascia niente dietro di sé.
+
+`buildRoute()` prende la distanza in linea d'aria e la **allunga del 22–50 %** —
+è quello che fanno le strade — poi la taglia in gambe da almeno 140 m, ognuna che
+finisce in una manovra e in una via. Ogni passo è `{t, m, st}`: la manovra alla
+**fine** della gamba, la sua lunghezza, e la via in cui si entra dopo.
+
+Sopra: la freccia grande (un `path` in un box 64, uno per manovra), i metri che
+scalano, la via, e «then …» con la manovra dopo. Sotto: il **resto
+dell'itinerario** — la fila che prima era un buco vuoto alto 200 px — ridisegnata
+**solo quando si supera un passo**, non a ogni frame. In fondo quattro celle:
+arrivo, km, minuti, €/L là.
+
+Sotto i 70 m dalla manovra la velocità scende a 5.5 m/s: è quello che rende
+credibile il conto alla rovescia. Arrivato, il riquadro diventa verde e resta
+fermo su `ARRIVED`.
+
+Il navigatore **continua a girare anche cambiando vista**: `navFrame(dt)` sta nel
+`frame()` dell'app, non nella mappa. La mappa invece non si ridisegna mentre il
+navigatore è aperto (`view === 'map' && !navOn`): sta sotto, coperta.
+
+### Vista 3 — Price history
+
+Due anni di benzina, e dove ci siamo fermati dentro quei due anni.
+
+**La linea** è la media nazionale italiana, benzina self-service, in €/L. Le
+ancore sono **mensili** (`ANCH`, 25 valori dal mese di due anni fa a questo) e la
+serie giornaliera (`DAYS = 731`) le interpola con una *smoothstep* più un rumore
+deterministico — una deriva settimanale più una giornaliera — così il passo
+**DAY** somiglia a un mercato e non a una curva liscia.
+
+> Le ancore sono i valori pubblicati reali fin dove arrivano; la coda è una
+> continuazione plausibile, **non un dato**. Comunque vada, **gli ultimi 60 giorni
+> vengono piegati sul prezzo live** (`state.marketPrice`) con una rampa e non con
+> un gradino: il grafico finisce dove sta il cluster. Si ricostruisce da solo
+> quando cambia `marketPrice` **o** `refuelPrice`.
+
+**I pallini** sono i nostri rifornimenti: uno ogni 20–40 giorni, sempre gli stessi
+(seed), ciascuno un po' sopra o sotto il mercato di quel giorno — che è tutto il
+punto della vista. **Verde sotto la media, rosso sopra.** L'ultimo, nove giorni fa,
+**è la benzina che abbiamo nel serbatoio**: vale `state.refuelPrice`.
+
+**I due controlli** fanno esattamente quello che dicono: `RANGE` (3M · 6M · 1Y ·
+2Y) sceglie la finestra fino a due anni indietro, `STEP` (DAY · WEEK · MONTH)
+ricampiona la stessa serie facendo la **media** di ogni blocco di giorni. Sotto,
+quattro numeri (mercato ora, minimo, massimo, la nostra media pagata) e una riga
+che dice **di quanto abbiamo pagato sopra o sotto** la media nazionale nella
+finestra.
+
+**Toccando un pallino** quella riga diventa la scheda del rifornimento: data,
+insegna, litri, €/L, totale, e lo scarto dal mercato di quel giorno.
+
+> **Trappola pagata due volte.**
+> 1. `.pv-foot` era `display:flex`: un contenitore flex **butta via gli spazi**
+>    fra i nodi di testo, e la frase usciva «13 stopsin this window». È un blocco.
+> 2. Il gruppo display è ruotato di 9° in 3D: `getBoundingClientRect()` dà il
+>    **riquadro proiettato** e il click sul canvas cadeva storto. `ev.offsetX/Y`
+>    sono nello spazio locale non trasformato dell'elemento — cioè esattamente
+>    quello in cui il grafico è disegnato.
 
 ### Ritmi
 
 Testo dei numeri 4 volte al secondo, canvas ~16 volte, e il `€/km` in alto a ogni
-frame: la mappa si ridisegna **solo se è la vista aperta**, ma i dati (barre,
-posizione delle stazioni) si aggiornano sempre, così cambiando scheda non c'è mai
-un buco nella storia.
+frame: la mappa si ridisegna **solo se è la vista aperta** (e solo se il navigatore
+non la sta coprendo), ma i dati (barre, posizione delle stazioni) si aggiornano
+sempre, così cambiando scheda non c'è mai un buco nella storia.
+
+Le due viste «ferme» costano quasi niente: un viaggio passato è una fotografia, e
+**il grafico dei prezzi è storia** — si ridisegna a evento, e nel tick lento solo
+se `state.marketPrice` è cambiato, cioè quando l'API risponde. Il navigatore
+invece gira sempre, anche mentre guardi un'altra vista.
 
 ## Cosa è cambiato nella strada
 
