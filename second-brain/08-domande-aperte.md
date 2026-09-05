@@ -38,9 +38,12 @@ Da chiarire quando serve. Non bloccano il lavoro, ma cambiano le scelte.
 - **Mappa giri → velocità lineare**: nella realtà dipende dalla marcia. Vale la pena
   simulare un cambio a 6 rapporti (più credibile per un pubblico tecnico) o la
   semplicità è meglio?
-- **Consumo al minimo**: oggi a vettura ferma il costo istantaneo è 0. Un motore
-  acceso e fermo consuma ~0.6–0.8 L/h — mostrarlo sarebbe un dettaglio molto
-  "True Cost" (il costo di stare fermi accesi)
+- ~~**Consumo al minimo**: oggi a vettura ferma il costo istantaneo è 0~~ →
+  **risolta il 2026-09-05**: un motore acceso e fermo brucia `IDLE_LH = 0.7` L/h,
+  il costo del viaggio lo porta, e Trip management ne tiene il conto in euro
+  (`€ STANDING`) e lo dice sulla cartolina di fine viaggio: *«fermo con il motore
+  acceso per 3:34, € 0.08 — l'1 % di questo viaggio, su nessuna distanza»*. Gli
+  €/km istantanei restano 0 a vettura ferma: a 0 km/h non sono definiti
 - **Curva consumo**: ereditata dal simulatore precedente. Su quale vettura vogliamo
   tararla davvero?
 

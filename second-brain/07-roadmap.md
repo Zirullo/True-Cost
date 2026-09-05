@@ -27,6 +27,15 @@
 
 ## Fatto
 
+- ✅ **Trip management, e il costo di stare fermi accesi** (2026-09-05): la quinta
+  vista decide **dove finisce un viaggio** — chiave, motore spento per N minuti,
+  fermo per N minuti, o solo a mano — con il conto alla rovescia che si guarda
+  girare, KEEP OPEN, SPLIT HERE e la cartolina di fine viaggio (business /
+  privato / commute, MERGE, DISCARD). Il viaggio salvato **entra davvero** in
+  Cost history e nel Report. Con essa il simulatore ha un motore da spegnere e
+  un consumo al minimo — [11-plancia-estesa.md](11-plancia-estesa.md),
+  [01-decisioni.md](01-decisioni.md)
+
 - ✅ **La pump map e il parabrezza dicono lo stesso prezzo** (2026-09-04): sotto
   «lungo questa strada» ci sono i cartelloni veri, non stazioni inventate, e la
   demo si apre su quella vista — [11-plancia-estesa.md](11-plancia-estesa.md)

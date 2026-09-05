@@ -5,6 +5,65 @@ Ordine cronologico inverso (la più recente in alto). Ogni voce: **cosa**, **per
 
 ---
 
+## 2026-09-05 · Dove finisce un viaggio è una scelta, e sta in una pagina
+
+**Scelta**: il display centrale ha una quinta vista, **Trip management**, che
+possiede una domanda sola: **dove finisce un viaggio**. Quattro regole —
+`IGNITION`, `SMART`, `DESTINATION`, `MANUAL` — una soglia (2 / 5 / 15 / 30 min), e un
+conto alla rovescia che si vede girare mentre la vettura è ferma. Con essa
+arrivano due cose che il simulatore non aveva: un **motore** da spegnere e il
+**costo del minimo**.
+
+**Perché**: ogni euro delle altre quattro viste dipende da un taglio che nessuno
+dichiara. Se il viaggio finisce con la chiave, il pieno a metà strada spezza
+Torino–Milano in due note spese; se non finisce mai, le due ore dal cliente
+stanno dentro la guida e abbassano la media. È il tipo di decisione che nei
+gestionali di flotta è sepolta in un menu, e che qui diventa **la pagina**: la
+regola non si legge, si guarda lavorare.
+
+**Come**: `state.engineOn` e un pulsante ENGINE sul deck (tasto «E»); a vettura
+ferma con motore acceso `update()` brucia `IDLE_LH = 0.7` L/h che non comprano
+un metro. Il modulo tiene contatori **propri** (`tKm`, `tEur`, `tSec`,
+`idleEur`) e non legge solo `state.tripKm`, perché PAUSE deve poter lasciare
+correre la vettura mentre il registro sta fermo. `RULES[rule].arm()` è la
+condizione che arma il conto; `kept` la tiene aperta finché la condizione non si
+libera — è quello che fa KEEP OPEN, ed è quello che impedisce a un viaggio
+chiuso a motore spento di chiudere subito anche il successivo.
+
+**Cosa comporta**:
+
+- **il cerchio si chiude**: il viaggio salvato dalla cartolina di fine viaggio
+  entra in cima a Cost history e nella lista del Report, e se le chip del Report
+  descrivono un insieme (non una scelta a mano) ci entra già spuntato. Una nota
+  spese «ultimi 30 giorni, business» non può saltare la guida finita un minuto fa;
+- **due specie di viaggio nello stesso array**: i diciotto finti si dichiarano
+  fisicamente e lasciano che `PRICES` li trasformi in euro, perché un euro scritto
+  a mano invecchia appena l'API risponde. Quello registrato porta `fixed: true`:
+  i suoi euro sono stati **misurati litro per litro** sul carburante che era nel
+  serbatoio, e `priceTrips()` lo scavalca. Il mercato si muove, i diciotto lo
+  seguono, il nostro resta come è stato misurato;
+- **RESET diventa una cosa sola**: il tasto sul cluster e quello sul deck
+  chiamano `hardReset()`, che azzera i contatori *e* riapre il viaggio registrato.
+  Separati, dal primo reset in poi le due pagine avrebbero raccontato due storie;
+- **la regola `DESTINATION` legge il navigatore**, non un finto GPS: si sceglie
+  una stazione in Pumps, si preme NAVIGATE, e il viaggio si chiude all'arrivo. Se
+  nessuna destinazione è impostata la fascia lo **dice** invece di far finta di
+  saperlo — è l'unica delle quattro che dipende da un dato che il guidatore
+  fornisce, e l'unica che può onestamente rispondere «non lo so». Una prima
+  versione aveva al suo posto `PARKED` (fermo per N minuti, motore acceso o
+  spento): si dimostrava bene, ma diceva quasi la stessa cosa di `SMART` e non
+  aggiungeva nessuna informazione che l'app non avesse già;
+- **un viaggio da meno di 200 m non si registra** (`MIN_KM`): una manovra in un
+  parcheggio non è un viaggio, e una regola che ne deposita uno a ogni spegnimento
+  riempie la nota spese di niente;
+- **cinque bottoni non reggono due parole**: le etichette scendono a una parola
+  sola — Costs, Pumps, Prices, Report, Trips. È il contrario di quello che si era
+  deciso il 2026-09-04 («un bottone che dice *Prices* non dice cosa fa»): a 454 px
+  e cinque viste non c'è più la larghezza per dirlo, e l'icona resta a portare il
+  resto.
+
+---
+
 ## 2026-09-04 · «Lungo questa strada» sono i cartelloni veri, e la demo ci si apre
 
 **Scelta**: le stazioni che la pump map elenca sotto «lungo questa strada» non

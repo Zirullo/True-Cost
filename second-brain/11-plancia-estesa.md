@@ -99,7 +99,7 @@ store segue i pixel veri (`pxRatio = scala × devicePixelRatio`).
 >    senza la regola `.ap-pane[hidden]{display:none}` le due viste si disegnavano
 >    una sopra l'altra.
 
-### Le quattro viste, e perché sono quattro bottoni
+### Le viste, e perché sono bottoni
 
 Fino al 2026-09-04 le viste erano due e si sceglievano con delle **linguette
 unite**, attaccate fra loro e al pannello sotto. Era un oggetto solo: si leggeva
@@ -118,6 +118,14 @@ non ci stava più nel suo bottone: l'etichetta scende a **8.5 px** e perde quasi
 tutto l'`letter-spacing` (da 1.15 a 0.7 px), l'icona da 14 a 13, il gap fra i
 bottoni da 9 a 7. Nessuna etichetta è stata accorciata: un bottone che dice
 «Prices» non dice cosa fa.
+
+Dal 2026-09-05 sono **cinque**: si è aggiunto TRIPS, e a cinque quella frase non
+si può più mantenere. 454 px meno 22 di padding meno quattro gap da 7 fanno
+**80.8 px a bottone**, icona compresa: nessuna etichetta di due parole ci entra a
+nessuna dimensione leggibile. Quindi si accorciano **tutte e cinque** — *Costs,
+Pumps, Prices, Report, Trips* — e l'icona resta a portare il resto. È il prezzo
+della quinta vista, ed è stato pagato con gli occhi aperti: meglio cinque nomi
+corti e un'icona ciascuno che quattro nomi lunghi e una vista in meno.
 
 > **Trappola**: `#app button{font:inherit}` ha specificità `(1,0,1)` e **batte**
 > qualunque regola di classe. Ogni regola che tocca un bottone dentro l'app deve
@@ -376,6 +384,130 @@ per la mail, l'endpoint e il token per il portale, l'importo rimborsabile per la
 nota spese, i €/km per il ride-hailing). Un fleet manager in demo deve vedere i
 *suoi* numeri prima di premere qualcosa.
 
+### Vista 5 — Trip management
+
+Le altre quattro rispondono a **quanto costa**. Questa possiede la domanda che
+sta sotto e che nessuno pronuncia: **dove finisce un viaggio**.
+
+Non è una domanda di comodo. Se il viaggio finisce con la chiave, il pieno a metà
+strada archivia Torino–Milano come **due** viaggi. Se non finisce mai, le due ore
+ferme dal cliente stanno **dentro** la guida e ne abbassano la media. La regola
+decide cosa dice la nota spese — e nei gestionali di flotta è un'impostazione
+sepolta in un menu. Qui è la pagina, e il conto alla rovescia la fa **vedere
+mentre lavora**.
+
+Quattro regole, e non sono quattro sfumature della stessa:
+
+| | chiude quando | a cosa serve |
+|---|---|---|
+| `IGNITION` | il motore si spegne, subito | la chiave *è* il viaggio. Semplice, e sbagliata a ogni sosta |
+| `SMART` | il motore **resta** spento per la soglia | il pieno resta dentro il viaggio, tornare a casa no |
+| `DESTINATION` | si arriva dove il navigatore era stato puntato | il viaggio finisce dove il guidatore aveva detto che sarebbe finito |
+| `MANUAL` | mai da sola | solo END TRIP |
+
+La soglia (2 / 5 / 15 / 30 min) vale per `SMART` e `DESTINATION` — lì è il tempo
+di conferma dell'arrivo, che distingue una sosta da un passaggio; sotto le altre
+due le chip si **spengono**, perché una chip che non cambia niente non deve
+somigliare a una che cambia qualcosa.
+
+`DESTINATION` è l'unica che legge un dato **messo dal guidatore**, e quindi
+l'unica che può rispondere onestamente «non lo so»: `arm()` è
+`navOn && navLeft <= 0`, cioè il navigatore di Pump map — si sceglie una
+stazione, si preme NAVIGATE, e il viaggio si chiude all'arrivo. Senza
+destinazione la fascia lo dichiara (*«No destination set — nothing here will
+close this trip»*), con una in corso conta i chilometri che mancano. Dire che
+non si sa vale più che indovinare, e le altre tre regole restano lì per chi
+quella risposta la vuole comunque.
+
+> Al suo posto c'era `PARKED` (fermo per N minuti, motore acceso o spento). Si
+> dimostrava bene, ma diceva quasi la stessa cosa di `SMART` con un sensore
+> diverso, e non portava nel pannello nessuna informazione che l'app non avesse
+> già. È stata tolta il 2026-09-05.
+
+Sopra: lo stato (`RECORDING` / `PAUSED` / `CLOSING IN 3:34` / `ENGINE OFF ·
+TRIP HELD OPEN`), il totale in euro e quattro celle — durata, km registrati,
+€/km medi e **€ fermi**. Sotto: PAUSE, SPLIT HERE, END TRIP.
+
+In mezzo la **fascia**, che cambia mestiere: in movimento dichiara la regola in
+vigore e quanto costa un'ora di minimo; a vettura ferma diventa il conto alla
+rovescia — anello ambrato che **si svuota**, «*Engine off for 1:24 — closing in
+3:35*», e il bottone **KEEP OPEN**, che tiene aperto il viaggio finché la
+condizione non si libera. *A fuel stop is not the end of a trip.*
+
+#### I contatori sono suoi
+
+Il modulo non legge solo `state.tripKm`: tiene `tKm`, `tLit`, `tEur`, `tSec`,
+`idleSec`, `idleEur` **propri**, e li muove sui delta. Deve poterlo fare, perché
+**PAUSE** significa esattamente questo — la vettura continua a guidare e il
+cluster continua a contare, ma il registro sta fermo. Quei km non finiranno in
+nessuna nota spese.
+
+Al boot il modulo si **innesta sul viaggio già in corso**: la demo si apre con
+48 km fatti, e una pagina che dicesse 0.0 km mentre Cost history ne dice 48
+sarebbe la solita contraddizione.
+
+#### Il motore, e il costo di stare fermi accesi
+
+Una regola che chiude a motore spento non ha niente da mostrare senza un motore
+da spegnere. Quindi il cockpit ha una **chiave**: `state.engineOn`, il bottone
+ENGINE sul deck e il tasto «E». Spento, la vettura scende a zero da sola, i giri
+cadono a zero e né pedale né slider possono chiedere velocità. Quello che **non**
+fa è fermare il viaggio: quello lo decide la regola, ed è tutto il punto.
+
+Con la chiave arriva il numero che il simulatore aveva sempre arrotondato via:
+`IDLE_LH = 0.7` L/h. A vettura ferma con il motore acceso il costo del viaggio
+**sale senza che salgano i km** — è l'unico costo di tutto il cruscotto che non
+compra un metro. La cartolina di fine viaggio lo dice per esteso: *«fermo con il
+motore acceso per 3:34, € 0.08 — l'1 % di questo viaggio, su nessuna distanza»*.
+Chiude una domanda che era aperta in [08-domande-aperte.md](08-domande-aperte.md).
+
+Gli **€/km istantanei restano 0** a vettura ferma: a 0 km/h non sono definiti.
+Il costo del minimo entra da `state.tripCost`, non da lì.
+
+#### La cartolina di fine viaggio
+
+Niente si archivia finché qualcuno non dice **di chi era**. Un viaggio che si
+chiude apre una card sopra il pannello: percorso, orari, km, durata, euro, €/km,
+la riga ambrata del minimo, e tre chip — BUSINESS / PRIVATE / COMMUTE — già
+posate sulla risposta probabile (la politica scelta, o giorno feriale 07–20).
+
+Tre uscite: **SAVE**, **MERGE WITH PREVIOUS** — che disfa l'ultimo taglio, perché
+un taglio sbagliato è peggio di nessun taglio, e resta spento se il viaggio
+precedente non è uno dei nostri — e **DISCARD**, l'unico posto dell'app dove una
+cifra in euro si può buttare via.
+
+Quando la regola scatta sotto una politica che **già sa** di chi è il viaggio, la
+card non serve: si archivia da sé e lo dice sulla fascia.
+
+Un viaggio da meno di 200 m (`MIN_KM`) non si registra affatto: una manovra in un
+parcheggio non è un viaggio, e una regola che ne deposita uno a ogni spegnimento
+riempirebbe la nota spese di niente.
+
+#### Due specie di viaggio nello stesso array
+
+Il viaggio salvato entra in cima a `TRIPS`, con la sua riga in Cost history e la
+sua riga nel Report — e se le chip del Report descrivono un **insieme** (non una
+scelta a mano) ci entra già spuntato: una nota spese «ultimi 30 giorni, business»
+non può saltare la guida finita un minuto fa.
+
+Ma porta `fixed: true`, e quella parola è tutta la differenza. I diciotto finti si
+dichiarano **fisicamente** e lasciano che `PRICES` li trasformi in euro, perché un
+euro scritto a mano invecchia appena l'API risponde con un mercato diverso. Questo
+non ne ha bisogno: i suoi euro sono stati **misurati litro per litro** sul
+carburante che era davvero nel serbatoio mentre guidava. Quindi `priceTrips()` lo
+scavalca — il mercato si muove, i diciotto lo seguono, e il nostro resta esattamente
+come è stato misurato.
+
+Da qui la separazione fra `priceTrips()` (ridà il prezzo) e `paintRows()` (ridisegna
+le righe): il registro cambia ora per **tre** motivi diversi — un prezzo nuovo, un
+viaggio archiviato in cima, una fusione che ha fatto crescere quello che c'era già.
+
+#### RESET è una cosa sola
+
+Il tasto sul cluster e quello sul deck chiamavano `resetTrip()`. Ora chiamano
+`hardReset()`, che azzera i contatori **e** riapre il viaggio registrato. Tenuti
+separati, dal primo reset in poi le due pagine avrebbero raccontato due storie.
+
 ### Ritmi
 
 Testo dei numeri 4 volte al secondo, canvas ~16 volte, e il `€/km` in alto a ogni
@@ -388,6 +520,12 @@ Le due viste «ferme» costano quasi niente: un viaggio passato è una fotografi
 se `state.marketPrice` è cambiato, cioè quando l'API risponde. Il navigatore
 invece gira sempre, anche mentre guardi un'altra vista, e così l'invio del report:
 `sendFrame(dt)` sta accanto a `navFrame(dt)` nel battito dell'app.
+
+Accanto a loro c'è ora **`tmFrame(dt)`**, e per la stessa ragione portata più in
+là: un viaggio continua a registrarsi *e a chiudersi da solo* mentre stai
+guardando la mappa. La regola non si mette in pausa perché hai cambiato scheda —
+sarebbe l'unico modo di renderla inaffidabile. Il **disegno** invece sì:
+`tmPaint()` gira solo se la vista aperta è `trips`, come tutte le altre.
 
 ## Cosa è cambiato nella strada
 
