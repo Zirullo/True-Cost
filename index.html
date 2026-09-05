@@ -1026,10 +1026,6 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     <rect x="487" y="357" width="248" height="62" rx="9" fill="rgba(10,22,34,.3)" stroke="#9db4c6" stroke-width="1.1"/>
     <text x="611" y="379" text-anchor="middle" class="lbl-sm" letter-spacing="1.2">TOTAL TRIP COST</text>
     <text id="total" x="611" y="411" text-anchor="middle" font-size="34" font-weight="600">EUR 9.55</text>
-    <g id="reset-hit" class="hit">
-      <rect x="742" y="391" width="62" height="24" rx="6" fill="transparent"/>
-      <text x="773" y="409" text-anchor="middle" font-size="17" letter-spacing="1" fill="#dbe8f2">RESET</text>
-    </g>
 
     <!-- ── VEHICLE STATUS ─────────────────────────────────── -->
     <g>
@@ -1038,7 +1034,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
                stroke="rgba(90,255,180,.42)" stroke-width="5" filter="url(#soft)"/>
       <text x="864" y="240" text-anchor="middle" font-size="18" letter-spacing="1.1" fill="#e4f1ea">VEHICLE STATUS</text>
       <text x="864" y="266" text-anchor="middle" font-size="16" fill="#cfe4d9">Last Refuel Price:</text>
-      <text id="refuel" x="864" y="292" text-anchor="middle" font-size="25" font-weight="600">1.83 €/L</text>
+      <text id="refuel" x="864" y="292" text-anchor="middle" font-size="25" font-weight="600">2.15 €/L</text>
       <line x1="797" y1="302" x2="931" y2="302" stroke="#7fd6ae" stroke-width=".8" opacity=".35"/>
       <text x="864" y="319" text-anchor="middle" font-size="16" fill="#cfe4d9">Local Price:</text>
       <text x="864" y="344" text-anchor="middle" font-size="25" font-weight="600"><tspan id="local">1.92 €</tspan><tspan id="localDist" dx="7" font-size="13" font-weight="400" fill="#8fd3b4">· 2.0 km</tspan></text>
@@ -1520,7 +1516,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       <div class="help-section" style="border-left-color:var(--green);grid-column:1/-1">
         <div class="help-section-title" style="color:var(--green)">● Trip &amp; tank</div>
         <p>Distance, litres burned and total euro accumulate live; the fuel level bar drains with them.
-           Press <strong>RESET</strong> — on the cluster or on the deck — to start a new trip from zero.
+           Press <strong>Reset trip</strong> on the deck to start a new trip from zero.
            Press <strong>ENGINE</strong> on the deck (or <strong>&ldquo;E&rdquo;</strong>) to switch the engine off: the car coasts to a stop, and a running engine standing still burns about <strong>0.7 L/h</strong> that buys no distance at all — the cost of going nowhere.</p>
       </div>
       <div class="help-section" style="border-left-color:#8fd8f5;grid-column:1/-1">
@@ -1591,7 +1587,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     targetSpeed: 128, currentSpeed: 128, currentRpm: 2250,
     gear: 5, shiftLock: 0,
     driftAngle: 0,
-    refuelPrice: 1.83,        // replaced below, off the price history
+    refuelPrice: 2.15,        // what the fuel in the tank actually cost
     marketPrice: 1.85,        // live average around the vehicle: the centre the
                               // stations along the road scatter around
     tankCapacity: 45, tankLiters: 27.5,
@@ -1710,9 +1706,11 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
   })();
 
   /* the fuel in the tank right now was bought nine days ago — the same fill
-     the last dot on the price chart shows. Priced off the history from the
-     first frame, so the cluster never displays a hard-coded euro. */
-  state.refuelPrice = PRICES.pumpAgo(9, 0.30, 0.40);
+     the last dot on the price chart shows — at a pump dearer than the ones
+     along this road: the tank price and the local price must never open on
+     the same number, or the cluster looks like it is saying one thing twice. */
+  const TANK_EUR_L = 2.15;
+  state.refuelPrice = TANK_EUR_L;
 
   const $ = id => document.getElementById(id);
   const el = {
@@ -1759,7 +1757,6 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
      thing. RESET has to move both, or from that moment on the Trips pane
      would go on counting a trip the cluster says has just begun. */
   function hardReset() { resetTrip(); app.newTrip(); }
-  $('reset-hit').addEventListener('click', hardReset);
   $('resetBtn').addEventListener('click', hardReset);
 
   /* ── the engine ─────────────────────────────────────────
@@ -1937,9 +1934,8 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       const avg = list.reduce((a, b) => a + b, 0) / list.length;
 
       state.marketPrice = avg;
-      /* the tank was filled nine days ago — the same fill the last dot on the
-         price chart shows — so price it off the history, not off today */
-      state.refuelPrice = PRICES.pumpAgo(9, 0.30, 0.40);
+      /* the live average moves the road, not the tank: what we already paid
+         nine days ago stays what we paid. */
     } catch (e) {
       /* keep the demo prices already in state */
     }
