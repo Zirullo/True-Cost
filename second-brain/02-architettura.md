@@ -7,6 +7,8 @@ Funziona aprendolo con doppio click.
 
 ```
 #shell  (wrapper, serve solo ad ancorare i pedali al bordo basso della scena)
+ ├─ #regia  la barra di regia: switch ICE/BEV/PHEV e tariffa di casa.
+ │          Sta FUORI dallo stage di proposito - vedi sotto
 #stage  (aspect-ratio --scenew/--stageh = 1720/791, max-width 1720px)
  ├─ z1  #windshield   <canvas id="road">  la strada, su TUTTI i 1720
  ├─ z2  #ext          x 1135→1720: l'ultima colonna della foto stirata e sfocata
@@ -29,6 +31,34 @@ allargare la scena non li ha toccati.
 posizione dei layer nuovi, e il canvas della strada che la rilegge in JS
 (`SW`). Il **punto di fuga resta VPX 575**, quello della foto: la carreggiata è
 decentrata a sinistra nell'inquadratura larga, ed è giusto così.
+
+### `#regia`, la barra che non è il cockpit
+
+Sopra la scena, alta `--regiah` (42px, sottratta dal `padding-top` che appoggia
+tutto al fondo pagina). Contiene lo **switch del veicolo** e la **tariffa di
+casa**, e sta lì proprio perché non appartiene all'auto: nessuna vettura ha un
+bottone che trasforma un serbatoio in una batteria. Tenerla grigia e piatta,
+fuori dal vetro, è il modo di non mentire sul confine fra la demo e il prodotto.
+
+### `PT`, i profili di powertrain
+
+Un oggetto per motorizzazione (`PT.ice`, `PT.bev`, il PHEV verrà), e `car()` che
+restituisce quello attivo secondo `state.vehicle`. Dentro un profilo sta tutto
+ciò che i due veicoli non condividono: **curva di consumo** (`per100`), unità ed
+etichette del cluster, capacità e livello di partenza, prezzo iniziale, consumo
+da fermo (`idleRate`), se ha un **cambio** (`hasGears`), e per l'elettrico i
+parametri della rigenerazione.
+
+Il punto è che `update()` e `render()` **non si biforcano**: calcolano `stepU`,
+l'energia del passo nell'unità del profilo, e da lì discendono costo del viaggio,
+livello e €/km per entrambi. Un terzo veicolo è un terzo oggetto, non un terzo
+ramo.
+
+`garage` conserva lo stato di ciascun veicolo mentre non lo si guida (`CARRY`
+elenca i campi che viaggiano), così lo switch è una porta fra due auto e non un
+interruttore su una sola. Al boot lo stato ICE di apertura — quello scenografico
+della foto, 128 km/h e un viaggio già di 48 km — viene riposto **com'è** invece
+di essere ricostruito da zero.
 
 ### Layer 1 — `#windshield`
 

@@ -6,8 +6,15 @@ Da chiarire quando serve. Non bloccano il lavoro, ma cambiano le scelte.
 
 - **Effetto velocità**: procedurale, video, o ibrido? → è la prossima decisione,
   opzioni in [07-roadmap.md](07-roadmap.md)
-- **BEV**: quando torna, e in che forma — switcher, seconda pagina, o vista unica
-  che si adatta al tipo di vettura?
+- ~~**BEV**: quando torna, e in che forma — switcher, seconda pagina, o vista unica
+  che si adatta al tipo di vettura?~~ → **risolta il 2026-09-06**: **vista unica
+  che si adatta**, con profili di powertrain in un solo `index.html` e uno switch
+  in una barra di regia sopra la scena. Non due pagine: strada, app, mappa e
+  report sarebbero andati tenuti allineati a mano su tre copie da 5000 righe.
+  Con essa sono cadute altre tre scelte — la rigenerazione è **automatica sul
+  freno** (nessun selettore da spiegare), la ricarica si fa **solo alla
+  colonnina**, e i due veicoli tengono **viaggi e storici separati**: nessun
+  viaggio è metà a benzina e metà elettrico
 - ~~**Pubblico della demo**: portatile o link?~~ → **risolta il 2026-09-03**: è
   distribuita come link (https://zirullo.github.io/True-Cost/). Quindi gira su
   macchine che non controlliamo: ogni dipendenza da un servizio esterno va sempre

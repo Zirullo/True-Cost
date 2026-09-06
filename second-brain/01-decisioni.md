@@ -5,6 +5,66 @@ Ordine cronologico inverso (la più recente in alto). Ogni voce: **cosa**, **per
 
 ---
 
+## 2026-09-06 · Due veicoli sotto lo stesso cruscotto, e una porta fra loro
+
+**Scelta**: il simulatore ha due motorizzazioni, **ICE** e **BEV**, e uno switch
+che passa dall'una all'altra. Lo switch **non sta nel cockpit**: vive in una barra
+di regia sopra la scena, perché nessuna vettura vera ha un bottone che trasforma
+un serbatoio in una batteria. Il PHEV sarà il terzo profilo, non un terzo progetto.
+
+**Perché**: il confronto in euro sullo stesso percorso è il numero che colpisce di
+più chi guarda, e finora esisteva solo come promessa in roadmap. E l'elettrico
+porta una cosa che il termico non può mostrare: in frenata **il costo del
+chilometro va sotto zero**.
+
+**Come**: un oggetto `PT` con un profilo per veicolo — curva di consumo, unità,
+etichette del cluster, capacità, prezzo di partenza, costo del fermo — e `car()`
+che restituisce quello attivo. `update()` e `render()` restano **una copia sola**
+di logica: invece di biforcarsi calcolano `stepU`, l'energia del passo nell'unità
+del profilo, e costo del viaggio, livello e €/km ne discendono tutti. Il
+tachimetro non cambia — i km/h sono km/h — mentre **giri → kW** con segno,
+**marcia → D**, **serbatoio → carica**, **€/L → €/kWh**.
+
+La rigenerazione non è un fattore moltiplicativo come nell'archivio, ma
+**energia cinetica vera**: `½·m·(v₀²−v²)·η` con m 1600 kg ed η 0.65, limitata dai
+45 kW che il motore riesce ad assorbire. È per questo che una frenata forte non
+si ripaga tutta: i freni ad attrito prendono il resto, come nella realtà. Il
+risultato si vede — in frenata da 100 km/h il cluster segna **−0.12 €/km e
+−32 kW**, entrambi in verde.
+
+**Mondi separati**: `garage` tiene lo stato di ogni veicolo (viaggio, serbatoio o
+batteria, ultimo prezzo pagato); lo switch lo ripone e lo riprende. Nessun
+viaggio è mai metà a benzina e metà elettrico.
+
+**Cosa comporta**:
+
+- **un debito dichiarato**: i campi si chiamano ancora `tripLiters`, `tankLiters`,
+  `instantL100`, e sotto il profilo BEV contengono kWh. Rinominarli tocca il
+  modulo app (Cost history, Report, Trips); lo formerà il PHEV, che brucia
+  entrambi e non può far finta che sia un solo contatore;
+- **l'app tiene ancora un libro solo**, scritto in litri: adattare le cinque
+  viste alla batteria è il passo successivo, e per questo lo switch **apre un
+  viaggio nuovo** invece di mescolare;
+- le celle vive dell'app e il costo del fermo in Trips **sì** che seguono il
+  veicolo: `KWH / 100 KM`, `CHARGE €/KWH`, e lo «standing still costs» che passa
+  da € 1.50/h a € 0.10/h — un elettrico fermo e pronto consuma solo gli
+  ausiliari, 0.4 kW, non i 0.7 L/h di un motore acceso.
+
+---
+
+## 2026-09-06 · La versione termica ha un nome
+
+**Scelta**: tag annotato **`v2.0-ice`** sul commit `89c64f6`, con dentro la
+descrizione di cosa contiene, più una Release su GitHub.
+
+**Perché**: da oggi `index.html` non è più solo termico. Senza un nome, la
+versione su cui si fanno le demo sarebbe rimasta raggiungibile solo cercando un
+hash nella storia.
+
+**Cosa comporta**: `git checkout v2.0-ice` riapre l'ICE com'era il 6 settembre
+2026. Il BEV e il PHEV avranno i loro.
+
+
 ## 2026-09-05 · Dove finisce un viaggio è una scelta, e sta in una pagina
 
 **Scelta**: il display centrale ha una quinta vista, **Trip management**, che

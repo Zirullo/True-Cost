@@ -22,6 +22,10 @@
   --rise:150;
   --stageh:791;          /* = 641 + rise; recomputed from --rise at boot */
   --deckh:66px;
+  /* the director's bar above the scene. It is NOT part of the car — no
+     vehicle has a button that turns a petrol engine into a battery — so
+     it lives outside the stage and looks like studio kit, not cockpit. */
+  --regiah:42px;
   /* ── how wide the scene is ──────────────────────────────────
      The photo is 1147 wide and stops just past the cluster. The scene
      is wider: everything from x 1147 to --scenew is dashboard we draw
@@ -45,7 +49,47 @@ body{
      so that on a short window the page simply scrolls instead of hiding
      its own top row. Nothing is ever scaled down. */
   --sw:min(1720px, 100vw);
-  padding-top:max(0px, calc(100dvh - var(--sw) * var(--stageh) / var(--scenew) - var(--deckh)));
+  padding-top:max(0px, calc(100dvh - var(--sw) * var(--stageh) / var(--scenew) - var(--deckh) - var(--regiah)));
+}
+
+/* ══════════ DIRECTOR'S BAR ══════════
+   Everything in here is a demo control, deliberately outside the cockpit:
+   which vehicle is under us, and what the driver pays for energy at home.
+   Kept flat and grey so it never competes with the cluster. */
+#regia{
+  height:var(--regiah);width:100%;max-width:1720px;
+  display:flex;align-items:center;gap:18px;
+  padding:0 4px 8px;
+}
+#regia .rg-lbl{
+  font-size:9px;letter-spacing:1.8px;text-transform:uppercase;
+  color:rgba(120,140,160,.5);font-weight:700;flex:none;
+}
+#veh-switch{display:flex;gap:3px;background:#0c1219;border:1px solid #1d2935;border-radius:9px;padding:3px}
+.veh-opt{
+  background:transparent;border:0;border-radius:6px;
+  padding:6px 16px;font-family:inherit;font-size:10px;font-weight:700;
+  letter-spacing:1.5px;text-transform:uppercase;color:#6d8398;
+  cursor:pointer;transition:background .18s,color .18s;
+}
+.veh-opt:hover:not(:disabled):not(.on){color:#a9c1d4}
+.veh-opt.on{color:#04121b}
+.veh-opt:disabled{color:#3a4854;cursor:not-allowed}
+.veh-opt[data-v="ice"].on{background:var(--amber)}
+.veh-opt[data-v="bev"].on{background:var(--green)}
+/* the home tariff only means something with a battery under the floor */
+#tariff-wrap{display:none;align-items:center;gap:9px}
+#tariff-wrap.on{display:flex}
+#tariff{
+  width:104px;accent-color:var(--green);cursor:pointer;
+}
+#tariff-val{
+  font-family:Consolas,monospace;font-size:11px;font-weight:700;
+  color:var(--green);min-width:66px;
+}
+#regia .rg-note{
+  margin-left:auto;font-size:9px;letter-spacing:1.2px;text-transform:uppercase;
+  color:rgba(120,140,160,.35);
 }
 
 /* ══════════ COCKPIT STAGE ══════════ */
@@ -696,6 +740,9 @@ body{
 .lbl{font-size:17px;letter-spacing:.6px;fill:#cfe0ee}
 .lbl-sm{font-size:14px;letter-spacing:.4px;fill:#bcd2e2}
 .val{font-weight:600}
+/* regeneration: the cost of the kilometre has gone below zero, and the
+   two numbers that say so turn the colour of money coming back */
+#cluster text.regen{fill:var(--green)}
 .hit{cursor:pointer}
 .hit:hover text{fill:#fff}
 #tick-group line.on{stroke:#eaf6ff;opacity:.95}
@@ -886,6 +933,26 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
      ═══════════════════════════════════════════════════════════ -->
 <div id="shell">
 
+<!-- ═══════════════════════════════════════════════════════════
+     DIRECTOR'S BAR — outside the car on purpose.
+     No vehicle has a switch that turns petrol into a battery, so this
+     control refuses to pretend it is part of the cockpit.
+     ═══════════════════════════════════════════════════════════ -->
+<div id="regia">
+  <span class="rg-lbl">Vehicle</span>
+  <div id="veh-switch" role="group" aria-label="Vehicle type">
+    <button class="veh-opt on" data-v="ice" type="button">ICE</button>
+    <button class="veh-opt"    data-v="bev" type="button">BEV</button>
+    <button class="veh-opt"    data-v="phev" type="button" disabled title="Coming next">PHEV</button>
+  </div>
+  <div id="tariff-wrap">
+    <span class="rg-lbl">Home tariff</span>
+    <input type="range" id="tariff" min="0.10" max="0.60" step="0.01" value="0.25">
+    <span id="tariff-val">0.25 &euro;/kWh</span>
+  </div>
+  <span class="rg-note">each vehicle keeps its own trip</span>
+</div>
+
 <div id="stage">
 
   <!-- ▼▼ THE WINDSHIELD VIEW.
@@ -1002,9 +1069,9 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       <text id="spd" x="345" y="316" text-anchor="middle" font-size="52" font-weight="600">128</text>
       <text x="345" y="341" text-anchor="middle" font-size="17" fill="#c3d6e6">km/h</text>
       <text id="rpmTxt" x="330" y="404" text-anchor="middle" font-size="32" font-weight="600">2250</text>
-      <text x="330" y="422" text-anchor="middle" font-size="14" letter-spacing="1.2" fill="#c3d6e6">RPM</text>
+      <text id="rpmLbl" x="330" y="422" text-anchor="middle" font-size="14" letter-spacing="1.2" fill="#c3d6e6">RPM</text>
       <text id="gearTxt" x="412" y="404" text-anchor="middle" font-size="26" font-weight="600" fill="#dfeaf4">6</text>
-      <text x="412" y="422" text-anchor="middle" font-size="14" letter-spacing="1.2" fill="#c3d6e6">GEAR</text>
+      <text id="gearLbl" x="412" y="422" text-anchor="middle" font-size="14" letter-spacing="1.2" fill="#c3d6e6">GEAR</text>
     </g>
 
     <!-- ── LIVE CONSUMPTION ───────────────────────────────── -->
@@ -1019,7 +1086,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     </text>
     <text x="675" y="321" text-anchor="middle" class="lbl">CONSUMED</text>
     <text x="675" y="347" text-anchor="middle" font-size="27" class="val">
-      <tspan id="cons">5.02</tspan><tspan font-size="18" fill="#d2e2ef"> L</tspan>
+      <tspan id="cons">5.02</tspan><tspan id="consUnit" font-size="18" fill="#d2e2ef"> L</tspan>
     </text>
 
     <!-- ── TOTAL TRIP COST ────────────────────────────────── -->
@@ -1033,13 +1100,13 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       <ellipse cx="864" cy="303" rx="100" ry="108" fill="none"
                stroke="rgba(90,255,180,.42)" stroke-width="5" filter="url(#soft)"/>
       <text x="864" y="240" text-anchor="middle" font-size="18" letter-spacing="1.1" fill="#e4f1ea">VEHICLE STATUS</text>
-      <text x="864" y="266" text-anchor="middle" font-size="16" fill="#cfe4d9">Last Refuel Price:</text>
+      <text id="refuelLbl" x="864" y="266" text-anchor="middle" font-size="16" fill="#cfe4d9">Last Refuel Price:</text>
       <text id="refuel" x="864" y="292" text-anchor="middle" font-size="25" font-weight="600">2.15 €/L</text>
       <line x1="797" y1="302" x2="931" y2="302" stroke="#7fd6ae" stroke-width=".8" opacity=".35"/>
       <text x="864" y="319" text-anchor="middle" font-size="16" fill="#cfe4d9">Local Price:</text>
       <text x="864" y="344" text-anchor="middle" font-size="25" font-weight="600"><tspan id="local">1.92 €</tspan><tspan id="localDist" dx="7" font-size="13" font-weight="400" fill="#8fd3b4">· 2.0 km</tspan></text>
       <line x1="797" y1="354" x2="931" y2="354" stroke="#7fd6ae" stroke-width=".8" opacity=".35"/>
-      <text x="864" y="364" text-anchor="middle" font-size="16" fill="#cfe4d9">Fuel Level</text>
+      <text id="levelLbl" x="864" y="364" text-anchor="middle" font-size="16" fill="#cfe4d9">Fuel Level</text>
       <rect x="806" y="370" width="116" height="11" rx="2.5" fill="#0c1a17" stroke="#3f6a5c" stroke-width=".9"/>
       <rect x="808" y="372" width="13" height="7" rx="1.5" fill="#c4433c"/>
       <rect id="fuelbar" x="821" y="372" width="60" height="7" rx="1.5" fill="url(#fuelG)"/>
@@ -1048,8 +1115,8 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         <line x1="878" y1="372" x2="878" y2="379"/>
         <line x1="899" y1="372" x2="899" y2="379"/>
       </g>
-      <text x="812" y="392" text-anchor="middle" font-size="14" fill="#dcece4">E</text>
-      <text x="916" y="392" text-anchor="middle" font-size="14" fill="#dcece4">F</text>
+      <text id="lvlE" x="812" y="392" text-anchor="middle" font-size="14" fill="#dcece4">E</text>
+      <text id="lvlF" x="916" y="392" text-anchor="middle" font-size="14" fill="#dcece4">F</text>
       <g filter="url(#glow)" transform="translate(852,398)">
         <path d="M4,2 h13 a2,2 0 0 1 2,2 v16 h-17 v-16 a2,2 0 0 1 2,-2 z" fill="#39e08a"/>
         <path d="M21,7 l4,3 v9 a2.6,2.6 0 0 1 -5.2,0 v-4" fill="none" stroke="#39e08a" stroke-width="2.2" stroke-linecap="round"/>
@@ -1455,8 +1522,8 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
 
   <!-- ▼▼ REFUEL PROMPT — shown inside the last 200 m before a station ▼▼ -->
   <div id="refuel-prompt" aria-live="polite">
-    <span class="rp-ask">PRESS <b>&ldquo;R&rdquo;</b> to refuel</span>
-    <span class="rp-done">Tank full &mdash; refuelled at <b id="rp-price">0.00 &euro;/L</b></span>
+    <span class="rp-ask">PRESS <b>&ldquo;R&rdquo;</b> to <span id="rp-verb">refuel</span></span>
+    <span class="rp-done"><span id="rp-done-lbl">Tank full &mdash; refuelled at</span> <b id="rp-price">0.00 &euro;/L</b></span>
   </div>
   <!-- ▲▲ ─────────────────────────────────────────────────── ▲▲ -->
 </div>
@@ -1519,6 +1586,10 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
            Press <strong>Reset trip</strong> on the deck to start a new trip from zero.
            Press <strong>ENGINE</strong> on the deck (or <strong>&ldquo;E&rdquo;</strong>) to switch the engine off: the car coasts to a stop, and a running engine standing still burns about <strong>0.7 L/h</strong> that buys no distance at all — the cost of going nowhere.</p>
       </div>
+      <div class="help-section" style="border-left-color:#c9a6ff;grid-column:1/-1">
+        <div class="help-section-title" style="color:#c9a6ff">⇄ Petrol or electric</div>
+        <p>The bar <strong>above the cockpit</strong> — deliberately outside it, because no real car has this button — switches the vehicle under you between <strong>ICE</strong> and <strong>BEV</strong> (<strong>&ldquo;V&rdquo;</strong> on the keyboard). Each one keeps <strong>its own trip, its own tank or battery and its own last price paid</strong>, so nothing is ever half petrol and half electric. In the electric car the revs become <strong>kW</strong>, the gear becomes <strong>D</strong>, the tank becomes <strong>charge</strong>, and the signs along the road quote <strong>&euro; / kWh</strong>. Set what you pay at home on the <strong>home tariff</strong> slider: the charge in the battery came off that wall, which is why the totems outside — asking two to three times as much — are the whole argument. And when you <strong>brake</strong>, the motor hands energy back: the kW go negative, and <strong>the cost of that kilometre turns green and drops below zero</strong>. <em>The centre display still keeps one ledger, and it is written in litres: adapting the five app views to the battery is the next step.</em></p>
+      </div>
       <div class="help-section" style="border-left-color:#8fd8f5;grid-column:1/-1">
         <div class="help-section-title" style="color:#8fd8f5">▣ Centre display</div>
         <p>The screen on the dashboard runs the app itself, and it is <strong>touchable</strong>: <strong>Cost history</strong> charts what every kilometre has cost you — one bar per 200 m of the road you are driving — over your previous trips: <strong>tap any of them</strong> to open it, with its own cost profile, litres, average speed and the price paid at the pump. <strong>Pump map</strong> &mdash; the view the demo opens on &mdash; ranks the stations around the car by price, cheapest in green with the halo, dearest in red: choose how far to look &mdash; 5, 10 or 20 km, or <em>along this road</em>, which is not a radius but the totems you are about to drive past, each one at the price its sign will show through the windshield, or <em>on my route</em>, the same corridor for as long as no destination is set &mdash; then <strong>tap a station and NAVIGATE</strong> to be driven there by a simulated navigator, arrow by arrow. <strong>Price history</strong> puts two years of the Italian pump price behind our own refuels: pick the window and how finely to sample it, and tap any stop to see what we paid against the market that day. <strong>Report</strong> is the view for whoever pays rather than drives: pick a week, a month or single trips, keep only the <strong>business</strong> ones or only the <strong>private</strong> ones, and the log becomes an expense claim &mdash; spend, kilometres, litres, &euro;/km, the <strong>business / private</strong> split and the recoverable VAT &mdash; ready for email, CSV, a fleet portal, an expense tool or a ride&#8209;hailing ledger. <em>The delivery is simulated: nothing leaves this page.</em> <strong>Trips</strong> owns the question the other four all depend on: <strong>where does one trip end?</strong> Choose what closes it — the <strong>ignition</strong>, <strong>smart</strong> (the engine has to stay off for two, five, fifteen or thirty minutes, so a fuel stop stays inside the trip and going home does not), the <strong>GPS destination</strong> (the trip ends where you said it would: pick a station in <strong>Pumps</strong>, press <strong>NAVIGATE</strong>, and it closes on arrival — with no destination set the pane says so instead of guessing), or nothing but your own hand — then switch the engine off and watch the countdown ring run down. <strong>Keep open</strong> holds the trip through a stop, <strong>split here</strong> cuts it in two, and closing one brings up the card that files it: business, private or commute, merged back into the previous trip, or thrown away. What you save goes straight to the top of <strong>Costs</strong> and into the <strong>Report</strong>, priced on the fuel it actually burned.</p>
@@ -1574,7 +1645,8 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
   const RPM_IDLE = 800;
   const ACC_MAX = 13, DEC_COAST = 4;         // km/h per second: full throttle at rest / lift-off
   const BRAKE_MAX = 20;                      // km/h per second with the brake pedal down
-  const IDLE_LH = 0.7;                       // L/h a running engine burns standing still
+  /* what a vehicle burns standing still now belongs to its profile:
+     PT.ice.idleRate (0.7 L/h) and PT.bev.idleRate (0.4 kW) */
 
   /* 6-speed gearbox, ratios expressed as engine rpm per km/h.
      6th is calibrated on the reference cluster: 128 km/h -> 2250 rpm. */
@@ -1592,8 +1664,82 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
                               // stations along the road scatter around
     tankCapacity: 45, tankLiters: 27.5,
     tripKm: 48.09, tripLiters: 5.02, tripCost: 9.55,
-    instantEurKm: 0.14, instantL100: 7.14
+    instantEurKm: 0.14, instantL100: 7.14,
+    /* ── added with the BEV variant ── */
+    vehicle: 'ice',           // which profile in PT is under us
+    currentKw: 33,            // motor power, signed: negative is regeneration
+    homeTariff: 0.25,         // €/kWh the driver pays at home, set on the bar
+    chargedOut: false         // true once a charge is bought away from home
   };
+
+  /* ══════════════════════════════════════════════════════════
+     POWERTRAIN PROFILES
+     ──────────────────────────────────────────────────────────
+     One object per kind of vehicle. Everything that differs between a
+     petrol car and an electric one lives here — the consumption curve,
+     what a unit of energy is called, what the cluster writes on its
+     labels, what standing still costs — so that update() and render()
+     stay single copies of one piece of logic instead of forking.
+
+     A NOTE ON NAMES, and it is a debt, not a design: the state fields are
+     still called tripLiters / tankLiters / instantL100. Under the BEV
+     profile they carry kWh. Renaming them means touching the app module
+     (Cost history, Report, Trips), which belongs to the next pass; the
+     PHEV will force the issue properly, because it burns both.
+     ══════════════════════════════════════════════════════════ */
+  const PT = {
+    ice: {
+      id: 'ice',
+      unit: ' L', priceUnit: '€/L',
+      subLabel: 'RPM', gearLabel: 'GEAR',
+      levelLabel: 'Fuel Level', paidLabel: 'Last Refuel Price:',
+      lo: 'E', hi: 'F',
+      capacity: 45, startLevel: 27.5,
+      /* the fuel in the tank was bought nine days ago, dearer than the
+         totems on this road: the two must never open on the same number */
+      startPrice: 2.15,
+      priceDecimals: 2,
+      keyOn: '&#9679; Engine off', keyOff: '&#9679; Engine on',
+      refuelVerb: 'refuel', refuelDone: 'Tank full &mdash; refuelled at',
+      hasGears: true,
+      /* L / 100 km, calibrated on the reference cluster */
+      per100: v => 0.000282 * v * v - 0.0163 * v + 4.61,
+      /* a running engine standing still burns 0.7 L/h and covers no ground */
+      idleRate: 0.7
+    },
+
+    bev: {
+      id: 'bev',
+      unit: ' kWh', priceUnit: '€/kWh',
+      subLabel: 'kW', gearLabel: 'DRIVE',
+      levelLabel: 'Charge', paidLabel: 'Last Charge Price:',
+      lo: '0', hi: '100',
+      /* Jeep Avenger BEV: 54 kWh usable, opened at 78 % as the archive had it */
+      capacity: 54, startLevel: 42.1,
+      /* the charge in the battery came from the wall at home — which is the
+         whole point of the demo: the totems outside ask more than double */
+      startPrice: null,             // filled from state.homeTariff at boot
+      priceDecimals: 2,
+      keyOn: '&#9679; Ready off', keyOff: '&#9679; Ready on',
+      refuelVerb: 'charge', refuelDone: 'Battery full &mdash; charged at',
+      hasGears: false,
+      /* kWh / 100 km in traction, from 06-archivio-bev.md */
+      per100: v => 0.00055 * v * v + 0.030 * v + 13.0,
+      /* ready and standing still: only the auxiliaries — climate and
+         electronics — about 0.4 kW. Not zero, but nothing like 0.7 L/h */
+      idleRate: 0.4,
+      /* regeneration, and it is the reason the BEV is worth showing.
+         Braking gives kinetic energy back through the motor, so the cost
+         of that kilometre goes NEGATIVE. Recovery is bounded by what the
+         motor can actually take, which is why hard braking still needs
+         friction brakes and does not pay for the whole stop. */
+      mass: 1600,                   // kg, kerb weight with a driver
+      regenEta: 0.65,               // motor + inverter + battery, round trip
+      regenKwMax: 45                // kW the motor can absorb
+    }
+  };
+
+  const car = () => PT[state.vehicle];
 
   /* ══════════════════════════════════════════════════════════
      PRICE HISTORY — one source of truth for every price shown
@@ -1716,7 +1862,12 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
   const el = {
     spd: $('spd'), rpm: $('rpmTxt'), eurKm: $('eurKm'), dist: $('dist'),
     cons: $('cons'), total: $('total'), refuel: $('refuel'), local: $('local'),
-    localDist: $('localDist'), fuelbar: $('fuelbar'), gear: $('gearTxt')
+    localDist: $('localDist'), fuelbar: $('fuelbar'), gear: $('gearTxt'),
+    /* the labels the vehicle switch rewrites — they change once, on a
+       switch, not once a frame */
+    rpmLbl: $('rpmLbl'), gearLbl: $('gearLbl'), consUnit: $('consUnit'),
+    refuelLbl: $('refuelLbl'), levelLbl: $('levelLbl'),
+    lvlE: $('lvlE'), lvlF: $('lvlF')
   };
 
   /* ── dial ticks & numbers ───────────────────────────── */
@@ -1771,7 +1922,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     state.engineOn = on;
     if (!on) { state.targetSpeed = 0; rpmSlider.value = 0; }
     engineBtn.classList.toggle('off', !on);
-    engineBtn.innerHTML = (on ? '&#9679; Engine off' : '&#9679; Engine on');
+    engineBtn.innerHTML = on ? car().keyOn : car().keyOff;
   }
   engineBtn.addEventListener('click', () => { setEngine(!state.engineOn); engineBtn.blur(); });
   window.addEventListener('keydown', e => {
@@ -1784,6 +1935,101 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
   /* ── controls ───────────────────────────────────────── */
   const rpmSlider = $('rpmSlider'), rpmVal = $('rpmVal');
   rpmSlider.addEventListener('input', () => { state.targetSpeed = parseFloat(rpmSlider.value); });
+
+  /* ══════════════════════════════════════════════════════════
+     THE VEHICLE SWITCH
+     ──────────────────────────────────────────────────────────
+     A door between two cars, not a knob on one of them. Each vehicle
+     keeps its own trip, its own tank or battery, and its own last price
+     paid; nothing is averaged and nothing is carried across, so no single
+     trip is ever half petrol and half electric.
+
+     What this does NOT separate yet is the app's ledger: Cost history,
+     Report and Trips still keep one book, and it is written in litres.
+     That belongs to the next pass — and it is why throwing the switch
+     also starts a fresh trip in the app rather than pretending otherwise.
+     ══════════════════════════════════════════════════════════ */
+  const garage = {};        // vehicle id -> the state that vehicle was left in
+  const CARRY = ['engineOn', 'targetSpeed', 'currentSpeed', 'currentRpm',
+                 'currentKw', 'gear', 'shiftLock', 'refuelPrice', 'tankLiters',
+                 'tripKm', 'tripLiters', 'tripCost', 'instantEurKm',
+                 'instantL100', 'chargedOut'];
+
+  function stash(id) {
+    const box = {};
+    CARRY.forEach(k => box[k] = state[k]);
+    garage[id] = box;
+  }
+
+  /* getting into a vehicle for the first time: standing, key on, with
+     whatever it was last filled or charged with */
+  function fresh(id) {
+    const P = PT[id];
+    return {
+      engineOn: true, targetSpeed: 0, currentSpeed: 0,
+      currentRpm: 0, currentKw: 0, gear: 0, shiftLock: 0,
+      refuelPrice: P.startPrice === null ? state.homeTariff : P.startPrice,
+      tankLiters: P.startLevel,
+      tripKm: 0, tripLiters: 0, tripCost: 0,
+      instantEurKm: 0, instantL100: 0,
+      chargedOut: false        // has this charge been bought away from home?
+    };
+  }
+
+  function applyProfile(id, boot) {
+    if (!PT[id] || (!boot && id === state.vehicle)) return;
+    if (!boot) stash(state.vehicle);
+
+    state.vehicle = id;
+    const P = PT[id], box = garage[id] || fresh(id);
+    Object.keys(box).forEach(k => state[k] = box[k]);
+    state.tankCapacity = P.capacity;
+
+    /* the cluster relabels itself: the same slots, a different vehicle.
+       Nothing moves, which is the point — it is one instrument panel. */
+    el.rpmLbl.textContent    = P.subLabel;
+    el.gearLbl.textContent   = P.gearLabel;
+    el.consUnit.textContent  = P.unit;
+    el.refuelLbl.textContent = P.paidLabel;
+    el.levelLbl.textContent  = P.levelLabel;
+    el.lvlE.textContent      = P.lo;
+    el.lvlF.textContent      = P.hi;
+    $('rp-verb').textContent   = P.refuelVerb;
+    $('rp-done-lbl').innerHTML = P.refuelDone;
+
+    rpmSlider.value = state.targetSpeed;
+    setEngine(state.engineOn);          // rewrites the key's own label too
+
+    document.querySelectorAll('.veh-opt').forEach(b =>
+      b.classList.toggle('on', b.dataset.v === id));
+    $('tariff-wrap').classList.toggle('on', id === 'bev');
+
+    if (!boot) app.newTrip();           // a trip never spans two vehicles
+  }
+
+  document.querySelectorAll('.veh-opt').forEach(b => {
+    b.addEventListener('click', () => { applyProfile(b.dataset.v); b.blur(); });
+  });
+  /* "V" throws the switch from the keyboard, for a demo run without a mouse */
+  window.addEventListener('keydown', e => {
+    if (e.key !== 'v' && e.key !== 'V') return;
+    if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+    e.preventDefault();
+    applyProfile(state.vehicle === 'ice' ? 'bev' : 'ice');
+  });
+
+  /* ── the home tariff ────────────────────────────────────
+     The one price in this demo the driver actually controls. The charge in
+     the battery came off the wall at home, so moving this re-prices it —
+     until the car is plugged into a totem on the road, after which THAT
+     price is what the kilometres are costing, and the tariff only decides
+     what the next charge at home would have cost instead. */
+  const tariffEl = $('tariff'), tariffVal = $('tariff-val');
+  tariffEl.addEventListener('input', () => {
+    state.homeTariff = parseFloat(tariffEl.value);
+    tariffVal.textContent = state.homeTariff.toFixed(2) + ' €/kWh';
+    if (state.vehicle === 'bev' && !state.chargedOut) state.refuelPrice = state.homeTariff;
+  });
 
   /* -- pedals: hold to accelerate / brake ---------------
      Three states, and only three: holding UP accelerates for as long as it is
@@ -1877,9 +2123,10 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
   function refuel() {
     const st = road.station();
     if (st.dist > REFUEL_RANGE) return;     // no station within reach
-    state.tankLiters  = state.tankCapacity;
+    state.tankLiters  = car().capacity;
     state.refuelPrice = st.price;
-    promptPrice.textContent = st.price.toFixed(2) + ' €/L';
+    state.chargedOut  = true;      // this energy did NOT come off the wall at home
+    promptPrice.textContent = st.price.toFixed(2) + ' ' + car().priceUnit;
     promptEl.classList.add('done');
     receiptUntil = performance.now() + RECEIPT_MS;
   }
@@ -2575,8 +2822,20 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
        Both draws come from the station's INDEX through hash(), so a totem
        is decided once and does not shimmer while you drive up to it — and
        the pump map, given the same index, gets the same price. */
-    const stationPrice = i => PRICES.ago(0) +
-      PRICES.roadOffset(hash(i * 97 + 13), hash(i * 131 + 7));
+    /* A charging point is not a petrol pump, but the shape of the scatter
+       is the same and so is the reason for it: one price per station,
+       decided by its index, so a totem does not shimmer while you drive up
+       to it and the pump map — given the same index — quotes the same money.
+       The electric band runs from a slow AC post to an ultrafast one, about
+       0.50 to 0.86 €/kWh. That spread is the argument: the driver charging
+       at home pays 0.25, and every sign out here asks at least double. */
+    const EKWH_BASE = 0.60;
+    const stationPrice = i => {
+      const u = hash(i * 97 + 13), w = hash(i * 131 + 7);
+      return state.vehicle === 'bev'
+        ? EKWH_BASE + PRICES.roadOffset(u, w) * 0.75
+        : PRICES.ago(0) + PRICES.roadOffset(u, w);
+    };
 
     /* and its sign. NOT hashed: walked, in steps that are coprime with the
        two lists, so no two stations in sight can end up carrying the same
@@ -3779,11 +4038,14 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       T.lab.innerHTML     = 'THIS TRIP &middot; COST SO FAR';
       T.total.textContent = state.tripCost.toFixed(2);
       T.sub.innerHTML     = state.tripKm.toFixed(1) + ' km &middot; ' +
-                            state.tripLiters.toFixed(2) + ' L burned';
+                            state.tripLiters.toFixed(2) +
+                            (car().hasGears ? ' L burned' : ' kWh used');
       T.c1.textContent = state.instantEurKm.toFixed(2); T.l1.innerHTML = '&euro;/KM NOW';
       T.c2.textContent = avg.toFixed(2);                T.l2.innerHTML = '&euro;/KM AVG';
-      T.c3.textContent = state.instantL100.toFixed(1);  T.l3.innerHTML = 'L / 100 KM';
-      T.c4.textContent = state.refuelPrice.toFixed(2);  T.l4.innerHTML = 'TANK &euro;/L';
+      T.c3.textContent = state.instantL100.toFixed(1);
+      T.l3.innerHTML = (car().hasGears ? 'L' : 'KWH') + ' / 100 KM';
+      T.c4.textContent = state.refuelPrice.toFixed(2);
+      T.l4.innerHTML = (car().hasGears ? 'TANK &euro;/L' : 'CHARGE &euro;/KWH');
       T.ctitle.innerHTML = 'COST PER KM &middot; LAST 5 KM';
       T.ax0.innerHTML = '&minus;5.0 km';
       T.ax1.textContent = 'now';
@@ -4896,7 +5158,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       tEur = lastTEur = state.tripCost;
       tSec = tKm / 78 * 3600;                       // ~37 min at a motorway average
       idleSec = 214;                                // two lights and a toll booth
-      idleEur = idleSec / 3600 * IDLE_LH * state.refuelPrice;
+      idleEur = idleSec / 3600 * car().idleRate * state.refuelPrice;
       tStart = new Date(Date.now() - tSec * 1000);
     })();
 
@@ -5002,7 +5264,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       } else {
         TM.b1.textContent = R.say(closeAfter);
         TM.b2.innerHTML   = 'STANDING STILL COSTS &euro; ' +
-                            (IDLE_LH * state.refuelPrice).toFixed(2) + ' / H &middot; &euro; ' +
+                            (car().idleRate * state.refuelPrice).toFixed(2) + ' / H &middot; &euro; ' +
                             idleEur.toFixed(2) + ' SO FAR ON THIS TRIP';
       }
       /* the ring is the time LEFT, so it drains. Off the countdown it sits
@@ -5212,6 +5474,10 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
        was holding, the car coasts down to nothing */
     if (!state.engineOn) state.targetSpeed = 0;
 
+    /* the speed we are coming FROM. Regeneration is paid for out of the
+       kinetic energy the car loses, so it needs both ends of the step. */
+    const v0 = state.currentSpeed;
+
     /* the car cannot jump to the requested speed: power-limited acceleration
        that fades as drag builds up, so the top of the dial takes real effort */
     const gap = state.targetSpeed - state.currentSpeed;
@@ -5236,58 +5502,105 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     const v = Math.max(0, Math.min(VMAX, state.currentSpeed));
     state.currentSpeed = v;
 
-    /* gearbox: the ratio picks the revs, and the up/down thresholds are far
-       enough apart that the box cannot hunt between two gears */
-    state.shiftLock = Math.max(0, state.shiftLock - dt);
-    if (state.shiftLock === 0) {
-      if (state.gear < GEARS.length - 1 && GEARS[state.gear] * v > UPSHIFT) {
-        state.gear++; state.shiftLock = SHIFT_LOCK;
-      } else if (state.gear > 0 && GEARS[state.gear] * v < DOWNSHIFT) {
-        // hard braking skips gears, as a real box does
-        while (state.gear > 0 && GEARS[state.gear] * v < DOWNSHIFT) state.gear--;
-        state.shiftLock = SHIFT_LOCK;
-      }
-    }
-    /* below walking pace the clutch is out: the engine falls back to idle */
-    const drift = Math.sin(state.driftAngle) * 12;
-    const rpmTarget = state.engineOn ? Math.max(RPM_IDLE, GEARS[state.gear] * v) + drift : 0;
-    state.currentRpm += (rpmTarget - state.currentRpm) * Math.min(1, dt * 9);
+    const P = car();
 
-    if (v < 1) {
-      state.instantL100  = 0;
-      state.instantEurKm = 0;
-    } else {
-      state.instantL100  = 0.000282 * v * v - 0.0163 * v + 4.61;
-      state.instantEurKm = (state.instantL100 / 100) * state.refuelPrice;
+    /* gearbox: the ratio picks the revs, and the up/down thresholds are far
+       enough apart that the box cannot hunt between two gears. A BEV has one
+       ratio and nothing to hunt between, so the whole block sits this out. */
+    if (P.hasGears) {
+      state.shiftLock = Math.max(0, state.shiftLock - dt);
+      if (state.shiftLock === 0) {
+        if (state.gear < GEARS.length - 1 && GEARS[state.gear] * v > UPSHIFT) {
+          state.gear++; state.shiftLock = SHIFT_LOCK;
+        } else if (state.gear > 0 && GEARS[state.gear] * v < DOWNSHIFT) {
+          // hard braking skips gears, as a real box does
+          while (state.gear > 0 && GEARS[state.gear] * v < DOWNSHIFT) state.gear--;
+          state.shiftLock = SHIFT_LOCK;
+        }
+      }
+      /* below walking pace the clutch is out: the engine falls back to idle */
+      const drift = Math.sin(state.driftAngle) * 12;
+      const rpmTarget = state.engineOn ? Math.max(RPM_IDLE, GEARS[state.gear] * v) + drift : 0;
+      state.currentRpm += (rpmTarget - state.currentRpm) * Math.min(1, dt * 9);
     }
 
     const stepKm = (v / 3600) * dt;
-    /* A running engine standing still burns ~0.7 L/h and covers no ground.
-       Until Trip Management there was nowhere in the app to show that, so
-       it was rounded away; now it is the one cost on the whole dashboard
-       that buys no distance at all, and the trip carries it. A dead engine
-       burns nothing either way. */
-    let stepL = stepKm * (state.instantL100 / 100);
-    if (v < 1) stepL = state.engineOn ? (IDLE_LH / 3600) * dt : 0;
+
+    /* ── the energy this step cost, in the profile's own unit ──────────
+       This is the one quantity the two vehicles genuinely disagree about.
+       Everything downstream — trip cost, tank or battery level, €/km, the
+       big readout — is derived from it, so neither of them needs its own
+       copy of the bookkeeping.
+
+       Standing still with the key on: a running engine burns 0.7 L/h that
+       covers no ground, an electric car draws about 0.4 kW for climate and
+       electronics. Neither is zero, and neither buys any distance. */
+    let stepU;
+    if (v < 1) {
+      stepU = state.engineOn ? (P.idleRate / 3600) * dt : 0;
+      state.instantL100  = 0;
+      state.instantEurKm = 0;             // at 0 km/h €/km is not defined
+    } else {
+      stepU = stepKm * (P.per100(v) / 100);
+
+      /* ── REGENERATION, and it is why the BEV is worth showing ────────
+         Braking hands kinetic energy back through the motor, so this step
+         can END UP NEGATIVE: the car is paying you, and the big € / km
+         readout goes below zero. What comes back is capped by the power
+         the motor can absorb, which is exactly why a hard stop still needs
+         friction brakes and does not refund the whole thing. */
+      if (P.regenEta && state.engineOn && held.brake && v < v0) {
+        const a = v0 / 3.6, b = v / 3.6;                    // m/s
+        const joules = 0.5 * P.mass * (a * a - b * b);
+        const cap = P.regenKwMax * dt / 3600;               // the motor's ceiling
+        stepU -= Math.min(joules * P.regenEta / 3.6e6, cap);
+      }
+      /* net, so the figure the app reads is what the step really cost —
+         and under regeneration it is negative, as it should be */
+      state.instantL100  = (stepU / stepKm) * 100;
+      state.instantEurKm = (stepU / stepKm) * state.refuelPrice;
+    }
+
+    /* the readout under the dial: revs for an engine, signed power for a
+       motor. Smoothed like the revs are, so neither number twitches. */
+    if (!P.hasGears) {
+      const kwTarget = state.engineOn ? (stepU / Math.max(dt, 1e-6)) * 3600 : 0;
+      state.currentKw += (kwTarget - state.currentKw) * Math.min(1, dt * 6);
+    }
+
     state.tripKm     += stepKm;
-    state.tripLiters += stepL;
-    /* litres times the price of the fuel in the tank — which for a moving
-       car is exactly stepKm * instantEurKm, and for a standing one is the
-       idle burn the line above worked out */
-    state.tripCost   += stepL * state.refuelPrice;
-    state.tankLiters  = Math.max(0, state.tankLiters - stepL);
+    state.tripLiters += stepU;
+    /* units times the price of what is in the tank or the battery — which
+       for a moving car is exactly stepKm * instantEurKm, and for a standing
+       one is the idle draw the branch above worked out. Under regeneration
+       every one of these goes the other way, the trip cost included. */
+    state.tripCost   += stepU * state.refuelPrice;
+    state.tankLiters  = Math.max(0, Math.min(P.capacity, state.tankLiters - stepU));
   }
 
   /* ── render ─────────────────────────────────────────── */
   function render() {
+    const P = car();
     el.spd.textContent    = Math.round(state.currentSpeed);
-    el.rpm.textContent    = Math.round(state.currentRpm);
-    el.gear.textContent   = state.currentSpeed < 1 ? 'N' : state.gear + 1;
-    el.eurKm.textContent  = state.instantEurKm.toFixed(2);
+    /* revs for an engine, signed kW for a motor — same slot, same size */
+    el.rpm.textContent    = P.hasGears ? Math.round(state.currentRpm)
+                                       : Math.round(state.currentKw);
+    el.gear.textContent   = P.hasGears ? (state.currentSpeed < 1 ? 'N' : state.gear + 1)
+                                       : (state.engineOn ? 'D' : 'P');
+
+    /* the money shot: under regeneration the cost of the kilometre is
+       BELOW ZERO, and both the € / km and the kW turn green to say so.
+       Anything under half a cent is called zero rather than "-0.00". */
+    const ekm  = Math.abs(state.instantEurKm) < 0.005 ? 0 : state.instantEurKm;
+    const back = ekm < 0;
+    el.eurKm.textContent = ekm.toFixed(2);
+    el.eurKm.classList.toggle('regen', back);
+    el.rpm.classList.toggle('regen', !P.hasGears && state.currentKw < -0.5);
+
     el.dist.textContent   = state.tripKm.toFixed(2);
     el.cons.textContent   = state.tripLiters.toFixed(2);
     el.total.textContent  = 'EUR ' + state.tripCost.toFixed(2);
-    el.refuel.textContent = state.refuelPrice.toFixed(2) + ' €/L';
+    el.refuel.textContent = state.refuelPrice.toFixed(2) + ' ' + P.priceUnit;
 
     /* Local Price is the price of the NEXT station on the road, and it counts
        down to it: metres under a kilometre, so the last stretch feels alive */
@@ -5299,14 +5612,22 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
 
     syncRefuelPrompt(st.dist, performance.now());
 
-    const lvl = Math.max(0, Math.min(1, state.tankLiters / state.tankCapacity));
+    const lvl = Math.max(0, Math.min(1, state.tankLiters / P.capacity));
     el.fuelbar.setAttribute('width', (lvl * 100).toFixed(1));
 
     rpmVal.innerHTML = Math.round(state.currentSpeed) + ' km/h <em>· ' +
-                       Math.round(state.currentRpm) + ' rpm</em>';
+                       (P.hasGears ? Math.round(state.currentRpm) + ' rpm'
+                                   : Math.round(state.currentKw) + ' kW') + '</em>';
 
     paintDial(state.currentSpeed);
   }
+
+  /* ── boot ────────────────────────────────────────────────
+     The ICE opening state is the reference photo's — a trip already 48 km
+     old at 128 km/h — so it is stashed exactly as it stands rather than
+     rebuilt from zero. The BEV is only built the first time it is chosen. */
+  stash('ice');
+  applyProfile('ice', true);
 
   let lastFrame = performance.now();
   (function loop(now) {

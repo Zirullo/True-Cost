@@ -5,7 +5,6 @@
 - **Fare il pieno**: oggi superare una stazione è solo scenografia. Un rifornimento
   che aggiorna *Last Refuel Price* col prezzo di **quella** stazione chiuderebbe il
   cerchio: la scelta di dove fermarsi si vedrebbe negli €/km di tutto il viaggio dopo
-- **Reintrodurre il BEV** nel nuovo design ([06-archivio-bev.md](06-archivio-bev.md))
 - **Robustezza prezzi live**: cache dell'ultimo valore noto, così una demo dal vivo
   non dipende da un servizio gratuito che dorme
 - **Geolocalizzazione** al posto delle coordinate fisse su Roma
@@ -18,6 +17,16 @@
 
 ## Prossimo passo
 
+- **L'app in kWh**: il cockpit sa già di essere elettrico, il display centrale no.
+  Cost history, Price history e Report tengono un libro solo, scritto in litri.
+  Serve che il viaggio porti con sé **quale veicolo l'ha fatto**, e che le viste
+  leggano quello — il che vuol dire anche togliere il debito dei nomi
+  (`tripLiters` che contiene kWh). Vedi [06-archivio-bev.md](06-archivio-bev.md)
+- **Confronto ICE vs BEV sullo stesso percorso**: adesso che i due veicoli
+  esistono davvero, il numero che colpisce di più chi guarda è a un passo. Manca
+  solo che i viaggi sappiano dire da quale motorizzazione vengono
+- **Il PHEV**, terzo profilo in `PT` — ed è quello che forzerà la mano sui nomi,
+  perché brucia benzina **e** kWh nello stesso viaggio
 - **Il pieno visto dall'app**: oggi premere «R» aggiorna il cluster ma l'app non se
   ne accorge, se non nel prezzo del serbatoio. Un evento nel grafico («qui hai fatto
   il pieno a 1.78») legherebbe la scelta della stazione al costo dei km successivi
@@ -26,6 +35,14 @@
   [01-decisioni.md](01-decisioni.md)
 
 ## Fatto
+
+- ✅ **Il BEV, e uno switch fra due veicoli** (2026-09-06): `index.html` ha due
+  motorizzazioni e una barra di regia sopra la scena per passare dall'una
+  all'altra («V»). Profili di powertrain in `PT`, `garage` che tiene i due mondi
+  separati, giri → kW con segno, serbatoio → carica, totem in €/kWh, tariffa di
+  casa regolabile — e in frenata **il costo del chilometro va sotto zero, in
+  verde**. L'app resta da adattare — [06-archivio-bev.md](06-archivio-bev.md),
+  [01-decisioni.md](01-decisioni.md)
 
 - ✅ **Trip management, e il costo di stare fermi accesi** (2026-09-05): la quinta
   vista decide **dove finisce un viaggio** — chiave, motore spento per N minuti,

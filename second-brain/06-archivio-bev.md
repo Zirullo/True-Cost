@@ -1,9 +1,10 @@
-# 06 · Archivio BEV
+# 06 · Il BEV
 
-Il pannello elettrico è stato rimosso dalla UI (vedi
-[01-decisioni.md](01-decisioni.md)), ma il modello resta valido e **vive in
-`OLD index.html`**. Questa nota serve a non doverlo ricostruire da zero quando lo
-riprenderemo.
+> Questa nota era un **archivio**: il pannello elettrico era stato tolto dalla UI
+> e le formule aspettavano in `OLD index.html`. Dal **2026-09-06 il BEV è vivo**
+> in `index.html`, come profilo di powertrain accanto all'ICE
+> ([01-decisioni.md](01-decisioni.md)). Le formule qui sotto sono quelle che
+> girano davvero, con le differenze dichiarate in fondo.
 
 ## Il concetto BEV
 
@@ -19,46 +20,80 @@ Il prezzo della colonnina fast più vicina resta visibile come confronto: rende
 tangibile quanto costa ricaricare fuori casa (nel vecchio simulatore, 0.59 €/kWh
 contro 0.25 domestici → +136%).
 
-## Formule conservate
+## Le formule che girano
 
-**In trazione** (potenza positiva), calibrata su Jeep Avenger BEV 54 kWh:
+**In trazione**, calibrata su Jeep Avenger BEV 54 kWh — questa è arrivata intatta
+dall'archivio ed è `PT.bev.per100`:
 
 ```js
 kWh100 = 0.00055·v² + 0.030·v + 13.0        // kWh / 100 km
-kwhKm  = (kWh100 / 100) × fattoreRegen
-eurKm  = kwhKm × tariffaCasa
 ```
 
-Fattore regen sul consumo in marcia: `off 1.00 · low 0.92 · high 0.82`.
+A 128 km/h fa 25.9 kWh/100 km: a tariffa di casa sono **0.065 €/km**, contro i
+**0.153 €/km** che l'ICE segna alla stessa velocità. È quello il confronto.
 
-**In rigenerazione** (potenza negativa):
+**In rigenerazione** — e qui l'archivio è stato superato, vedi in fondo:
 
 ```js
-efficienza = { off: 0, low: 0.55, high: 0.72 }[modoRegen]
-kwhKm = -(|kW| × efficienza / max(10, v)) × 0.5      // negativo
-eurKm = kwhKm × tariffaCasa                          // negativo
+recuperato = min( ½·m·(v₀² − v²) · η ,  P_max · dt )   // m 1600 kg, η 0.65, P_max 45 kW
+stepU      = consumo_in_trazione − recuperato       // può essere negativo
+eurKm      = (stepU / stepKm) × prezzo_della_carica  // negativo → verde
 ```
 
-Velocità: in trazione `clamp(|kW| × 1.12 + 30, 10, 160)`; in rigenerazione decelera
-di 0.8 km/h per step (× Time Warp).
+**Fermo e pronto**: `PT.bev.idleRate = 0.4` kW di ausiliari. Non zero — un
+elettrico acceso e fermo consuma — ma un ordine di grandezza sotto i 0.7 L/h
+dell'ICE, e Trips lo dice in euro.
 
-**Stato di carica**: batteria 54 kWh, partenza 78%, `ΔSoC = kWh consumati / 54 × 10`
-(risale in rigenerazione).
+**Stato di carica**: batteria 54 kWh, partenza 42.1 kWh (78%). Risale in
+rigenerazione, perché `stepU` negativo rimette dentro invece di togliere.
 
-## Se lo reintroduciamo nel nuovo design
+## Com'è stato reintrodotto
 
-Il layout della foto si mappa quasi 1:1:
+Il layout della foto si mappa quasi 1:1, e così è stato fatto — **stesse caselle,
+stesso quadrante, etichette diverse**:
 
 | Elemento ICE | Equivalente BEV |
 |---|---|
-| Quadrante giri | potenza kW (con zona negativa = regen) |
+| Giri motore (`rpmTxt`) | potenza kW, **con segno**: negativa in rigenerazione |
+| Marcia (`gearTxt`) | `D` — e `P` a vettura non pronta |
 | CONSUMED · litri | kWh consumati |
-| Last Refuel Price | tariffa domestica €/kWh |
-| Local Price | colonnina fast più vicina |
-| Fuel Level E→F | stato di carica % |
-| km/L | kWh/100 km |
+| Last Refuel Price | Last Charge Price, €/kWh |
+| Local Price | il totem della colonnina, 0.50–0.86 €/kWh |
+| Fuel Level E→F | Charge 0→100 |
+| L / 100 km | kWh / 100 km |
 
-Il numero grande €/km resta identico — e diventa **verde quando è negativo**.
+Il tachimetro **non cambia**: i km/h sono km/h. Il numero grande €/km resta lo
+stesso ed è **verde quando è negativo**.
 
-Da decidere prima di rifarlo: switcher tra le due viste, oppure due pagine separate.
-Vedi [08-domande-aperte.md](08-domande-aperte.md).
+## Quello che è cambiato rispetto all'archivio
+
+**La rigenerazione non è più un fattore, è fisica.** L'archivio la modellava con
+tre efficienze (`off / low / high`) scelte a mano e un fattore moltiplicativo sul
+consumo in marcia. Si è scelto invece il **freno automatico**
+([08-domande-aperte.md](08-domande-aperte.md)): nessun selettore da spiegare, e
+l'energia che torna è quella cinetica davvero persa nel passo,
+
+```js
+recuperato = min( ½·m·(v₀² − v²) · η ,  P_max·dt )     // m 1600 kg, η 0.65, P_max 45 kW
+```
+
+Il tetto dei 45 kW è quello che rende la cosa onesta: una frenata forte chiede
+molta più potenza di quanta il motore ne assorba, e il resto se lo prendono i
+freni ad attrito. Non si ripaga tutto, e non deve.
+
+**Il prezzo di partenza è la tariffa di casa.** La carica in batteria viene dal
+muro, a `state.homeTariff` (0.25 €/kWh, regolabile sulla barra di regia). È il
+contrasto che fa la demo: ogni cartellone lungo la strada ne chiede almeno il
+doppio. Attaccarsi a una colonnina riscrive quel prezzo — e da quel momento
+`chargedOut` impedisce allo slider di riscriverlo di nuovo, perché quei kWh li
+hai già pagati a quel prezzo lì.
+
+**Ricarica solo alla colonnina.** Niente gesto «attacca a casa»: si carica dove ci
+si ferma, come si fa il pieno, con lo stesso tasto «R».
+
+## Quello che ancora non segue il veicolo
+
+L'app sul display centrale tiene **un libro solo**, in litri: Cost history,
+Price history e Report parlano ancora di carburante anche sotto il profilo BEV.
+Seguono il veicolo solo le celle vive del viaggio in corso e il costo del fermo
+in Trips. È il prossimo passo — [07-roadmap.md](07-roadmap.md).
