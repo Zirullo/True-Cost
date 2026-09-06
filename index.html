@@ -21,7 +21,11 @@
      this variable, so changing it here moves everything together. */
   --rise:150;
   --stageh:791;          /* = 641 + rise; recomputed from --rise at boot */
-  --deckh:66px;
+  /* the control deck is GONE from the page: no bar, no signature, no
+     Info / Engine / Reset buttons. The variable stays at zero because the
+     padding-top below still subtracts it, and because putting a bar back
+     is then a matter of one number instead of an equation. */
+  --deckh:0px;
   /* the director's bar above the scene. It is NOT part of the car — no
      vehicle has a button that turns a petrol engine into a battery — so
      it lives outside the stage and looks like studio kit, not cockpit. */
@@ -815,7 +819,12 @@ body{
 #num-group text.on{fill:#eaf6ff}
 #num-group text.off{fill:#7f9ab2}
 
-/* ══════════ CONTROL DECK ══════════ */
+/* ══════════ CONTROL DECK — DORMANT ══════════
+   The deck is no longer in the page: #deck, #deck-foot, #signature and .btn
+   below style elements that nothing renders any more. They are kept, not
+   deleted, so that giving Reset trip or the Info card a button back is a
+   markup line and not a re-design. Only #hidden-controls is live: it holds
+   the speed slider, which outlived the bar that used to carry it. */
 #deck{
   width:100%;max-width:1720px;
   background:#080a0d;
@@ -824,8 +833,8 @@ body{
   border-radius:0 0 14px 14px;
   padding:26px 22px 10px;      /* the top padding clears the overhanging pedals */
 }
-/* the speed slider still exists — the pedals and the arrow keys write to it —
-   but it no longer costs the windshield any vertical room */
+/* LIVE. The speed slider is read and written by the pedals, the arrow keys
+   and the cluster; clipped to a pixel, it costs the windshield nothing. */
 #hidden-controls{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .deck-title{
   font-size:9px;letter-spacing:2.6px;text-transform:uppercase;
@@ -869,7 +878,6 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
   font-size:9px;letter-spacing:1.5px;text-transform:uppercase;
   color:rgba(120,140,160,.45);
 }
-#signature a{color:var(--blue);text-decoration:none}
 
 
 /* PEDALS
@@ -1641,26 +1649,26 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
 </div><!-- /#shell -->
 
 <!-- ═══════════════════════════════════════════════════════════
-     CONTROL DECK
+     THE SPEED SLIDER, WITHOUT ITS DECK
+     ──────────────────────────────────────────────────────────
+     The control deck that used to close the page — dark bar, signature,
+     Info / Engine off / Reset trip — is gone. Nothing of the car was in
+     it: it was studio kit, and the cockpit reads better ending at its own
+     bottom edge.
+
+     The slider is not deck furniture and stays: the pedals, the arrow keys
+     and the cluster all read and write it. It was already clipped to one
+     pixel while the deck existed, so nothing about it changes here.
+
+     The CODE behind the three buttons is left standing and inert — see
+     the note over the dormant deck rules in the stylesheet. Engine off is
+     the one that loses nothing, because "E" already does it; Reset trip
+     and the Info card keep their logic but have no door until one is
+     given back to them.
      ═══════════════════════════════════════════════════════════ -->
-<div id="deck">
-
-  <div id="hidden-controls">
-    <input type="range" id="rpmSlider" min="0" max="240" value="128" step="1">
-    <span id="rpmVal">128 km/h <em>· 2250 rpm</em></span>
-  </div>
-
-  <div id="deck-foot">
-    <div id="signature">
-      Star*Up 2026 &nbsp;·&nbsp; True Cost Project &nbsp;·&nbsp; Stellantis &nbsp;·&nbsp;
-      <a href="https://forms.office.com/e/jJ7Sgw7WkD" target="_blank" rel="noopener">✍ Give feedback</a>
-    </div>
-    <div style="display:flex;gap:10px">
-      <button class="btn" id="helpBtn">? Info</button>
-      <button class="btn" id="engineBtn">&#9679; Engine off</button>
-      <button class="btn" id="resetBtn">↺ Reset trip</button>
-    </div>
-  </div>
+<div id="hidden-controls">
+  <input type="range" id="rpmSlider" min="0" max="240" value="128" step="1">
+  <span id="rpmVal">128 km/h <em>· 2250 rpm</em></span>
 </div>
 
 <!-- ═══════════════ HELP ═══════════════ -->
@@ -2081,7 +2089,11 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
      thing. RESET has to move both, or from that moment on the Trips pane
      would go on counting a trip the cluster says has just begun. */
   function hardReset() { resetTrip(); app.newTrip(); }
-  $('resetBtn').addEventListener('click', hardReset);
+  /* the Reset trip button went with the deck. hardReset() is deliberately
+     left standing: give it a button or a key and the feature is back, with
+     nothing to rewrite. Same story for the Info card, further down. */
+  const resetBtn = $('resetBtn');
+  if (resetBtn) resetBtn.addEventListener('click', hardReset);
 
   /* ── the engine ─────────────────────────────────────────
      There was no key in this cockpit until Trip Management asked for one:
@@ -2090,14 +2102,18 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
      and the revs fall to zero — no pedal and no slider can ask for speed.
      What it does NOT do is stop the clock: a trip stays open until the
      rule on the Trips pane says otherwise, which is the whole point. */
+  /* This one loses nothing to the deck going away: "E" was always the
+     other way in, and it is now the only one. The button is optional. */
   const engineBtn = $('engineBtn');
   function setEngine(on) {
     state.engineOn = on;
     if (!on) { state.targetSpeed = 0; rpmSlider.value = 0; }
+    if (!engineBtn) return;
     engineBtn.classList.toggle('off', !on);
     engineBtn.innerHTML = on ? car().keyOn : car().keyOff;
   }
-  engineBtn.addEventListener('click', () => { setEngine(!state.engineOn); engineBtn.blur(); });
+  if (engineBtn) engineBtn.addEventListener('click',
+    () => { setEngine(!state.engineOn); engineBtn.blur(); });
   window.addEventListener('keydown', e => {
     if (e.key !== 'e' && e.key !== 'E') return;
     if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
@@ -2392,7 +2408,10 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
   const overlay = $('help-overlay');
   const open  = () => overlay.classList.add('open');
   const close = () => overlay.classList.remove('open');
-  $('helpBtn').addEventListener('click', open);
+  /* the "? Info" button went with the deck; open() and the whole card are
+     kept, so a key or a button hands the explanation straight back */
+  const helpBtn = $('helpBtn');
+  if (helpBtn) helpBtn.addEventListener('click', open);
   $('help-close').addEventListener('click', close);
   $('help-cta').addEventListener('click', close);
   overlay.addEventListener('click', e => { if (e.target === overlay) close(); });

@@ -5,6 +5,46 @@ Ordine cronologico inverso (la più recente in alto). Ogni voce: **cosa**, **per
 
 ---
 
+## 2026-09-07 · La barra in fondo se ne va
+
+Via il **control deck**: la striscia scura sotto la scena, con la firma
+*Star\*Up 2026 · True Cost Project · Stellantis*, il link al form di feedback e
+i tre bottoni **? Info · Engine off · Reset trip**.
+
+**Perché.** Non c'era niente dell'automobile là dentro. Era attrezzatura di
+studio appoggiata sotto il cofano, e il cockpit finisce meglio sul proprio
+bordo che dentro una cornice di comandi. Stesso ragionamento che il 2026-09-06
+ha spostato la tariffa di casa dentro il pannello *Chargers*: **togliere dalla
+regia quello che non è regia**.
+
+**Lo slider sopravvive al deck che lo conteneva.** Non era arredamento: pedali,
+frecce e cluster lo leggono e lo scrivono. Era già ritagliato a un pixel, quindi
+è uscito dal deck e sta nel DOM da solo, identico.
+
+**Il codice resta in piedi, spento.** `hardReset()`, `open()` della card Info e
+tutto il markup di `#help-overlay` sono intatti; le tre righe di cablaggio ora
+cercano il bottone e, se non lo trovano, tirano dritto. Anche le regole CSS
+`#deck`, `#deck-foot`, `#signature` e `.btn` sono rimaste, sotto un'intestazione
+che le dichiara dormienti. È una scelta esplicita di Roberto contro la
+cancellazione completa: rimettere un bottone deve costare una riga di markup,
+non un ridisegno.
+
+**Cosa si perde e cosa no.** *Engine off* non perde niente: **E** faceva già la
+stessa cosa ed è ora l'unica porta — per questo `setEngine()` esce prima di
+toccare l'etichetta quando il bottone non c'è. *Reset trip* e la card *Info*
+invece restano **senza porta**: il viaggio si chiude ancora da *Split here* /
+*End trip* nel pannello Trips, che passano dallo stesso `resetTrip()`, ma la
+spiegazione del progetto non è più raggiungibile da nessuna parte finché non le
+si dà un tasto.
+
+**Cosa comporta**: `--deckh` passa a **0px** — il `padding-top` che centra la
+pagina la sottrae ancora, e lasciarla a 66 avrebbe tenuto un vuoto al posto
+della barra. I pedali non si muovono: sono ancorati a `#shell`, non al deck.
+Verificato: altezza del documento 819 px contro 819 di viewport utile, nessuna
+striscia vuota e nessuna barra di scorrimento.
+
+---
+
 ## 2026-09-07 · Un cartello, due prezzi
 
 Il cartellone delle stazioni mostrava **un** prezzo: quello del veicolo sotto di

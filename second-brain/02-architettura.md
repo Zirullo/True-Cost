@@ -139,8 +139,8 @@ Nessun ridisegno completo: l'SVG resta lo stesso, cambiano solo testi e classi.
 | `#dashext` | l'SVG della plancia disegnata: cruscotto, trim, bocchetta, carbonio |
 | `#stack` `#bezel` `#glass` | il gruppo display centrale (la fila clima `#hvac` non c'è più) |
 | `#app` | l'app True Cost sul display: `.ap-tab`, `#pane-history`, `#pane-map`, `#ap-canvas` |
-| `#deck` `#history` | comandi e storico viaggi, HTML sotto la scena |
-| `#pedals` | i due pedali a cavallo fra scena e deck (`#pedal-gas`, `#pedal-brake`) |
+| `#hidden-controls` | lo slider della velocità, ritagliato a un pixel: lo scrivono pedali, frecce e cluster. È tutto ciò che resta del deck |
+| `#pedals` | i due pedali, ancorati a `#shell` — non al deck, che non c'è più (`#pedal-gas`, `#pedal-brake`) |
 | `#pedal-hint` | la scritta che invita a tenere premuto, sparisce al primo uso |
 
 ## Comandi (fuori dalla scena)
@@ -152,8 +152,12 @@ Nessun ridisegno completo: l'SVG resta lo stesso, cambiano solo testi e classi.
   tastiera: il divario non si chiude mai, quindi la vettura tira per tutto il
   tempo. **Al rilascio la velocità richiesta viene agganciata a quella raggiunta**,
   quindi non si tocca nulla e si mantiene l'andatura. Lo slider Speed segue.
-- **Reset trip** → chiude il viaggio, lo scrive nello storico, azzera gli accumulatori
-  (stesso effetto del RESET dentro il cluster)
+- **Reset trip** → chiude il viaggio, lo scrive nello storico, azzera gli accumulatori.
+  Dal 2026-09-07 **non ha più un bottone**: `hardReset()` è lì, il cablaggio lo cerca
+  e non lo trova. La porta rimasta è nel pannello **Trips** sul display — *Split here*
+  e *End trip*, che passano da `closeTrip()` e chiamano lo stesso `resetTrip()`
+- **Tasti** → `E` motore, `V` veicolo, `R` rifornimento, `U` l'UFO. `E` è l'unico modo
+  di spegnere il motore da quando la barra in fondo è sparita
 
 ## Fedeltà: come sono state ricavate le coordinate
 
