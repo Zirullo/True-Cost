@@ -5,6 +5,63 @@ Ordine cronologico inverso (la più recente in alto). Ogni voce: **cosa**, **per
 
 ---
 
+## 2026-09-06 · Lo stesso mese, guidato due volte
+
+Il log costi sotto il BEV era ancora scritto in litri. Adesso **ogni viaggio
+sa da quale vettura è stato fatto** (`t.veh`), e le viste mostrano solo la
+metà che le riguarda — righe dell'altro veicolo nascoste, non rimosse, come
+già fa la pump map con quello che è fuori raggio.
+
+**I diciotto viaggi hanno un gemello elettrico**, sulle stesse identiche
+tratte, gli stessi km, gli stessi minuti, la stessa divisione business /
+privato. Il consumo però **non è scritto**: esce da `PT.bev.per100` applicata
+alla velocità media di quel viaggio, cioè dalla stessa curva che muove l'auto
+viva. Ed è per questo che la colonna elettrica **si rovescia**: in autostrada
+il termico è il viaggio economico e la batteria quello caro, in città il
+contrario. Non è stato arrangiato, cade fuori dalla fisica — ed è la cosa più
+interessante che il confronto abbia da dire.
+
+Il totale, sullo stesso mese e sugli stessi **1194 km**: **€ 151.61 a benzina
+contro € 131.84 in elettrico**. Meno di quanto la retorica dell'elettrico
+lascerebbe pensare, e il motivo si legge nel pannello: quei kWh sono comprati
+alle colonnine a 0.60, non al muro di casa a 0.25.
+
+**La vista Prices sotto la batteria è una stima, e lo dice.** Non esiste un
+MIMIT della ricarica: nessuna serie aperta di quanto costava un kWh pubblico
+in un giorno di due anni fa. Invece di inventarne una, quella elettrica è
+**derivata** da quella dei carburanti, che è reale — stessa forma mensile,
+smorzata al 55 % dell'oscillazione relativa e ricentrata sulla base elettrica.
+Lo smorzamento è la parte onesta: il prezzo alla pompa segue il greggio quasi
+direttamente, una tariffa di ricarica è in gran parte rete e la seguirebbe
+molto meno. L'etichetta passa da `MARKET NOW` a **`EST. MARKET`**, e il piede
+dice «against the modelled charging market». Vale la regola delle note
+pubbliche: questa storia è **modellata, non misurata**, e serve al gesto — i
+tuoi rifornimenti contro il mercato del giorno — non a citare una cifra.
+
+**La velatura sul cockpit.** `--dashmask`, costruita dallo stesso array di
+punti che già ritaglia il parabrezza ma letta dall'altro lato, permette a una
+velatura di colore di coprire la plancia **e fermarsi al vetro**: tingere anche
+la strada direbbe che il mondo fuori cambia colore quando cambi
+motorizzazione, e non è vero. Modalità di fusione `color`, che prende la tinta
+e lascia stare la luminanza — la plancia resta illuminata, non ridipinta.
+Ambra al 17 % sotto il termico, azzurro al 36 % sotto la batteria: il freddo
+sta naturale su un interno scuro dove la stessa quantità di arancio urlerebbe.
+
+**Tre bug trovati dal probe, non dalla lettura**: il Report continuava a
+sommare i viaggi dell'altra vettura (`picked` non veniva ricalcolato allo
+switch); `MARKET NOW` stampava 1.86 sopra un grafico il cui asse va da 0.57 a
+0.60; e MERGE avrebbe unito un viaggio termico dentro l'ultimo elettrico,
+perché `TRIPS[0]` non vuol dire «l'ultimo dei nostri».
+
+**Una nota sul metodo, perché mi ha ingannato due volte.** Chrome headless
+compone certi sotto-alberi una volta sola: uno screenshot può mostrare la
+lista dei viaggi ferma ai valori di prima mentre il DOM ha già quelli nuovi
+(verificato: banner in pagina che legge i nodi vivi dice `0.136 / 19.43`, i
+pixel dicono `0.117 / 16.71`, a 9 secondi). **Il DOM è la prova, lo screenshot
+no.** L'unica volta che lo scarto era vero e non un artefatto — lo sfondo
+dello switch — lo ha detto `getComputedStyle`, non l'immagine.
+
+
 ## 2026-09-06 · Il ciano, la tariffa dove si decide, e la velocità che passa
 
 Quattro correzioni allo switch, tutte nella stessa direzione: **togliere dalla
@@ -81,7 +138,7 @@ viaggio è mai metà a benzina e metà elettrico.
 
 - **un debito dichiarato**: i campi si chiamano ancora `tripLiters`, `tankLiters`,
   `instantL100`, e sotto il profilo BEV contengono kWh. Rinominarli tocca il
-  modulo app (Cost history, Report, Trips); lo formerà il PHEV, che brucia
+  modulo app (Cost history, Report, Trips); lo forzerà il PHEV, che brucia
   entrambi e non può far finta che sia un solo contatore;
 - **l'app tiene ancora un libro solo**, scritto in litri: adattare le cinque
   viste alla batteria è il passo successivo, e per questo lo switch **apre un

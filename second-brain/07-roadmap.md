@@ -17,14 +17,9 @@
 
 ## Prossimo passo
 
-- **L'app in kWh**: il cockpit sa già di essere elettrico, il display centrale no.
-  Cost history, Price history e Report tengono un libro solo, scritto in litri.
-  Serve che il viaggio porti con sé **quale veicolo l'ha fatto**, e che le viste
-  leggano quello — il che vuol dire anche togliere il debito dei nomi
-  (`tripLiters` che contiene kWh). Vedi [06-archivio-bev.md](06-archivio-bev.md)
-- **Confronto ICE vs BEV sullo stesso percorso**: adesso che i due veicoli
-  esistono davvero, il numero che colpisce di più chi guarda è a un passo. Manca
-  solo che i viaggi sappiano dire da quale motorizzazione vengono
+- **Il debito dei nomi**: `tripLiters`, `tankLiters`, `instantL100`, `t.l100`
+  contengono kWh sotto il profilo elettrico. Va sciolto col PHEV, che brucia
+  entrambi — [06-archivio-bev.md](06-archivio-bev.md)
 - **Il PHEV**, terzo profilo in `PT` — ed è quello che forzerà la mano sui nomi,
   perché brucia benzina **e** kWh nello stesso viaggio
 - **Il pieno visto dall'app**: oggi premere «R» aggiorna il cluster ma l'app non se
@@ -35,6 +30,15 @@
   [01-decisioni.md](01-decisioni.md)
 
 ## Fatto
+
+- ✅ **Lo stesso mese, guidato due volte** (2026-09-06): ogni viaggio porta
+  `t.veh`, il log e il Report mostrano solo la metà della vettura in uso, e i
+  diciotto viaggi hanno un gemello elettrico sulle stesse tratte col consumo
+  derivato dalla curva viva. Sullo stesso mese e sugli stessi 1194 km:
+  **€ 151.61 contro € 131.84**, con l'ordine dei viaggi che si rovescia fra
+  autostrada e città. Con essi una serie storica dei prezzi elettrici
+  **derivata e dichiarata tale**, e una velatura di colore sul cockpit che si
+  ferma al vetro — [01-decisioni.md](01-decisioni.md)
 
 - ✅ **Il BEV, e uno switch fra due veicoli** (2026-09-06): `index.html` ha due
   motorizzazioni e una barra di regia sopra la scena per passare dall'una

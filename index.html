@@ -93,6 +93,36 @@ body{
   aspect-ratio:var(--scenew) / var(--stageh);
   overflow:hidden;
   background:#000;
+  /* #tint blends with what is under it; isolate keeps that blending inside
+     the stage instead of reaching the page behind it */
+  isolation:isolate;
+}
+
+/* ══════════ THE COLOUR OF THE CAR ══════════
+   Which vehicle you are sitting in should read from across the room,
+   before a single number does. `color` as the blend mode takes the hue
+   and leaves the luminance alone, so the dashboard keeps its own shape,
+   its highlights and its shadows — it is lit differently, not painted. */
+#tint{
+  position:absolute;inset:0;z-index:4;pointer-events:none;
+  /* `color` takes ALL the hue at full strength, which turns a grey dashboard
+     into brown plastic. Kept low, it reads as the light in the cabin having
+     changed rather than the trim having been replaced. */
+  mix-blend-mode:color;opacity:.17;
+  background:linear-gradient(168deg,#e0b478 0%,#c98a45 55%,#8a5a2a 100%);
+  -webkit-mask-image:var(--dashmask);
+          mask-image:var(--dashmask);
+  -webkit-mask-size:100% 100%;
+          mask-size:100% 100%;
+  -webkit-mask-repeat:no-repeat;
+          mask-repeat:no-repeat;
+}
+/* petrol runs warm, the battery runs cold */
+#stage.bev #tint{
+  /* the cold side takes a little more: a blue cast sits naturally on a dark
+     interior, where the same amount of orange would shout */
+  opacity:.36;
+  background:linear-gradient(168deg,#7fd6f5 0%,#2f9fce 55%,#134b70 100%);
 }
 
 /* the windshield view — the procedural road lives in here */
@@ -1384,7 +1414,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
               </div>
               <div class="pv-chart"><canvas id="ap-pcanvas"></canvas></div>
               <div class="pv-stats">
-                <div><b id="pv-now">1.85</b><i>MARKET NOW</i></div>
+                <div><b id="pv-now">1.85</b><i id="pv-now-l">MARKET NOW</i></div>
                 <div><b id="pv-min">1.70</b><i>PERIOD LOW</i></div>
                 <div><b id="pv-max">1.95</b><i>PERIOD HIGH</i></div>
                 <div><b id="pv-avg">1.79</b><i>WE PAID AVG</i></div>
@@ -1432,10 +1462,10 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
                   <div class="rp-grid">
                     <div><b id="rp-eur">0.00</b><i>TOTAL &euro;</i></div>
                     <div><b id="rp-km">0</b><i>KM</i></div>
-                    <div><b id="rp-lit">0.0</b><i>LITRES</i></div>
+                    <div><b id="rp-lit">0.0</b><i id="rp-lit-l">LITRES</i></div>
                     <div><b id="rp-epk">0.000</b><i>&euro; / KM</i></div>
-                    <div><b id="rp-l100">0.0</b><i>L / 100 KM</i></div>
-                    <div><b id="rp-paid">0.00</b><i>&euro;/L PAID</i></div>
+                    <div><b id="rp-l100">0.0</b><i id="rp-l100-l">L / 100 KM</i></div>
+                    <div><b id="rp-paid">0.00</b><i id="rp-paid-l">&euro;/L PAID</i></div>
                   </div>
                   <div class="rp-split">
                     <div class="hd"><span>BUSINESS / PRIVATE</span><span id="rp-splitpc">0%</span></div>
@@ -1576,6 +1606,15 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
   </div>
   <!-- ▲▲ ─────────────────────────────────────────────────── ▲▲ -->
 
+  <!-- ▼▼ THE COLOUR OF THE CAR.
+          A wash over the cockpit surfaces — the photographed dashboard and
+          the drawn one — carrying --dashmask so that it stops at the glass.
+          Late in the DOM but at z-index 4: above both dashboards, below the
+          cluster and the centre display, which keep their own colours
+          because instruments have to stay legible. ▼▼ -->
+  <div id="tint"></div>
+  <!-- ▲▲ ─────────────────────────────────────────────────── ▲▲ -->
+
   <!-- ▼▼ REFUEL PROMPT — shown inside the last 200 m before a station ▼▼ -->
   <div id="refuel-prompt" aria-live="polite">
     <span class="rp-ask">PRESS <b>&ldquo;R&rdquo;</b> to <span id="rp-verb">refuel</span></span>
@@ -1688,8 +1727,31 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
   const svg =
     "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1147 641' preserveAspectRatio='none'>" +
     "<path fill='%23ffffff' fill-rule='evenodd' d='M0,0 H1147 V641 H0 Z " + hole + "'/></svg>";
-  document.getElementById('stage').style
-    .setProperty('--wsmask', 'url("data:image/svg+xml;utf8,' + svg + '")');
+  const stage = document.getElementById('stage');
+  stage.style.setProperty('--wsmask', 'url("data:image/svg+xml;utf8,' + svg + '")');
+
+  /* ── and the same edge read the other way round ──────────────────
+     --dashmask is the DASHBOARD side of the glass, over the whole scene
+     rather than just the photo: everything below the line the array above
+     traces, plus the drawn dashboard out to --scenew, whose own edge the
+     stylesheet already states (y 108 at x 1147, 94 at the far side).
+
+     It exists so a colour wash can cover the cockpit and stop at the
+     glass. Tinting the road as well would say that the world outside
+     changes colour when you change powertrain, and it does not. */
+  const rise = parseFloat(getComputedStyle(document.documentElement)
+                 .getPropertyValue('--rise')) || 0;
+  const W = parseFloat(getComputedStyle(document.documentElement)
+                 .getPropertyValue('--scenew')) || 1720;
+  const H = 641 + rise;
+  const dash = 'M' + W + ',' + (94 + rise) +
+               ' L1147,' + (108 + rise) + ' ' +
+               edge.map(p => 'L' + p[0] + ',' + (p[1] + rise)).join(' ') +
+               ' L0,' + H + ' L' + W + ',' + H + ' Z';
+  const dsvg =
+    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 " + W + " " + H +
+    "' preserveAspectRatio='none'><path fill='%23ffffff' d='" + dash + "'/></svg>";
+  stage.style.setProperty('--dashmask', 'url("data:image/svg+xml;utf8,' + dsvg + '")');
 })();
 
 /* ══════════════════════════════════════════════════════════
@@ -1915,7 +1977,45 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       pumpOffset: pumpOffset,
       roadOffset: roadOffset,
       /* a pump price `n` days ago, from two stable draws */
-      pumpAgo: function (n, u, v) { return this.ago(n) + pumpOffset(u, v); }
+      pumpAgo: function (n, u, v) { return this.ago(n) + pumpOffset(u, v); },
+
+      /* ── THE ELECTRIC MARKET, AND IT IS AN ESTIMATE ────────────────
+         There is no MIMIT for charging: no open series of what a kWh at a
+         public point cost on a given day two years ago. Rather than invent
+         one out of nothing, this one is DERIVED from the fuel series that
+         is real — same monthly shape, damped to 55 % of its relative swing,
+         centred on today's electric base.
+
+         The damping is the honest part: pump prices track crude almost
+         directly, while a charging tariff is mostly network and grid cost
+         and moves less. Getting the SHAPE from a real series and stating
+         the assumption beats typing two years of plausible numbers.
+
+         Said plainly, because this is a public note and a live demo: the
+         electric history is modelled, not measured. What it is for is the
+         gesture - your own charges against the market of the day - not for
+         quoting a figure at anybody. */
+      ELEC_DAMP: 0.55,
+      elecAgo: function (n, eb) {
+        return (eb || 0.60) * (1 + (this.ago(n) / this.ago(0) - 1) * this.ELEC_DAMP);
+      },
+      /* the whole derived series, for the chart to draw — the trend, and the
+         noisy daily one, bent the same way so the two stay one picture */
+      elecArr: function (eb) {
+        ensure();
+        const today = base[DAYS - 1], b = eb || 0.60, d = this.ELEC_DAMP;
+        return base.map(v => b * (1 + (v / today - 1) * d));
+      },
+      elecSeriesArr: function (eb) {
+        ensure();
+        const today = base[DAYS - 1], b = eb || 0.60, d = this.ELEC_DAMP;
+        return series.map(v => b * (1 + (v / today - 1) * d));
+      },
+      /* a charging point's price `n` days ago: the market plus its own draw,
+         on the narrower band a kWh scatters over */
+      chargeAgo: function (n, u, v, eb) {
+        return this.elecAgo(n, eb) + pumpOffset(u, v) * 0.75;
+      }
     };
   })();
 
@@ -2094,8 +2194,12 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     el.lvlF.textContent      = P.hi;
     $('ap-chip').textContent   = P.chip;
     $('ap-tab-map').textContent = P.mapTab;
+    /* the electric history is modelled, not measured, and the panel says so
+       rather than letting a demo quote it as a published figure */
+    $('pv-now-l').textContent  = P.hasGears ? 'MARKET NOW' : 'EST. MARKET';
     $('mp-tariff').hidden      = P.hasGears;   // a tank has no home tariff
     $('cluster').classList.toggle('bev', !P.hasGears);
+    $('stage').classList.toggle('bev', !P.hasGears);
     $('nv-price-l').innerHTML  = P.priceUnit + ' THERE';
     $('rp-verb').textContent   = P.refuelVerb;
     $('rp-done-lbl').innerHTML = P.refuelDone;
@@ -4018,6 +4122,31 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     const MON = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
                  'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
     (function buildTrips() {
+      TRIPS.forEach(t => { t.veh = 'ice'; });
+
+      /* ── the same month, driven electric ──────────────────────────
+         A twin of every trip above: same route, same distance, same minutes,
+         same business/private split. What changes is what the car drank -
+         and it is NOT typed. The consumption comes out of the very curve the
+         live BEV uses, fed with that trip's own average speed.
+
+         Which is why the electric column runs the OTHER WAY from the petrol
+         one: a motorway run is the cheap trip on fuel and the dear one on a
+         battery, and an hour crawling through town is the reverse. That
+         inversion is real, it falls out of the physics rather than being
+         arranged, and it is the most interesting thing this comparison has
+         to say. Throw the switch on the same log and watch the order of the
+         month turn over. */
+      TRIPS.slice().forEach(t => {
+        const kmh = t.km / (t.min / 60);
+        TRIPS.push(Object.assign({}, t, {
+          veh: 'bev',
+          /* kWh / 100 km. The field is still called l100 - the same debt the
+             live state carries, and the PHEV will settle it for both. */
+          l100: PT.bev.per100(kmh)
+        }));
+      });
+
       TRIPS.forEach(t => {
         const d = new Date(); d.setDate(d.getDate() - t.back);
         t.date = ('0' + d.getDate()).slice(-2) + ' ' + MON[d.getMonth()];
@@ -4067,6 +4196,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
        moves the eighteen and leaves this one exactly as it was measured. */
     function registerTrip(t) {
       t.fixed = true;
+      t.veh = state.vehicle;          // a trip belongs to the car that drove it
       TRIPS.unshift(t);
       histRow(t, true);
       paintRows();
@@ -4083,7 +4213,9 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       tripsPricedOn = state.marketPrice;
       TRIPS.forEach(t => {
         if (t.fixed) return;          // metered, not derived — see registerTrip()
-        t.paid = PRICES.pumpAgo(t.back + t.fill, t.u, t.v);
+        t.paid = t.veh === 'bev'
+          ? PRICES.chargeAgo(t.back + t.fill, t.u, t.v, PT.bev.energyBase)
+          : PRICES.pumpAgo(t.back + t.fill, t.u, t.v);
         t.eur  = t.lit * t.paid;
         t.epk  = t.eur / t.km;
         t.bars = t.raw.map(v => v * t.epk);
@@ -4094,13 +4226,24 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     /* The rows themselves, redrawn whenever the log changes — and it changes
        for three different reasons now: a new market price, a trip filed at
        the top, or a merge that grew the one already there. */
+    /* the most recent trip this vehicle recorded — the log is one array with
+       two halves, and "the last one" has to mean the last one of OURS */
+    const lastOwn = () => TRIPS.find(t => t.veh === state.vehicle);
+
     function paintRows() {
-      /* the arrow compares a trip against the four together, so it can only
-         be decided once they all have a price */
-      const ref = TRIPS.reduce((a, t) => a + t.eur, 0) / TRIPS.reduce((a, t) => a + t.km, 0);
+      /* the log is one book with two halves, and only the half belonging to
+         the car under us is shown: rows for the other vehicle are hidden,
+         not removed, exactly as the pump map hides what is out of range.
+         The comparison arrow is against THIS vehicle's own month - measuring
+         an electric trip against a petrol average would say nothing. */
+      const mine = TRIPS.filter(t => t.veh === state.vehicle);
+      const km = mine.reduce((a, t) => a + t.km, 0);
+      const ref = km ? mine.reduce((a, t) => a + t.eur, 0) / km : 0;
       TRIPS.forEach((t, i) => {
-        const up = t.epk > ref;
         const row = rowsT[i];
+        row.hidden = t.veh !== state.vehicle;
+        if (row.hidden) return;
+        const up = t.epk > ref;
         row.classList.toggle('up', up);
         row.classList.toggle('dn', !up);
         row.innerHTML =
@@ -4148,12 +4291,18 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       const h = Math.floor(t.min / 60), m = t.min % 60;
       T.lab.innerHTML   = t.route + ' &middot; ' + t.date;
       T.total.textContent = t.eur.toFixed(2);
+      /* a past trip is read in the units of the car that DROVE it, which is
+         the one under us: the log only ever shows this vehicle's own half */
+      const e = t.veh === 'bev';
       T.sub.innerHTML   = t.km.toFixed(1) + ' km &middot; ' + t.lit.toFixed(2) +
-                          ' L &middot; ' + (h ? h + 'h ' + m + 'm' : m + ' min');
+                          (e ? ' kWh' : ' L') +
+                          ' &middot; ' + (h ? h + 'h ' + m + 'm' : m + ' min');
       T.c1.textContent = t.epk.toFixed(2);  T.l1.innerHTML = '&euro;/KM AVG';
-      T.c2.textContent = t.l100.toFixed(1); T.l2.innerHTML = 'L / 100 KM';
+      T.c2.textContent = t.l100.toFixed(1);
+      T.l2.innerHTML = (e ? 'KWH' : 'L') + ' / 100 KM';
       T.c3.textContent = Math.round(t.kmh); T.l3.innerHTML = 'AVG KM/H';
-      T.c4.textContent = t.paid.toFixed(2); T.l4.innerHTML = 'PAID &euro;/L';
+      T.c4.textContent = t.paid.toFixed(2);
+      T.l4.innerHTML = 'PAID &euro;/' + (e ? 'KWH' : 'L');
       T.ctitle.innerHTML = 'COST PER KM &middot; ' + t.date;
       T.ax0.textContent = 'start';
       T.ax1.textContent = t.km.toFixed(0) + ' km';
@@ -4734,13 +4883,21 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     /* the curves belong to PRICES now; what stays here is only OUR stops on
        them, and they are re-hung whenever the live market moves the history
        or a refuel changes the tank. */
-    let builtOn = -1;
+    let builtOn = '';
+    /* the sign a stop wore, in the market being read */
+    const stopBrand = s => car().hasGears ? s.bIce : s.bBev;
+    const seriesKey = () => state.vehicle + ':' + state.marketPrice + ':' + state.refuelPrice;
     function buildSeries() {
-      base = PRICES.baseArr(); series = PRICES.seriesArr();
-      builtOn = state.marketPrice + state.refuelPrice;
+      /* under the battery the chart reads the derived electric market — same
+         two years, same shape, damped and re-centred. It is an estimate, and
+         PRICES says so where it is built. */
+      const E = car().energyBase;
+      base   = E ? PRICES.elecArr(E)       : PRICES.baseArr();
+      series = E ? PRICES.elecSeriesArr(E) : PRICES.seriesArr();
+      builtOn = seriesKey();
       STOPS.forEach(s => {
         s.eur = s.d === DAYS - 9 ? state.refuelPrice
-                                 : base[s.d] + PRICES.pumpOffset(s.u, s.v);
+                                 : base[s.d] + PRICES.pumpOffset(s.u, s.v) * (E ? 0.75 : 1);
       });
     }
 
@@ -4752,7 +4909,13 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     const STOPS = [];
     (function () {
       for (let d = 6 + Math.floor(rnd() * 12); d < DAYS - 20; d += 20 + Math.floor(rnd() * 20)) {
-        STOPS.push({ d, b: BRANDS[Math.floor(rnd() * BRANDS.length)],
+        STOPS.push({ d,
+                     /* two signs per stop, drawn once: the same stop read as
+                        a fuel history or as a charging one. Picking at paint
+                        time keeps a stop in the same PLACE under both cars,
+                        which is what makes the two charts comparable. */
+                     bIce: BRANDS[Math.floor(rnd() * BRANDS.length)],
+                     bBev: PT.bev.brands[Math.floor(rnd() * PT.bev.brands.length)],
                      p: PLACES[Math.floor(rnd() * PLACES.length)],
                      /* Neither draw covers its whole range, and that is the
                         point of the app rather than a thumb on the scale:
@@ -4765,7 +4928,8 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
                         buys you, and the footer can say so. */
                      lit: 26 + rnd() * 17, u: rnd() * 0.8, v: rnd() * 0.85, eur: 0 });
       }
-      STOPS.push({ d: DAYS - 9, b: 'Eni', p: 'Via Emilia', lit: 41.2, u: 0, v: 0, eur: 0 });
+      STOPS.push({ d: DAYS - 9, bIce: 'Eni', bBev: 'Be Charge', p: 'Via Emilia',
+                   lit: 41.2, u: 0, v: 0, eur: 0 });
     })();
 
     const dayDate = d => new Date(Date.now() - (DAYS - 1 - d) * 86400000);
@@ -4801,7 +4965,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     let pHit = [];          /* where the stop dots landed, for the tap test */
     function drawPrice() {
       if (!pctx || !pcw) return;
-      if (builtOn !== state.marketPrice + state.refuelPrice) buildSeries();
+      if (builtOn !== seriesKey()) buildSeries();
       pctx.setTransform(pcv.width / pcw, 0, 0, pcv.height / pch, 0, 0);
       pctx.clearRect(0, 0, pcw, pch);
 
@@ -4884,7 +5048,10 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       /* the four numbers under the chart */
       const paid = stops.length ? stops.reduce((a, s) => a + s.eur, 0) / stops.length : 0;
       const mkt  = pts.reduce((a, p) => a + p.v, 0) / pts.length;
-      PV.now.textContent = state.marketPrice.toFixed(2);
+      /* the market the curve is drawn on, not the fuel one: under the
+         battery `state.marketPrice` is a litre price and would print 1.86
+         over a chart whose axis runs from 0.57 to 0.60 */
+      PV.now.textContent = (series[DAYS - 1]).toFixed(2);
       PV.min.textContent = Math.min.apply(null, pts.map(p => p.v)).toFixed(2);
       PV.max.textContent = Math.max.apply(null, pts.map(p => p.v)).toFixed(2);
       PV.avg.textContent = paid ? paid.toFixed(2) : '—';
@@ -4893,7 +5060,8 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         const dd = paid - mkt, cls = dd > 0 ? 'up' : 'dn';
         PV.foot.innerHTML = stops.length
           ? '<b>' + stops.length + ' stops</b> in this window &middot; we paid <span class="' + cls + '">' +
-            (dd > 0 ? '+' : '') + dd.toFixed(3) + ' &euro;/L</span> against the national average &middot; ' +
+            (dd > 0 ? '+' : '') + dd.toFixed(3) + ' ' + car().priceUnit + '</span> against the ' +
+            (car().hasGears ? 'national average' : 'modelled charging market') + ' &middot; ' +
             '<span style="color:#5f7a92">tap a dot</span>'
           : '<span style="color:#5f7a92">No stop in this window &mdash; widen the range</span>';
       }
@@ -4904,8 +5072,9 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       if (!s) { drawPrice(); return; }
       const dd = s.eur - base[s.d], cls = dd > 0 ? 'up' : 'dn';
       PV.foot.innerHTML =
-        '<b>' + fmtDay(s.d) + '</b> &middot; ' + s.b + ' · ' + s.p + ' &middot; ' +
-        s.lit.toFixed(1) + ' L &middot; <b>' + s.eur.toFixed(3) + ' &euro;/L</b> &middot; ' +
+        '<b>' + fmtDay(s.d) + '</b> &middot; ' + stopBrand(s) + ' · ' + s.p + ' &middot; ' +
+        s.lit.toFixed(1) + (car().hasGears ? ' L' : ' kWh') +
+        ' &middot; <b>' + s.eur.toFixed(3) + ' ' + car().priceUnit + '</b> &middot; ' +
         (s.lit * s.eur).toFixed(2) + ' &euro; &middot; <span class="' + cls + '">' +
         (dd > 0 ? '+' : '') + dd.toFixed(3) + '</span> vs market';
       drawPrice();
@@ -4989,7 +5158,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       if (top) { RP.list.insertBefore(r, RP.list.firstChild); rpRows.unshift(r); }
       else     { RP.list.appendChild(r); rpRows.push(r); }
       if (top) {
-        if (useF && useF !== 'none' && inWindow(t) && inUse(t)) picked.add(t);
+        if (useF && useF !== 'none' && inVeh(t) && inWindow(t) && inUse(t)) picked.add(t);
         paintReport();
       }
     }
@@ -4997,14 +5166,18 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
 
     /* is this trip inside the window the chips describe? period 0 is CUSTOM,
        which as a window means "the whole log" — the use chips have to have
-       something to filter even when no period is named. */
+       something to filter even when no period is named.
+       `inVeh` comes first in spirit: an expense claim is filed for a car, and
+       totalling petrol litres together with kWh would produce a figure that
+       means nothing in either unit. */
+    const inVeh    = t => t.veh === state.vehicle;
     const inWindow = t => !period || t.back <= period;
     const inUse    = t => useF === 'biz' ? t.biz : useF === 'prv' ? !t.biz : true;
 
     function applySel() {
       picked.clear();
       if (useF === 'none') return;                 /* DESELECT ALL: an empty claim */
-      TRIPS.forEach(t => { if (inWindow(t) && inUse(t)) picked.add(t); });
+      TRIPS.forEach(t => { if (inVeh(t) && inWindow(t) && inUse(t)) picked.add(t); });
     }
     applySel();
 
@@ -5044,7 +5217,9 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         done: o => 'Report delivered to <b>fleet.admin@company.it</b>' },
       csv: { name: 'CSV EXPORT',
         env: o => 'file <b>truecost-' + REPORT_ID.toLowerCase() + '.csv</b> &middot; ' + o.n +
-                  ' rows &middot; date, route, km, litres, &euro;/L, &euro;, use, cost centre',
+                  ' rows &middot; date, route, km, ' +
+                  (car().hasGears ? 'litres, &euro;/L' : 'kWh, &euro;/kWh') +
+                  ', &euro;, use, cost centre',
         steps: o => ['Flattening ' + o.n + ' trips',
                      'Writing 11 columns',
                      'Encoding UTF-8, semicolon separated',
@@ -5112,8 +5287,15 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         ? o.n + (o.n === 1 ? ' TRIP' : ' TRIPS') + ' · ' + o.range
         : 'NOTHING SELECTED';
 
+      const e = !car().hasGears;
+      $('rp-lit-l').textContent  = e ? 'KWH' : 'LITRES';
+      $('rp-l100-l').innerHTML   = (e ? 'KWH' : 'L') + ' / 100 KM';
+      $('rp-paid-l').innerHTML   = '&euro;/' + (e ? 'KWH' : 'L') + ' PAID';
+
       TRIPS.forEach((t, i) => {
         const r = rpRows[i], on = picked.has(t);
+        r.hidden = !inVeh(t);       // the other car's trips are not this claim
+        if (r.hidden) return;
         r.classList.toggle('on', on);
         r.classList.toggle('prv', !t.biz);
         r.q.d.textContent = t.date;
@@ -5507,7 +5689,10 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       bizBtns.forEach(b => b.classList.toggle('on', b.dataset.b === pendBiz));
       /* you can only take back a cut you made: the eighteen in the log were
          never ours to merge into */
-      TM.merge.disabled = !(TRIPS[0] && TRIPS[0].live);
+      /* MERGE joins onto the last trip THIS car recorded. TRIPS[0] would
+         have handed an electric trip the petrol one just closed. */
+      const last = lastOwn();
+      TM.merge.disabled = !(last && last.live);
       TM.note.innerHTML = TM.merge.disabled
         ? 'SAVING FILES IT AT THE TOP OF <b>COSTS</b> AND TICKS IT IN THE <b>REPORT</b>, ' +
           'PRICED ON THE FUEL IT ACTUALLY BURNED'
@@ -5549,7 +5734,8 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
        appearing beside it. */
     TM.merge.addEventListener('click', () => {
       if (!pend || TM.merge.disabled) return;
-      const p = TRIPS[0];
+      const p = lastOwn();
+      if (!p) return;
       p.km += pend.km; p.lit += pend.lit; p.eur += pend.eur; p.min += pend.min;
       p.idleSec += pend.idleSec; p.idleEur += pend.idleEur;
       p.kmh  = p.km / (p.min / 60);
@@ -5622,6 +5808,15 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     function rebrand() {
       syncRoad();
       sts.forEach(nameIt);
+      /* a trip opened in the other car cannot stay open in this one: its row
+         is about to be hidden, and the panel would go on describing it */
+      if (selTrip && selTrip.veh !== state.vehicle) openTrip(null);
+      priceTrips();       // the twins are priced on a different market
+      paintRows();
+      /* the claim was ticked against the other car's trips: re-tick it, or
+         the expense card goes on totalling litres under a battery */
+      applySel();
+      paintReport();
     }
 
     return { frame, show, newTrip, repaint: () => { rebrand(); show(view); } };
