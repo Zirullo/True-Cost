@@ -395,6 +395,10 @@ body{
         height:21px;font-size:11px;color:#c8d8e6;cursor:pointer;
         padding:0 4px;margin:0 -4px;border-radius:4px;
         border-top:1px solid rgba(120,170,210,.09)}
+/* beats the display above, which [hidden] alone does not — the same trap
+   .ap-pane and .st already carry. Without it the vehicle filter set the
+   attribute on every row of the other car and none of them went away. */
+.ch-row[hidden]{display:none}
 .ch-row:hover{background:rgba(255,255,255,.05)}
 /* the trip you are reading: the same blue the tabs use for "you are here" */
 .ch-row.sel{background:rgba(0,174,239,.16);border-top-color:transparent;
@@ -572,6 +576,7 @@ body{
          scrollbar-width:thin;scrollbar-color:rgba(120,170,210,.3) transparent}
 .rp-list::-webkit-scrollbar{width:3px}
 .rp-list::-webkit-scrollbar-thumb{background:rgba(120,170,210,.3);border-radius:3px}
+.rp-r[hidden]{display:none}
 .rp-r{display:grid;grid-template-columns:11px 30px 1fr 40px;gap:5px;align-items:center;
       height:21px;padding:0 4px;border-radius:4px;cursor:pointer;
       font-size:10px;color:#c8d8e6;border-top:1px solid rgba(120,170,210,.09)}
