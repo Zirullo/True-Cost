@@ -412,7 +412,8 @@ body{
 .mp-foot{flex:none;height:28px;margin-top:6px;display:flex;align-items:center;gap:7px;
   padding:0 9px;border-radius:7px;font-size:10.5px;color:#bff4d8;
   background:rgba(61,220,132,.10);border:1px solid rgba(61,220,132,.35);
-  white-space:nowrap;overflow:hidden}
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#ap-best{overflow:hidden;text-overflow:ellipsis;min-width:0}
 .mp-foot .dot{width:7px;height:7px;flex:none;border-radius:50%;background:var(--green);
               box-shadow:0 0 8px rgba(61,220,132,.9)}
 .mp-foot b{color:#fff;font-weight:600}
@@ -1206,7 +1207,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         <div id="app">
           <div class="ap-top">
             <div class="ap-brand">TRUE<span>COST</span></div>
-            <div class="ap-chip">GASOLINE</div>
+            <div class="ap-chip" id="ap-chip">GASOLINE</div>
             <div class="ap-sp"></div>
             <div class="ap-now"><span id="ap-eurkm">0.14</span><em>&euro;/KM</em></div>
             <div class="ap-clock" id="ap-clock">--:--</div>
@@ -1307,7 +1308,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
                   <div><b id="nv-eta">--:--</b><i>ARRIVAL</i></div>
                   <div><b id="nv-left">0.0</b><i>KM LEFT</i></div>
                   <div><b id="nv-min">0</b><i>MIN LEFT</i></div>
-                  <div><b id="nv-price">0.00</b><i>&euro;/L THERE</i></div>
+                  <div><b id="nv-price">0.00</b><i id="nv-price-l">&euro;/L THERE</i></div>
                 </div>
               </div>
             </div>
@@ -1701,6 +1702,8 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       priceDecimals: 2,
       keyOn: '&#9679; Engine off', keyOff: '&#9679; Engine on',
       refuelVerb: 'refuel', refuelDone: 'Tank full &mdash; refuelled at',
+      chip: 'GASOLINE',
+      brands: ['Eni', 'Q8', 'IP', 'Tamoil', 'Esso', 'Api', 'Repsol', 'Beyfin'],
       hasGears: true,
       /* L / 100 km, calibrated on the reference cluster */
       per100: v => 0.000282 * v * v - 0.0163 * v + 4.61,
@@ -1722,6 +1725,11 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       priceDecimals: 2,
       keyOn: '&#9679; Ready off', keyOff: '&#9679; Ready on',
       refuelVerb: 'charge', refuelDone: 'Battery full &mdash; charged at',
+      chip: 'ELECTRIC',
+      /* charging networks that actually operate in Italy, eight of them to
+         keep the same cycle as the fuel brands */
+      brands: ['Enel X Way', 'Ionity', 'Be Charge', 'Ewiva',
+               'A2A E-moving', 'Free To X', 'Atlante', 'Neogy'],
       hasGears: false,
       /* kWh / 100 km in traction, from 06-archivio-bev.md */
       per100: v => 0.00055 * v * v + 0.030 * v + 13.0,
@@ -1994,6 +2002,8 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     el.levelLbl.textContent  = P.levelLabel;
     el.lvlE.textContent      = P.lo;
     el.lvlF.textContent      = P.hi;
+    $('ap-chip').textContent   = P.chip;
+    $('nv-price-l').innerHTML  = P.priceUnit + ' THERE';
     $('rp-verb').textContent   = P.refuelVerb;
     $('rp-done-lbl').innerHTML = P.refuelDone;
 
@@ -2192,7 +2202,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
      read them: the totems along the road paint them, and the pump map lists
      them — a station passed on the verge and its row on the map have to say
      the same name, or they are not the same station. */
-  const BRANDS = ['Eni', 'Q8', 'IP', 'Tamoil', 'Esso', 'Api', 'Repsol', 'Beyfin'];
+  const BRANDS = PT.ice.brands;      // the fuel signs, and the only list past trips know
   const PLACES = ['Via Emilia', 'Tangenziale Ovest', 'Casello Nord', 'Corso Francia',
                   'SS9 km 12', 'Viale Europa', 'Zona Industriale', 'Raccordo Sud',
                   'Piazza Trento', 'Via Torino', 'Strada del Portone', 'Via Nizza',
@@ -2843,10 +2853,17 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
        "Eni · Via Torino" twice, ten kilometres apart. The place turns over
        every PLACES.length stations and the brand only then, so a repeat of
        the PAIR takes 8 x 14 = 112 stations — 224 km, far past the horizon. */
-    const stationName = i => ({
-      b: BRANDS[(i * 3 + Math.floor(i / PLACES.length)) % BRANDS.length],
-      p: PLACES[(i * 5) % PLACES.length]
-    });
+    const stationName = i => {
+      /* the LIVE signs follow whatever is under us: a battery does not pull
+         in at an Eni. Both lists are eight long on purpose, so the cycle the
+         comment above describes holds either way. The signs on PAST trips
+         keep reading BRANDS, because those trips were driven on petrol. */
+      const B = car().brands;
+      return {
+        b: B[(i * 3 + Math.floor(i / PLACES.length)) % B.length],
+        p: PLACES[(i * 5) % PLACES.length]
+      };
+    };
 
     /* the index of the next station ahead — where a walk up the road starts */
     const nextIndex = () => Math.floor(travel / ST_EVERY) + 1;
@@ -4244,7 +4261,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
           : (d / 1000).toFixed(1) + ' km · ' + dirOf(s);
         r.q.pr.textContent = p.toFixed(2);
         r.q.dl.textContent = rank === 0 ? 'BEST'
-          : (p - min) < 0.005 ? 'SAME' : '+' + (p - min).toFixed(2) + ' €/L';
+          : (p - min) < 0.005 ? 'SAME' : '+' + (p - min).toFixed(2) + ' ' + car().priceUnit;
       });
 
       /* the footer is the way into the navigator: it shows the best price
@@ -4254,14 +4271,16 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       if (sel) {
         T.best.innerHTML =
           '<b>' + sel.b + ' · ' + sel.p + '</b> &middot; ' + priceOf(sel).toFixed(2) +
-          ' &euro;/L &middot; ' + (distOf(sel) / 1000).toFixed(1) + ' km ' +
+          ' ' + car().priceUnit + ' &middot; ' + (distOf(sel) / 1000).toFixed(1) + ' km ' +
           (sel.road ? 'up this road' : dirOf(sel));
       } else if (order.length) {
         const b = order[0], save = (mean - priceOf(b)) * litres;
         T.best.innerHTML =
           '<b>' + b.b + ' · ' + b.p + '</b> &middot; ' + priceOf(b).toFixed(2) +
-          ' &euro;/L &middot; save <b>' + save.toFixed(2) + ' &euro;</b> on this tank' +
-          ' &middot; <span style="color:#8fa6ba">tap a station to navigate</span>';
+          ' ' + car().priceUnit + ' &middot; save <b>' + save.toFixed(2) + ' &euro;</b> on ' +
+          (car().hasGears ? 'this tank' : 'a charge') +
+          ' &middot; <span style="color:#8fa6ba">tap ' +
+          (car().hasGears ? 'a station ' : '') + 'to navigate</span>';
       } else {
         T.best.innerHTML = '<span style="color:#8fa6ba">Nothing in range &mdash; widen the search</span>';
       }
@@ -4550,7 +4569,8 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         NAV.dist.textContent = 'ARRIVED';
         NAV.unit.textContent = '';
         NAV.street.textContent = cur.st;
-        NAV.then.innerHTML = 'pull in and fill up &middot; ' + NAV.price.textContent + ' &euro;/L';
+        NAV.then.innerHTML = (car().hasGears ? 'pull in and fill up' : 'plug in and charge') +
+                             ' &middot; ' + NAV.price.textContent + ' ' + car().priceUnit;
       } else {
         const m = Math.max(0, cur.m);
         NAV.dist.textContent = m >= 1000 ? (m / 1000).toFixed(1) : Math.round(m / 10) * 10;
