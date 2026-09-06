@@ -45,6 +45,8 @@ leggibili appiccicati sopra, per ritrovare i punti che contano.
 | Tag | Commit | Cos'è |
 |---|---|---|
 | `v1.0` | `da8bc75` | Prima versione marcata: cockpit, strada procedurale, pedali che guidano, cartelloni, cavalcavia, stazioni, dirigibile e UFO |
+| `v2.0-ice` | `89c64f6` | La termica completa, e il punto a cui tornare: cockpit fedele alla foto, cinque viste dell'app, motore che si spegne, pieno alla stazione che stai superando |
+| `v3.0` | *(vedi tag)* | **Due veicoli sotto lo stesso cruscotto.** ICE e BEV con lo switch, cockpit ciano sotto la batteria, rigenerazione in verde, log costi e Report che sanno da quale vettura viene ogni viaggio, e i cartelloni delle stazioni che dicono litro e kWh insieme |
 
 Tre modi, dal più cauto al più invasivo:
 

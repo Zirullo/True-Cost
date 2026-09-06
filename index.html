@@ -3043,6 +3043,75 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     const ST_TOTEM = RAIL + 3.6;              // the sign, just past the guardrail
     const ST_X = RAIL + 6;                    // near edge of the forecourt
 
+    /* ── the two colours the board indexes its rows with ──────
+       Amber for the litre, cyan for the kWh. GREEN is deliberately not
+       here: on this project green means one thing only — energy coming
+       back, in regeneration — and a green fuel row would spend it. The
+       cyan is the cockpit's own (#cluster.bev), so the sign on the verge
+       and the instrument behind the wheel agree on what electricity is. */
+    const FUEL_C = '#F0A500', ELEC_C = '#5fdcff';
+
+    /* ── the two icons the board carries ──────────────────────
+       A pump and a battery, painted once at full size into offscreen
+       canvases and stamped with drawImage — the same reason the billboards
+       are: redrawing a nozzle and a bolt per frame would cost more and,
+       worse, would SHIMMER while the board scales. A bitmap being shrunk
+       keeps quiet.
+
+       The detail inside each one — the pump's display, the bolt — is CUT
+       out with destination-out rather than painted in the panel's navy. So
+       the icons stay right whatever colour the panel is, and the edge stays
+       clean when the whole thing is down to five pixels. */
+    const ICO = 128;
+    function rrect(g, x, y, w, h, r) {        // the shape both icons are made of
+      g.beginPath();
+      g.moveTo(x + r, y);
+      g.arcTo(x + w, y, x + w, y + h, r);
+      g.arcTo(x + w, y + h, x, y + h, r);
+      g.arcTo(x, y + h, x, y, r);
+      g.arcTo(x, y, x + w, y, r);
+      g.closePath();
+    }
+    function iconOf(col, draw) {
+      const oc = document.createElement('canvas');
+      oc.width = oc.height = ICO;
+      const g = oc.getContext('2d');
+      g.fillStyle = g.strokeStyle = col;
+      g.lineCap = 'round'; g.lineJoin = 'round';
+      draw(g);
+      return oc;
+    }
+
+    /* the dispenser: plinth, body, and the filler neck rising over its
+       shoulder. The neck is what makes it a PUMP and not a cabinet, so it
+       is stroked first and the body drawn over it — the joint disappears
+       instead of showing as a seam at fifteen pixels. */
+    const IC_PUMP = iconOf(FUEL_C, g => {
+      g.lineWidth = 18;                             // fat: at 18 px of board
+      g.beginPath();                                // the neck is 2.5 px, and a
+      g.moveTo(70, 28); g.lineTo(94, 28);           // hairline would just vanish
+      g.lineTo(94, 84);
+      g.stroke();
+      rrect(g, 10, 108, 76, 15, 5); g.fill();       // plinth
+      rrect(g, 18, 10, 60, 100, 11); g.fill();      // body
+      g.globalCompositeOperation = 'destination-out';
+      rrect(g, 28, 23, 40, 33, 5); g.fill();        // the display
+      rrect(g, 30, 71, 36, 10, 5); g.fill();        // the keypad slot
+    });
+
+    /* the battery: shell, terminal, and the bolt taken out of the middle.
+       Drawn wide and short on purpose — next to the tall pump the pair
+       reads as two different objects even when both are a smudge. */
+    const IC_BATT = iconOf(ELEC_C, g => {
+      rrect(g, 102, 46, 20, 36, 6); g.fill();       // the terminal
+      rrect(g, 4, 24, 100, 80, 15); g.fill();       // the shell
+      g.globalCompositeOperation = 'destination-out';
+      g.beginPath();                                 // the bolt, cut out
+      g.moveTo(62, 30); g.lineTo(34, 72); g.lineTo(50, 72);
+      g.lineTo(43, 100); g.lineTo(72, 56); g.lineTo(55, 56);
+      g.closePath(); g.fill();
+    });
+
     /* What the totems along THIS road ask. It is the live market average
        plus PRICES.roadOffset — the wide band, not the five-cent town one,
        so a row of totems at 130 km/h actually offers a choice. Anchoring it
@@ -3060,11 +3129,22 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
        The electric band runs from a slow AC post to an ultrafast one, about
        0.50 to 0.86 €/kWh. That spread is the argument: the driver charging
        at home pays 0.25, and every sign out here asks at least double. */
-    const stationPrice = i => {
-      const u = hash(i * 97 + 13), w = hash(i * 131 + 7), E = car().energyBase;
-      return E ? E + PRICES.roadOffset(u, w) * 0.75
-               : PRICES.ago(0) + PRICES.roadOffset(u, w);
+    /* The board carries BOTH now, so the two are split out and named. The
+       draws are the station's, so the pair belongs to that forecourt and
+       nothing shimmers as you drive up; stationPrice() is simply the one
+       the vehicle under us actually buys, which is what the cluster's
+       Local Price, the refuel key and the pump map keep asking for. Same
+       hashes, same numbers as before the board learned to say two. */
+    const stationDraw = i => [hash(i * 97 + 13), hash(i * 131 + 7)];
+    const fuelPriceAt = i => {
+      const d = stationDraw(i);
+      return PRICES.ago(0) + PRICES.roadOffset(d[0], d[1]);
     };
+    const elecPriceAt = i => {
+      const d = stationDraw(i);
+      return PT.bev.energyBase + PRICES.roadOffset(d[0], d[1]) * 0.75;
+    };
+    const stationPrice = i => car().energyBase ? elecPriceAt(i) : fuelPriceAt(i);
 
     /* and its sign. NOT hashed: walked, in steps that are coprime with the
        two lists, so no two stations in sight can end up carrying the same
@@ -3072,16 +3152,26 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
        "Eni · Via Torino" twice, ten kilometres apart. The place turns over
        every PLACES.length stations and the brand only then, so a repeat of
        the PAIR takes 8 x 14 = 112 stations — 224 km, far past the horizon. */
-    const stationName = i => {
-      /* the LIVE signs follow whatever is under us: a battery does not pull
-         in at an Eni. Both lists are eight long on purpose, so the cycle the
-         comment above describes holds either way. The signs on PAST trips
-         keep reading BRANDS, because those trips were driven on petrol. */
-      const B = car().brands;
+    /* Both lists are eight long on purpose, so ONE walk indexes both and a
+       service area can sign its pumps and its chargers at the same time —
+       an Eni forecourt with Ionity bays in it, which is what a board on the
+       A1 actually looks like. The place is the area's own name and belongs
+       to neither: it goes in the headline band. */
+    const stationSigns = i => {
+      const j = (i * 3 + Math.floor(i / PLACES.length)) % PT.ice.brands.length;
       return {
-        b: B[(i * 3 + Math.floor(i / PLACES.length)) % B.length],
+        fuel: PT.ice.brands[j],
+        elec: PT.bev.brands[j % PT.bev.brands.length],
         p: PLACES[(i * 5) % PLACES.length]
       };
+    };
+
+    /* the ONE sign the rest of the demo asks for. The LIVE pump map follows
+       whatever is under us — a battery does not pull in at an Eni — while
+       PAST trips keep reading BRANDS, because those were driven on petrol. */
+    const stationName = i => {
+      const s = stationSigns(i);
+      return { b: car().energyBase ? s.elec : s.fuel, p: s.p };
     };
 
     /* the index of the next station ahead — where a walk up the road starts */
@@ -3114,7 +3204,6 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       const z0 = idx * ST_EVERY - travel;
       if (z0 > Z_FAR || z0 < 4) return;       // nothing in sight, or already beside us
 
-      const price = stationPrice(idx);
       const zN = Math.max(4, z0 - 11), zF = z0 + 11;   // the plot runs 22 m along the road
       ctx.globalAlpha = Math.min(1, (Z_FAR - z0) / 120);
 
@@ -3139,45 +3228,87 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       pillar(ST_X + 10, z0, 1.9, 0.45, '#dfe4e7');
 
       /* ── the price board, the only thing that HAS to be readable ──
-         It used to be squashed down to 1.4-4.4 m because the glass was a
-         thin strip and anything taller left through the top of the frame at
-         exactly the moment it got close enough to read. With --rise rows of
-         sky above the photo that constraint is gone: 2.2 to 5.6 m is a real
-         totem, it reads bigger at every distance, and it stays in the frame
-         from ~250 m all the way down to ~21 m. */
+         It carries BOTH prices: the litre and the kWh, one row each, of
+         equal weight. The same forecourt sells both, the demo can be driven
+         in either car, and the comparison the two rows put side by side —
+         what a litre asks against what a kWh asks, on one sign, at 130 —
+         IS the project. Neither row is favoured: the board says exactly the
+         same thing under a petrol tank and under a battery, which is also
+         why nothing here reads state.vehicle.
+
+         Two rows cost height, so the panel grew from 2.2-5.6 to 2.0-6.3 m
+         and widened to 4.9 m. High things leave early — y = HZ + (CAMH-Y)
+         *F/z — so the price of that height is real: this one is out of the
+         top of the frame at z ~ 24 m instead of ~21. In exchange it is
+         12 px tall already at ~310 m instead of ~255. */
       const zt = Math.max(4, z0 - 6);
-      const BRD_LO = 2.2, BRD_HI = 5.6;
-      const half = 1.9, yTop = syOf(BRD_HI, zt), yBot = syOf(BRD_LO, zt);
+      const BRD_LO = 2.0, BRD_HI = 6.3;
+      const half = 2.45, yTop = syOf(BRD_HI, zt), yBot = syOf(BRD_LO, zt);
       const xc = sxOf(ST_TOTEM, zt), w = 2 * half * F / zt, h = yBot - yTop;
-      pillar(ST_TOTEM - 1.2, zt, BRD_LO + 0.1, 0.16, '#b9c1c6');
-      pillar(ST_TOTEM + 1.2, zt, BRD_LO + 0.1, 0.16, '#b9c1c6');
+      const L = xc - w / 2;
+      pillar(ST_TOTEM - 1.5, zt, BRD_LO + 0.1, 0.18, '#b9c1c6');
+      pillar(ST_TOTEM + 1.5, zt, BRD_LO + 0.1, 0.18, '#b9c1c6');
       quad([[ST_TOTEM - half, BRD_LO, zt], [ST_TOTEM + half, BRD_LO, zt],
             [ST_TOTEM + half, BRD_HI, zt], [ST_TOTEM - half, BRD_HI, zt]], '#0e2f4f');
       ctx.strokeStyle = '#dfe8ee';
       ctx.lineWidth = Math.max(0.4, 0.05 * F / zt);
-      ctx.strokeRect(xc - w / 2, yTop, w, h);
-      ctx.fillStyle = '#3ddc84';                       // brand band across the top
-      ctx.fillRect(xc - w / 2, yTop, w, h * 0.22);
+      ctx.strokeRect(L, yTop, w, h);
 
-      if (h > 26) {                     // and the brand on it, once it can be read
-        ctx.fillStyle = '#06301b';
+      /* the headline band carries the SERVICE AREA, not a brand — the two
+         brands moved down onto their own rows. A light band with dark type
+         is also the one thing on the panel that is still a legible SHAPE at
+         300 m, which is what tells you a station is coming. */
+      const sg = stationSigns(idx), hb = h * 0.155;
+      ctx.fillStyle = '#e6edf2';
+      ctx.fillRect(L, yTop, w, hb);
+      if (hb > 4.5) {
+        ctx.fillStyle = '#0e2f4f';
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.font = '700 ' + (h * 0.15).toFixed(1) + 'px "Segoe UI",Arial,sans-serif';
-        ctx.fillText(stationName(idx).b.toUpperCase(), xc, yTop + h * 0.115);
-        ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+        ctx.font = '700 ' + (hb * 0.60).toFixed(1) + 'px "Segoe UI",Arial,sans-serif';
+        ctx.fillText(sg.p.toUpperCase(), xc, yTop + hb * 0.54, w * 0.88);
       }
 
-      if (h > 12) {                                     // close enough to read the price
-        ctx.fillStyle = '#ffffff';
-        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.font = '700 ' + (h * 0.42).toFixed(1) + 'px "Segoe UI",Arial,sans-serif';
-        ctx.fillText(price.toFixed(2), xc, yTop + h * 0.58);
-        if (h > 22) {
-          ctx.font = '600 ' + (h * 0.13).toFixed(1) + 'px "Segoe UI",Arial,sans-serif';
-          ctx.fillText('EURO / L', xc, yTop + h * 0.86);
+      /* Each row: icon on the left, operator and unit on the top line, the
+         money big on the bottom one. WHITE for the price and the row's own
+         colour for everything that says which money it is — at speed the
+         two big numbers are the message, and the colour is only the index
+         into them. The unit sits opposite the brand rather than beside the
+         price: on one line with it, "€/kWh" and a four-figure price collide
+         on this panel's width at every distance worth reading. */
+      const rh = (h - hb) * 0.5;
+      const RW = [[IC_PUMP, FUEL_C, sg.fuel, fuelPriceAt(idx), '€/L'],
+                  [IC_BATT, ELEC_C, sg.elec, elecPriceAt(idx), '€/kWh']];
+      for (let r = 0; r < 2; r++) {
+        const ry = yTop + hb + r * rh, R = RW[r];
+        if (r) {                                       // the rule between them
+          ctx.fillStyle = 'rgba(223,232,238,.40)';
+          ctx.fillRect(L + w * 0.05, ry, w * 0.90, Math.max(0.4, h * 0.007));
         }
-        ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+        const is = rh * 0.60;                          // the icon, square, on the left
+        ctx.drawImage(R[0], L + w * 0.045, ry + (rh - is) / 2, is, is);
+
+        const tx = L + w * 0.085 + is, rx = L + w * 0.95;
+        ctx.textBaseline = 'alphabetic';
+        if (rh > 12) {                                 // top line, once it is type
+          ctx.fillStyle = R[1];
+          ctx.font = '700 ' + (rh * 0.25).toFixed(1) + 'px "Segoe UI",Arial,sans-serif';
+          /* the operator is squeezed into whatever the UNIT leaves, measured
+             and not guessed: the names run from "Q8" to "A2A E-moving", and a
+             fixed reserve puts EWIVA into the W of kWh */
+          ctx.textAlign = 'right';
+          ctx.fillText(R[4], rx, ry + rh * 0.36);
+          ctx.textAlign = 'left';
+          ctx.fillText(R[2].toUpperCase(), tx, ry + rh * 0.36,
+                       Math.max(1, rx - tx - ctx.measureText(R[4]).width - w * 0.05));
+        }
+        if (rh > 4) {                                  // the money, as early as it shows
+          ctx.fillStyle = '#ffffff';
+          ctx.textAlign = 'left';
+          ctx.font = '700 ' + (rh * 0.58).toFixed(1) + 'px "Segoe UI",Arial,sans-serif';
+          ctx.fillText(R[3].toFixed(2), tx, ry + rh * 0.93, rx - tx);
+        }
       }
+      ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
       ctx.globalAlpha = 1;
     }
 

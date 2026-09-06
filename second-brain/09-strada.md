@@ -176,25 +176,47 @@ distanza che scala (metri sotto il chilometro).
 | Costante | Valore | Cos'è |
 |---|---|---|
 | `ST_EVERY` | **2000 m** | passo fra le stazioni |
-| `ST_SPREAD` | 0.15 € | scarto massimo attorno a `state.marketPrice` |
 | `ST_TOTEM` | `RAIL + 3.6` | posizione laterale del cartellone |
 | `ST_X` | `RAIL + 6` | bordo vicino del piazzale |
+| `FUEL_C` · `ELEC_C` | `#F0A500` · `#5fdcff` | ambra il litro, ciano il kWh |
 
-**Il prezzo è funzione dell'indice della stazione**, non del tempo:
-`marketPrice + (hash(i·97+13)·2−1)·0.15`. Deciso una volta, non tremola mentre ti
-avvicini, e cambia a ogni stazione. `marketPrice` è la media live MIMIT (1.85 di
-fallback) — [05-dati-esterni.md](05-dati-esterni.md).
+**I prezzi sono funzione dell'indice della stazione**, non del tempo. Un solo
+tiro di dadi (`stationDraw(i)` → due `hash()`) alimenta entrambi, quindi la
+coppia appartiene a **quel** piazzale, è decisa una volta e non tremola mentre ti
+avvicini:
 
-### Perché il cartellone è basso
+```
+fuelPriceAt(i) = PRICES.ago(0)        + roadOffset(u, v)
+elecPriceAt(i) = PT.bev.energyBase    + roadOffset(u, v) · 0.75
+stationPrice(i) = quello che il veicolo sotto di noi compra davvero
+```
+
+`roadOffset` è la banda larga della strada — aree di servizio in alto,
+whitelabel in fondo alla rampa — ancorata alla stessa media live MIMIT di tutto
+il resto: [05-dati-esterni.md](05-dati-esterni.md), [04-modello-costi.md](04-modello-costi.md).
+
+**`stationPrice()` non è cambiato**, ed è quello che continuano a chiedere il
+*Local Price* del cluster, il tasto R e la pump map. Le due funzioni nuove le
+usa **solo** il cartellone.
+
+Stessa storia per i marchi: `stationSigns(i)` restituisce `{ fuel, elec, p }` —
+un solo passo indicizza tutte e due le liste, che sono lunghe otto apposta,
+quindi un'area di servizio può firmare **le pompe e le colonnine insieme** (un
+piazzale Eni con dentro le baie Ionity, che è come sono fatti i cartelli sull'A1).
+`stationName(i)` resta la funzione che dà **un** marchio solo, quello del veicolo
+corrente, ed è quella che la pump map continua a leggere.
+
+### Quanto può essere alto il cartellone
 
 Prima versione: totem da 9 m, come quelli veri. Sbagliato — il parabrezza mostra
 una **striscia** che parte dall'orizzonte, quindi un oggetto alto `Y` entra nel
 fotogramma solo se `z > 23.7·(Y − 1.2)`: il totem usciva dal bordo alto proprio
 mentre si avvicinava abbastanza da poterlo leggere.
 
-Il cartellone attuale sta fra **1.4 e 4.4 m**: resta dentro il vetro da ~200 m
-fino a ~40 m, cioè per tutto l'avvicinamento, ed è leggibile (`h > 12 px`) da
-~180 m. Stesso motivo per la pensilina, abbassata da 5 a 4.4 m.
+Con le righe di cielo di `--rise` sopra la foto il vincolo si è allentato due
+volte: 1.4–4.4 m → 2.2–5.6 → **2.0–6.3 m**, largo **4.9 m**. L'ultimo scatto lo
+ha pagato il doppio prezzo (vedi sotto): esce dal bordo alto a `z ≈ 24 m` invece
+che a 21, ma è già alto 12 px a **~310 m** invece che a 255.
 
 > Regola generale, se aggiungi altri oggetti a bordo strada: **più sono alti,
 > prima escono dall'inquadratura**. `y = HZ + (CAMH − Y)·F/z`.
@@ -202,10 +224,58 @@ fino a ~40 m, cioè per tutto l'avvicinamento, ed è leggibile (`h > 12 px`) da
 ### Cosa viene disegnato
 
 Piazzale in cemento (22 m di strada), negozio arretrato, pensilina bianca su
-quattro pilastri con fascia rossa sul bordo vicino, due pompe, e il cartellone:
-pannello blu, banda verde in alto, prezzo bianco e `EURO / L` sotto (quest'ultimo
-solo se il pannello supera i 22 px). Tutto con `quad()`, che proietta quattro
-angoli `[X, Y, z]` — l'unico helper nuovo, riusabile per qualsiasi altro edificio.
+quattro pilastri con fascia rossa sul bordo vicino, due pompe, e il cartellone.
+Tutto con `quad()`, che proietta quattro angoli `[X, Y, z]` — l'unico helper
+nuovo, riusabile per qualsiasi altro edificio.
+
+### Il cartellone dice **due** prezzi
+
+Dal 2026-09-07 il pannello porta **il litro e il kWh insieme**, una riga per
+uno, **dello stesso peso**. Il motivo non è il colpo d'occhio: lo stesso
+piazzale vende entrambi, la demo si guida in tutti e due i veicoli, e il
+confronto che le due righe mettono una sopra l'altra — quanto chiede un litro
+contro quanto chiede un kWh, sullo stesso cartello, a 130 — **è il progetto**.
+
+Perciò **nessuna riga è privilegiata e niente qui legge `state.vehicle`**: il
+cartellone dice esattamente la stessa cosa sotto un serbatoio e sotto una
+batteria. Quello che cambia col veicolo è solo la riga *Local Price* del
+cluster, che continua a leggere `station().price` — cioè l'energia che quella
+macchina compra davvero. Verificato: a 60 m dalla stazione il cluster scrive
+`1.84 €` sotto ICE e `0.58 €` sotto BEV, e sono le due righe del cartello.
+
+| | |
+|---|---|
+| Banda in testa | il **luogo** (`VIALE EUROPA`), su fondo chiaro con testo navy: è l'unica cosa del pannello ancora leggibile come *forma* a 300 m, ed è quella che dice «sta arrivando una stazione» |
+| Riga 1 | icona pompa · marchio carburante · `€/L` · prezzo |
+| Riga 2 | icona batteria · marchio ricarica · `€/kWh` · prezzo |
+| Colori | ambra `#F0A500` il litro, ciano `#5fdcff` il kWh — lo stesso ciano del cockpit BEV. **Il verde non c'è**: su questo progetto significa una cosa sola, energia che torna indietro |
+| Gerarchia | **prezzo bianco**, tutto il resto nel colore della riga: a velocità i due numeri grandi sono il messaggio, il colore è solo l'indice |
+
+Il marchio e l'unità stanno **sulla riga sopra** il prezzo, non accanto: su
+questa larghezza `€/kWh` e un prezzo a tre cifre si scontrano a **qualsiasi**
+distanza in cui valga la pena leggerli. E il nome dell'operatore è schiacciato
+in quello che l'unità lascia, **misurato con `measureText`, non stimato**: i
+nomi vanno da `Q8` a `A2A E-moving`, e una riserva fissa infilava `EWIVA`
+dentro la `W` di `kWh`.
+
+### Le icone
+
+`IC_PUMP` e `IC_BATT`, due canvas fuori schermo da 128 px costruiti da
+`iconOf()` e stampati con `drawImage` — **stessa ragione dei cartelloni km**:
+ridisegnare un pistone e una saetta per frame costerebbe di più e, peggio,
+**tremolerebbe** mentre il cartello scala.
+
+Il dettaglio dentro ognuna — il display della pompa, la saetta della batteria —
+è **ritagliato** con `destination-out`, non dipinto nel navy del pannello: così
+le icone restano giuste qualunque colore abbia il pannello e il bordo resta
+pulito quando la cosa è alta cinque pixel.
+
+Due tarature trovate a video, non a tavolino:
+
+- **il collo della pompa a `lineWidth` 18**: a 12 px il collo veniva 1.7 px
+  reali e spariva, e l'icona si leggeva come una tanica, non come una pompa
+- **la batteria disegnata larga e bassa** accanto alla pompa alta e stretta: è
+  la differenza di sagoma, non il colore, a distinguerle quando sono due macchie
 
 ## I cavalcavia
 
@@ -459,8 +529,11 @@ non avevano il problema.
 | Un veicolo lontano sembra un ritaglio | il velo di foschia in fondo a `drawVehicle()` |
 | La strada resta vuota all'avvio | i veicoli nascono fra 90 e 420 m (`spawn()`); prima nascevano solo al limite lontano |
 | Le stazioni si vedono troppo di rado | `ST_EVERY` (2000 m ≈ 55 s a 130 km/h; il valore autostradale vero sarebbe 5000) |
-| Il prezzo sul cartellone non si legge | l'altezza del pannello `BRD_LO`/`BRD_HI` e la soglia `h > 12` — **non** la dimensione del font |
-| Il cartellone esce dal bordo alto | è alto: vedi *Perché il cartellone è basso* |
+| I prezzi sul cartellone non si leggono | l'altezza del pannello `BRD_LO`/`BRD_HI` e la larghezza `half` — **non** la dimensione del font, che è tutta in frazioni di `rh` |
+| Il marchio finisce sotto l'unità | la riserva è misurata: `measureText(unit)` nella riga superiore, non un `w * k` fisso |
+| L'icona pompa sembra una tanica | il `lineWidth` del collo in `IC_PUMP` (oggi 18): sotto, a distanza sparisce |
+| Le due icone si confondono | è la **sagoma** a distinguerle, non il colore: pompa alta e stretta, batteria larga e bassa |
+| Il cartellone esce dal bordo alto | è alto: vedi *Quanto può essere alto il cartellone* |
 | Un cartellone finisce dentro un cavalcavia | il passo è lo stesso (1 km): serve che `OVP_FIRST` resti sul mezzo chilometro |
 | Un elemento laterale finisce a mezz'aria a destra | è fermo a `Z_NEAR`: gli serve un `zNear` suo, come `Z_RAIL` per il guard-rail |
 | Il dirigibile sparisce prima del bordo | `BL_SPAN` e il cull, ora legati a `SW` |

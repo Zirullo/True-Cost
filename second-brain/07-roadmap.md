@@ -31,6 +31,15 @@
 
 ## Fatto
 
+- ✅ **Un cartello, due prezzi** (2026-09-07): il cartellone delle stazioni
+  porta il litro **e** il kWh, una riga per uno e dello stesso peso, con icona
+  pompa e icona batteria, doppio marchio (le pompe e le colonnine dello stesso
+  piazzale) e il luogo in testa. Niente sul pannello legge il veicolo: dice la
+  stessa cosa sotto un serbatoio e sotto una batteria, ed è il confronto fra le
+  due righe la cosa da vedere. Il *Local Price* del cluster continua a mostrare
+  solo l'energia che quella macchina compra — [09-strada.md](09-strada.md),
+  [01-decisioni.md](01-decisioni.md)
+
 - ✅ **Lo stesso mese, guidato due volte** (2026-09-06): ogni viaggio porta
   `t.veh`, il log e il Report mostrano solo la metà della vettura in uso, e i
   diciotto viaggi hanno un gemello elettrico sulle stesse tratte col consumo

@@ -5,6 +5,58 @@ Ordine cronologico inverso (la più recente in alto). Ogni voce: **cosa**, **per
 
 ---
 
+## 2026-09-07 · Un cartello, due prezzi
+
+Il cartellone delle stazioni mostrava **un** prezzo: quello del veicolo sotto di
+noi. Adesso ne mostra **due**, il litro e il kWh, una riga per uno e **dello
+stesso peso**.
+
+**Perché entrambi, e perché alla pari.** Lo stesso piazzale vende tutte e due le
+cose, la demo si guida in tutti e due i veicoli, e il confronto che le due righe
+mettono una sopra l'altra — quanto chiede un litro contro quanto chiede un kWh,
+sullo stesso cartello, a 130 all'ora — **è il progetto**. Un cartellone che
+mostra solo la riga che ti riguarda toglie proprio la cosa che c'è da vedere. Per
+questo **niente sul pannello legge `state.vehicle`**: dice la stessa identica cosa
+sotto un serbatoio e sotto una batteria. È il cluster a specializzarsi, non la
+strada — *Local Price* continua a leggere `station().price`, che è l'energia che
+quella macchina compra davvero.
+
+**Un solo tiro di dadi per la coppia.** `stationDraw(i)` dà i due `hash()` e
+alimenta sia `fuelPriceAt` sia `elecPriceAt`: i due prezzi appartengono a *quel*
+piazzale, sono decisi una volta e non tremolano mentre ti avvicini.
+`stationPrice()` — quello che chiedono cluster, tasto R e pump map — non è
+cambiato di una virgola.
+
+**Doppio marchio, perché è come sono fatti davvero.** `stationSigns(i)` firma le
+pompe e le colonnine insieme: un piazzale Eni con dentro le baie Ionity. Le due
+liste sono lunghe otto apposta, quindi **un solo passo** le indicizza entrambe e
+il ciclo di non-ripetizione resta quello di prima. In testa al cartello va il
+**luogo**, non un marchio: è il nome dell'area di servizio, e una banda chiara con
+testo scuro è l'unica cosa del pannello ancora leggibile come *forma* a 300 m.
+
+**Ambra e ciano, e il verde no.** Il ciano è quello del cockpit BEV, così il
+cartello sulla banchina e lo strumento dietro il volante sono d'accordo su cosa
+sia l'elettricità. Il verde non entra: su questo progetto significa una cosa
+sola, energia che torna indietro, e una riga benzina verde l'avrebbe spesa.
+Prezzo **bianco**, tutto il resto nel colore della riga: a velocità i due numeri
+grandi sono il messaggio, il colore è solo l'indice.
+
+**Cosa comporta.** Due righe costano altezza, quindi il pannello è cresciuto da
+2.2–5.6 a **2.0–6.3 m** e allargato a 4.9: esce dal bordo alto a `z ≈ 24 m`
+invece che a 21 — le cose alte escono presto — ma è già alto 12 px a ~310 m
+invece che a 255. E due tarature che solo il video poteva dare: il collo della
+pompa a `lineWidth` 18 (sotto, a distanza l'icona diventa una tanica) e il nome
+dell'operatore schiacciato in quello che l'unità lascia, **misurato** con
+`measureText` — una riserva fissa infilava `EWIVA` dentro la `W` di `kWh`.
+
+**Sul metodo, che mi ha fatto perdere venti minuti.** Il canvas della strada
+**non finisce negli screenshot headless**: è dipinto (`getImageData` dà media
+57) e visibile secondo `getComputedStyle`, ma `--screenshot` restituisce nero.
+Si estrae con `road.toDataURL()` messo nel DOM e ripescato da `--dump-dom`. È lo
+stesso vizio già annotato il 2026-09-06: **il DOM è la prova, il pixel no.**
+
+---
+
 ## 2026-09-06 · Lo stesso mese, guidato due volte
 
 Il log costi sotto il BEV era ancora scritto in litri. Adesso **ogni viaggio
