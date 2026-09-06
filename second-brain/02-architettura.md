@@ -7,7 +7,7 @@ Funziona aprendolo con doppio click.
 
 ```
 #shell  (wrapper, serve solo ad ancorare i pedali al bordo basso della scena)
- ├─ #regia  la barra di regia: switch ICE/BEV/PHEV e tariffa di casa.
+ ├─ #regia  la barra di regia: lo switch ICE / BEV, e nient'altro.
  │          Sta FUORI dallo stage di proposito - vedi sotto
 #stage  (aspect-ratio --scenew/--stageh = 1720/791, max-width 1720px)
  ├─ z1  #windshield   <canvas id="road">  la strada, su TUTTI i 1720
@@ -35,10 +35,15 @@ decentrata a sinistra nell'inquadratura larga, ed è giusto così.
 ### `#regia`, la barra che non è il cockpit
 
 Sopra la scena, alta `--regiah` (42px, sottratta dal `padding-top` che appoggia
-tutto al fondo pagina). Contiene lo **switch del veicolo** e la **tariffa di
-casa**, e sta lì proprio perché non appartiene all'auto: nessuna vettura ha un
-bottone che trasforma un serbatoio in una batteria. Tenerla grigia e piatta,
-fuori dal vetro, è il modo di non mentire sul confine fra la demo e il prodotto.
+tutto al fondo pagina). Contiene **solo lo switch del veicolo**, e sta lì proprio
+perché non appartiene all'auto: nessuna vettura ha un bottone che trasforma un
+serbatoio in una batteria. Tenerla grigia e piatta, fuori dal vetro, è il modo di
+non mentire sul confine fra la demo e il prodotto.
+
+La **tariffa di casa** ci stava, e ne è stata tolta: è un prezzo che il guidatore
+paga davvero, non un comando di regia, e la sua casa è il pannello *Chargers*
+sul display — accanto ai prezzi contro cui va confrontata. Vedi
+[06-archivio-bev.md](06-archivio-bev.md).
 
 ### `PT`, i profili di powertrain
 

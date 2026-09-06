@@ -5,6 +5,47 @@ Ordine cronologico inverso (la più recente in alto). Ogni voce: **cosa**, **per
 
 ---
 
+## 2026-09-06 · Il ciano, la tariffa dove si decide, e la velocità che passa
+
+Quattro correzioni allo switch, tutte nella stessa direzione: **togliere dalla
+regia quello che non è regia**, e rendere il confronto fra i due veicoli
+immediato invece che da ricostruire.
+
+**La velocità attraversa lo switch.** È l'unica cosa che lo fa: a 128 premi BEV
+e sei ancora a 128, con gli €/km che passano da 0.15 a 0.06 sotto gli occhi. I
+soldi restano separati come prima. Perché regga, chi entra nell'ICE prende la
+marcia giusta per quei giri e chi entra nel BEV parte dalla potenza di
+crociera, invece di risalire da zero.
+
+**La tariffa di casa scende nel pannello *Chargers***, riga propria sotto
+`SEARCH`, e la barra sopra la scena torna a contenere solo lo switch. Il
+motivo è che quella tariffa non è un comando da presentatore ma un prezzo che
+il guidatore paga, e il suo posto è **accanto ai prezzi contro cui si
+confronta**: la riga ora dice «cheapest in range 0.48 · 1.9× quello che paghi a
+casa», che è il progetto in una frase.
+
+**Il cockpit elettrico vira al ciano** — alone del vehicle status, barra della
+carica, righe, e la pompa che diventa una colonnina con la saetta. L'ICE non si
+tocca: è la `v2.0-ice`. E c'è una ragione oltre al colpo d'occhio: su un
+cruscotto già verde, il verde della rigenerazione non avrebbe voluto dire
+niente. Così il verde resta **una cosa sola**: energia che torna indietro.
+
+**Via il PHEV** dalla barra: un bottone disabilitato promette una cosa che non
+c'è. Tornerà quando c'è.
+
+**Cosa comporta**: `app.repaint()` è nato qui. La vista aperta descriveva
+ancora il veicolo di prima finché non passava un ridisegno periodico — uno
+screenshot ha beccato la pump map che elencava benzinai sotto la batteria. Con
+essa `rebrand()`, perché le stazioni di città tenevano il nome di quando erano
+nate; e il prezzo di quelle stazioni ora legge `energyBase` dal profilo, che
+prima esisteva solo per i cartelloni della strada: a 10 km di raggio si
+vedevano reti di ricarica che chiedevano euro al litro.
+
+Ed è sparita la transizione CSS sullo sfondo dello switch: **quale veicolo è
+selezionato è un fatto**, non deve mai essere a metà strada fra due risposte.
+Lo sfondo calcolato restava indietro rispetto alla classe che lo comanda.
+
+
 ## 2026-09-06 · Due veicoli sotto lo stesso cruscotto, e una porta fra loro
 
 **Scelta**: il simulatore ha due motorizzazioni, **ICE** e **BEV**, e uno switch

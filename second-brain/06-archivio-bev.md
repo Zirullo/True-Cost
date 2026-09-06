@@ -82,7 +82,8 @@ molta più potenza di quanta il motore ne assorba, e il resto se lo prendono i
 freni ad attrito. Non si ripaga tutto, e non deve.
 
 **Il prezzo di partenza è la tariffa di casa.** La carica in batteria viene dal
-muro, a `state.homeTariff` (0.25 €/kWh, regolabile sulla barra di regia). È il
+muro, a `state.homeTariff` (0.25 €/kWh, regolabile **dentro il pannello
+*Chargers*** sul display). È il
 contrasto che fa la demo: ogni cartellone lungo la strada ne chiede almeno il
 doppio. Attaccarsi a una colonnina riscrive quel prezzo — e da quel momento
 `chargedOut` impedisce allo slider di riscriverlo di nuovo, perché quei kWh li
@@ -90,6 +91,29 @@ hai già pagati a quel prezzo lì.
 
 **Ricarica solo alla colonnina.** Niente gesto «attacca a casa»: si carica dove ci
 si ferma, come si fa il pieno, con lo stesso tasto «R».
+
+## La tariffa sta dove si decide
+
+Lo slider vive nel pannello che sotto il termico si chiama *Pumps* e sotto
+l'elettrico **Chargers**, in una riga propria sotto `SEARCH`, e compare solo in
+BEV. Accanto al valore c'è la frase che è tutto il progetto in una riga:
+«cheapest in range 0.48 · 1.9× quello che paghi a casa». Metterlo qui invece che
+sulla barra sopra la scena vuol dire metterlo **accanto ai prezzi contro cui
+va confrontato**, e togliere dalla regia una cosa che non è regia.
+
+## La velocità attraversa lo switch
+
+È l'unica cosa che passa la porta fra i due veicoli. I soldi no — viaggio,
+serbatoio o batteria, ultimo prezzo pagato restano di ciascuno — ma i km/h sì:
+a 128 premi BEV e sei ancora a 128, e gli €/km passano da **0.15 a 0.06** sotto
+i tuoi occhi senza toccare nient'altro. È il confronto più forte che la demo
+possa fare, e prima non era possibile perché si ripartiva da fermi.
+
+Perché funzioni, l'auto in cui atterri deve saper *reggere* quella velocità
+subito: entrando nell'ICE si sceglie la marcia il cui rapporto tiene i giri in
+banda (invece di ritrovarsi in prima a 128), entrando nel BEV si parte dalla
+potenza che quella andatura costa davvero, così i kW si assestano invece di
+salire da zero.
 
 ## Quello che ancora non segue il veicolo
 

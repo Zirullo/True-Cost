@@ -70,23 +70,16 @@ body{
   background:transparent;border:0;border-radius:6px;
   padding:6px 16px;font-family:inherit;font-size:10px;font-weight:700;
   letter-spacing:1.5px;text-transform:uppercase;color:#6d8398;
-  cursor:pointer;transition:background .18s,color .18s;
+  cursor:pointer;
+  /* colour fades, the background does NOT: which vehicle is selected is a
+     fact, and it should never be mid-way between two answers. Animating it
+     left the computed background lagging the class that drives it. */
+  transition:color .18s;
 }
 .veh-opt:hover:not(:disabled):not(.on){color:#a9c1d4}
 .veh-opt.on{color:#04121b}
-.veh-opt:disabled{color:#3a4854;cursor:not-allowed}
 .veh-opt[data-v="ice"].on{background:var(--amber)}
 .veh-opt[data-v="bev"].on{background:var(--green)}
-/* the home tariff only means something with a battery under the floor */
-#tariff-wrap{display:none;align-items:center;gap:9px}
-#tariff-wrap.on{display:flex}
-#tariff{
-  width:104px;accent-color:var(--green);cursor:pointer;
-}
-#tariff-val{
-  font-family:Consolas,monospace;font-size:11px;font-weight:700;
-  color:var(--green);min-width:66px;
-}
 #regia .rg-note{
   margin-left:auto;font-size:9px;letter-spacing:1.2px;text-transform:uppercase;
   color:rgba(120,140,160,.35);
@@ -421,6 +414,24 @@ body{
 /* the scope row: how far around the car we are looking, or the road itself.
    It sits between the head and the map because it changes both of them. */
 .mp-scope{flex:none;height:20px;margin-top:4px;display:flex;align-items:center;gap:5px}
+/* the home tariff row: same rhythm as the scope row above it, so the pane
+   reads as one stack of controls and not as a control plus an intruder */
+.mp-tariff{flex:none;height:20px;margin-top:4px;display:flex;align-items:center;gap:7px}
+.mp-tariff[hidden]{display:none}
+#tariff{
+  flex:none;width:96px;height:12px;accent-color:#39c8e0;cursor:pointer;
+}
+#tariff-val{
+  font-family:Consolas,monospace;font-size:9.5px;font-weight:700;
+  color:#8fe6f8;flex:none;letter-spacing:.2px;
+}
+/* the comparison IS the argument: what the wall at home asks against the
+   cheapest sign in range, spelled out rather than left to be worked out */
+.mp-tariff .vs{
+  font-size:8px;letter-spacing:.9px;color:#5f7a92;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.mp-tariff .vs b{color:#ffb9a8;font-weight:700}
 .mp-empty{margin:auto;text-align:center;font-size:9px;letter-spacing:1.1px;color:#5f7a92;padding:0 10px}
 .st[hidden]{display:none}
 /* the footer stops being a caption and becomes the way into the navigator */
@@ -744,6 +755,24 @@ body{
 /* regeneration: the cost of the kilometre has gone below zero, and the
    two numbers that say so turn the colour of money coming back */
 #cluster text.regen{fill:var(--green)}
+
+/* ── the cockpit under a battery ──────────────────────────────────
+   The vehicle-status side of the cluster goes cyan: it is the only
+   strongly coloured region of the panel, so recolouring it is enough to
+   tell the two cars apart at a glance without touching the geometry.
+   And it frees GREEN to mean exactly one thing - energy coming back -
+   which on a green cockpit it could not have done.
+   The petrol cluster is left as it was: it is the marked v2.0-ice. */
+#cluster.bev #vs-halo{fill:url(#cyanG)}
+#cluster.bev #vs-ring{stroke:rgba(95,220,255,.42)}
+#cluster.bev .vs-rule{stroke:#7fc8d6}
+#cluster.bev .vs-dim{fill:#8fcfe0}
+#cluster.bev #fuelbar{fill:url(#chargeG)}
+#cluster.bev #lvl-box{stroke:#3f5f6a}
+/* one icon at a time: the pump or the charging post */
+#cluster #ic-plug{display:none}
+#cluster.bev #ic-plug{display:inline}
+#cluster.bev #ic-pump{display:none}
 .hit{cursor:pointer}
 .hit:hover text{fill:#fff}
 #tick-group line.on{stroke:#eaf6ff;opacity:.95}
@@ -944,14 +973,8 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
   <div id="veh-switch" role="group" aria-label="Vehicle type">
     <button class="veh-opt on" data-v="ice" type="button">ICE</button>
     <button class="veh-opt"    data-v="bev" type="button">BEV</button>
-    <button class="veh-opt"    data-v="phev" type="button" disabled title="Coming next">PHEV</button>
   </div>
-  <div id="tariff-wrap">
-    <span class="rg-lbl">Home tariff</span>
-    <input type="range" id="tariff" min="0.10" max="0.60" step="0.01" value="0.25">
-    <span id="tariff-val">0.25 &euro;/kWh</span>
-  </div>
-  <span class="rg-note">each vehicle keeps its own trip</span>
+  <span class="rg-note">each vehicle keeps its own trip &middot; the speed carries over</span>
 </div>
 
 <div id="stage">
@@ -1000,6 +1023,19 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       <linearGradient id="fuelG" x1="0" y1="0" x2="1" y2="0">
         <stop offset="0%"   stop-color="#5fe39b"/>
         <stop offset="100%" stop-color="#2fd07f"/>
+      </linearGradient>
+      <!-- the electric twins of the two above. The cockpit turns cyan under
+           the battery so that GREEN is left to mean one thing only: energy
+           coming back, in regeneration. -->
+      <radialGradient id="cyanG" cx="50%" cy="50%" r="50%">
+        <stop offset="0%"   stop-color="rgba(40,190,235,.03)"/>
+        <stop offset="72%"  stop-color="rgba(40,190,235,.07)"/>
+        <stop offset="94%"  stop-color="rgba(95,220,255,.30)"/>
+        <stop offset="100%" stop-color="rgba(40,190,235,0)"/>
+      </radialGradient>
+      <linearGradient id="chargeG" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%"   stop-color="#7ae4f7"/>
+        <stop offset="100%" stop-color="#2fb6d0"/>
       </linearGradient>
       <filter id="soft" x="-60%" y="-60%" width="220%" height="220%">
         <feGaussianBlur stdDeviation="7"/>
@@ -1097,18 +1133,18 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
 
     <!-- ── VEHICLE STATUS ─────────────────────────────────── -->
     <g>
-      <ellipse cx="864" cy="303" rx="104" ry="112" fill="url(#greenG)"/>
-      <ellipse cx="864" cy="303" rx="100" ry="108" fill="none"
+      <ellipse id="vs-halo" cx="864" cy="303" rx="104" ry="112" fill="url(#greenG)"/>
+      <ellipse id="vs-ring" cx="864" cy="303" rx="100" ry="108" fill="none"
                stroke="rgba(90,255,180,.42)" stroke-width="5" filter="url(#soft)"/>
       <text x="864" y="240" text-anchor="middle" font-size="18" letter-spacing="1.1" fill="#e4f1ea">VEHICLE STATUS</text>
       <text id="refuelLbl" x="864" y="266" text-anchor="middle" font-size="16" fill="#cfe4d9">Last Refuel Price:</text>
       <text id="refuel" x="864" y="292" text-anchor="middle" font-size="25" font-weight="600">2.15 €/L</text>
-      <line x1="797" y1="302" x2="931" y2="302" stroke="#7fd6ae" stroke-width=".8" opacity=".35"/>
+      <line class="vs-rule" x1="797" y1="302" x2="931" y2="302" stroke="#7fd6ae" stroke-width=".8" opacity=".35"/>
       <text x="864" y="319" text-anchor="middle" font-size="16" fill="#cfe4d9">Local Price:</text>
-      <text x="864" y="344" text-anchor="middle" font-size="25" font-weight="600"><tspan id="local">1.92 €</tspan><tspan id="localDist" dx="7" font-size="13" font-weight="400" fill="#8fd3b4">· 2.0 km</tspan></text>
-      <line x1="797" y1="354" x2="931" y2="354" stroke="#7fd6ae" stroke-width=".8" opacity=".35"/>
+      <text x="864" y="344" text-anchor="middle" font-size="25" font-weight="600"><tspan id="local">1.92 €</tspan><tspan id="localDist" class="vs-dim" dx="7" font-size="13" font-weight="400" fill="#8fd3b4">· 2.0 km</tspan></text>
+      <line class="vs-rule" x1="797" y1="354" x2="931" y2="354" stroke="#7fd6ae" stroke-width=".8" opacity=".35"/>
       <text id="levelLbl" x="864" y="364" text-anchor="middle" font-size="16" fill="#cfe4d9">Fuel Level</text>
-      <rect x="806" y="370" width="116" height="11" rx="2.5" fill="#0c1a17" stroke="#3f6a5c" stroke-width=".9"/>
+      <rect id="lvl-box" x="806" y="370" width="116" height="11" rx="2.5" fill="#0c1a17" stroke="#3f6a5c" stroke-width=".9"/>
       <rect x="808" y="372" width="13" height="7" rx="1.5" fill="#c4433c"/>
       <rect id="fuelbar" x="821" y="372" width="60" height="7" rx="1.5" fill="url(#fuelG)"/>
       <g stroke="#0c1a17" stroke-width="1.6">
@@ -1118,10 +1154,19 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       </g>
       <text id="lvlE" x="812" y="392" text-anchor="middle" font-size="14" fill="#dcece4">E</text>
       <text id="lvlF" x="916" y="392" text-anchor="middle" font-size="14" fill="#dcece4">F</text>
-      <g filter="url(#glow)" transform="translate(852,398)">
+      <g id="ic-pump" filter="url(#glow)" transform="translate(852,398)">
         <path d="M4,2 h13 a2,2 0 0 1 2,2 v16 h-17 v-16 a2,2 0 0 1 2,-2 z" fill="#39e08a"/>
         <path d="M21,7 l4,3 v9 a2.6,2.6 0 0 1 -5.2,0 v-4" fill="none" stroke="#39e08a" stroke-width="2.2" stroke-linecap="round"/>
         <path d="M0,10 l-4,3 4,3 z" fill="#39e08a"/>
+      </g>
+      <!-- the same silhouette, because it means the same thing - the place
+           you stop to fill - with the nozzle traded for a cable and a bolt
+           cut out of the body in the panel's own dark. -->
+      <g id="ic-plug" filter="url(#glow)" transform="translate(852,398)">
+        <path d="M4,2 h13 a2,2 0 0 1 2,2 v16 h-17 v-16 a2,2 0 0 1 2,-2 z" fill="#39c8e0"/>
+        <path d="M11.6,4.6 L6.6,12.4 h3.4 L9.4,19.4 L15,11.2 h-3.6 z" fill="#0a1622"/>
+        <path d="M21,7 l4,3 v7 a2.6,2.6 0 0 1 -5.2,0" fill="none" stroke="#39c8e0" stroke-width="2.2" stroke-linecap="round"/>
+        <path d="M0,10 l-4,3 4,3 z" fill="#39c8e0"/>
       </g>
     </g>
   </svg>
@@ -1220,7 +1265,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
             </button>
             <button class="ap-tab on" type="button" data-v="map">
               <svg viewBox="0 0 16 16"><path d="M8 14.2s4.5-4.4 4.5-7.5a4.5 4.5 0 1 0-9 0C3.5 9.8 8 14.2 8 14.2Z"/><circle cx="8" cy="6.6" r="1.7"/></svg>
-              Pumps
+              <span id="ap-tab-map">Pumps</span>
             </button>
             <button class="ap-tab" type="button" data-v="price">
               <svg viewBox="0 0 16 16"><path d="M1.8 11.4 5.4 7l3 2.6L14.2 3" stroke-linecap="round" stroke-linejoin="round"/><path d="M10.6 3h3.6v3.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1282,6 +1327,16 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
                 <button class="sc" type="button" data-r="20000">20 km</button>
                 <button class="sc on" type="button" data-r="road">Along this road</button>
                 <button class="sc" type="button" data-r="route">On my route</button>
+              </div>
+              <!-- the one price the driver controls, and it only exists for a
+                   battery: what a kWh costs off the wall at home. It sits here
+                   rather than on a bar above the car because it belongs to the
+                   same question this pane asks - where is it cheapest to fill. -->
+              <div class="mp-tariff" id="mp-tariff" hidden>
+                <span class="lb">Home</span>
+                <input type="range" id="tariff" min="0.10" max="0.60" step="0.01" value="0.25">
+                <b id="tariff-val">0.25 &euro;/kWh</b>
+                <span class="vs" id="tariff-vs">&mdash;</span>
               </div>
               <div class="mp-body">
                 <div class="mp-list" id="ap-stations"><div class="mp-empty" id="ap-none" hidden>No station in range.<br>Widen the search.</div></div>
@@ -1670,7 +1725,8 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     vehicle: 'ice',           // which profile in PT is under us
     currentKw: 33,            // motor power, signed: negative is regeneration
     homeTariff: 0.25,         // €/kWh the driver pays at home, set on the bar
-    chargedOut: false         // true once a charge is bought away from home
+    chargedOut: false,        // true once a charge is bought away from home
+    cheapestNear: 0           // best price the pump map last found, for the tariff row
   };
 
   /* ══════════════════════════════════════════════════════════
@@ -1702,7 +1758,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       priceDecimals: 2,
       keyOn: '&#9679; Engine off', keyOff: '&#9679; Engine on',
       refuelVerb: 'refuel', refuelDone: 'Tank full &mdash; refuelled at',
-      chip: 'GASOLINE',
+      chip: 'GASOLINE', mapTab: 'Pumps',
       brands: ['Eni', 'Q8', 'IP', 'Tamoil', 'Esso', 'Api', 'Repsol', 'Beyfin'],
       hasGears: true,
       /* L / 100 km, calibrated on the reference cluster */
@@ -1725,9 +1781,13 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       priceDecimals: 2,
       keyOn: '&#9679; Ready off', keyOff: '&#9679; Ready on',
       refuelVerb: 'charge', refuelDone: 'Battery full &mdash; charged at',
-      chip: 'ELECTRIC',
+      chip: 'ELECTRIC', mapTab: 'Chargers',
       /* charging networks that actually operate in Italy, eight of them to
          keep the same cycle as the fuel brands */
+      /* the centre of the electric market, the way PRICES.ago(0) is the
+         centre of the fuel one. Both the totems on the road and the pumps
+         in town scatter around it, so a sign and a pin can be compared. */
+      energyBase: 0.60,
       brands: ['Enel X Way', 'Ionity', 'Be Charge', 'Ewiva',
                'A2A E-moving', 'Free To X', 'Atlante', 'Neogy'],
       hasGears: false,
@@ -1988,10 +2048,40 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     if (!PT[id] || (!boot && id === state.vehicle)) return;
     if (!boot) stash(state.vehicle);
 
+    /* The one thing that DOES cross the door: how fast you are going.
+       Money stays with its own vehicle - trip, tank or battery, last price
+       paid - but the km/h come with you, so throwing the switch at 128 puts
+       you at 128 in the other car and the € / km changes under your eyes.
+       That side-by-side is the whole reason for having two vehicles. */
+    const carry = boot ? null : {
+      currentSpeed: state.currentSpeed,
+      targetSpeed:  state.targetSpeed,
+      engineOn:     state.engineOn
+    };
+
     state.vehicle = id;
     const P = PT[id], box = garage[id] || fresh(id);
     Object.keys(box).forEach(k => state[k] = box[k]);
     state.tankCapacity = P.capacity;
+
+    if (carry) {
+      Object.assign(state, carry);
+      const v = state.currentSpeed;
+      if (P.hasGears) {
+        /* the car you land in has to be able to HOLD that speed straight
+           away: pick the gear whose ratio puts the revs in range, instead of
+           dropping you in first at 128 and letting the box climb out of it */
+        state.gear = 0;
+        for (let i = GEARS.length - 1; i >= 0; i--) {
+          if (GEARS[i] * v >= DOWNSHIFT) { state.gear = i; break; }
+        }
+        state.currentRpm = Math.max(RPM_IDLE, GEARS[state.gear] * v);
+      } else {
+        /* and the motor starts at the power cruising there actually takes,
+           so the kW readout settles instead of sweeping up from zero */
+        state.currentKw = P.per100(v) / 100 * v;
+      }
+    }
 
     /* the cluster relabels itself: the same slots, a different vehicle.
        Nothing moves, which is the point — it is one instrument panel. */
@@ -2003,6 +2093,9 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     el.lvlE.textContent      = P.lo;
     el.lvlF.textContent      = P.hi;
     $('ap-chip').textContent   = P.chip;
+    $('ap-tab-map').textContent = P.mapTab;
+    $('mp-tariff').hidden      = P.hasGears;   // a tank has no home tariff
+    $('cluster').classList.toggle('bev', !P.hasGears);
     $('nv-price-l').innerHTML  = P.priceUnit + ' THERE';
     $('rp-verb').textContent   = P.refuelVerb;
     $('rp-done-lbl').innerHTML = P.refuelDone;
@@ -2012,9 +2105,12 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
 
     document.querySelectorAll('.veh-opt').forEach(b =>
       b.classList.toggle('on', b.dataset.v === id));
-    $('tariff-wrap').classList.toggle('on', id === 'bev');
 
-    if (!boot) app.newTrip();           // a trip never spans two vehicles
+    if (!boot) {
+      app.newTrip();                    // a trip never spans two vehicles
+      app.repaint();                    // and the open view stops describing the old one
+    }
+    paintTariff();
   }
 
   document.querySelectorAll('.veh-opt').forEach(b => {
@@ -2034,11 +2130,27 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
      until the car is plugged into a totem on the road, after which THAT
      price is what the kilometres are costing, and the tariff only decides
      what the next charge at home would have cost instead. */
-  const tariffEl = $('tariff'), tariffVal = $('tariff-val');
+  const tariffEl = $('tariff'), tariffVal = $('tariff-val'), tariffVs = $('tariff-vs');
+
+  /* The row says the thing the whole demo is about, in words: what the wall
+     at home asks against the cheapest sign within reach. `cheapestNear` is
+     written by the map every time it repaints, so the two always describe
+     the same set of stations the list is showing. */
+  function paintTariff() {
+    tariffVal.textContent = state.homeTariff.toFixed(2) + ' €/kWh';
+    const c = state.cheapestNear;
+    if (!c || car().hasGears) { tariffVs.innerHTML = '&mdash;'; return; }
+    const times = c / Math.max(0.01, state.homeTariff);
+    tariffVs.innerHTML = 'cheapest in range <b>' + c.toFixed(2) + '</b> &middot; ' +
+                         times.toFixed(1) + '&times; what you pay at home';
+  }
+
   tariffEl.addEventListener('input', () => {
     state.homeTariff = parseFloat(tariffEl.value);
-    tariffVal.textContent = state.homeTariff.toFixed(2) + ' €/kWh';
+    /* the charge in the battery came off that wall, so moving the slider
+       re-prices it - unless it has since been bought at a totem */
     if (state.vehicle === 'bev' && !state.chargedOut) state.refuelPrice = state.homeTariff;
+    paintTariff();
   });
 
   /* -- pedals: hold to accelerate / brake ---------------
@@ -2839,12 +2951,10 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
        The electric band runs from a slow AC post to an ultrafast one, about
        0.50 to 0.86 €/kWh. That spread is the argument: the driver charging
        at home pays 0.25, and every sign out here asks at least double. */
-    const EKWH_BASE = 0.60;
     const stationPrice = i => {
-      const u = hash(i * 97 + 13), w = hash(i * 131 + 7);
-      return state.vehicle === 'bev'
-        ? EKWH_BASE + PRICES.roadOffset(u, w) * 0.75
-        : PRICES.ago(0) + PRICES.roadOffset(u, w);
+      const u = hash(i * 97 + 13), w = hash(i * 131 + 7), E = car().energyBase;
+      return E ? E + PRICES.roadOffset(u, w) * 0.75
+               : PRICES.ago(0) + PRICES.roadOffset(u, w);
     };
 
     /* and its sign. NOT hashed: walked, in steps that are coprime with the
@@ -4101,13 +4211,20 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     let scope = 'road';
 
     const sts = [];
-    function spawn(s, y) {
+    /* the sign a TOWN station carries. Split out of spawn() because the
+       vehicle switch has to be able to run it again: the eight names come
+       from the profile, and a battery does not stop at an Eni. */
+    function nameIt(s) {
+      const B = car().brands;
       for (let n = 0; n < 12; n++) {          // no two identical signs on screen
-        s.b = BRANDS[Math.floor(rnd() * BRANDS.length)];
+        s.b = B[Math.floor(rnd() * B.length)];
         s.p = PLACES[Math.floor(rnd() * PLACES.length)];
         if (!sts.some(o => o !== s && o.b === s.b && o.p === s.p) &&
             !roadSts.some(o => o.b === s.b && o.p === s.p)) break;   // nor a totem's
       }
+    }
+    function spawn(s, y) {
+      nameIt(s);
       /* outside the corridor, always: a pump this close to the road would
          claim to be one of the totems, and it is not one of them */
       s.x = (rnd() < 0.5 ? -1 : 1) * (CORRIDOR + 250 + rnd() * (XSPAN - CORRIDOR));
@@ -4155,8 +4272,15 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     /* everything the map ranks, town and road together */
     const world = sts.concat(roadSts);
 
-    /* a road station is priced by the road; a town pump by the town */
-    const priceOf = s => s.road ? road.priceAt(s.idx) : PRICES.ago(0) + s.off;
+    /* A road station is priced by the road; a town pump by the town — and
+       both of them by the ENERGY the vehicle actually takes. Without the
+       second half, picking a 10 km radius under the battery listed charging
+       networks quoting euro per litre. */
+    const priceOf = s => {
+      if (s.road) return road.priceAt(s.idx);
+      const E = car().energyBase;
+      return E ? E + s.off * 0.75 : PRICES.ago(0) + s.off;
+    };
     const distOf  = s => Math.sqrt(s.x * s.x + s.y * s.y);
     const dirOf   = s => DIRS[(Math.round(Math.atan2(s.x, s.y) / (Math.PI / 4)) + 8) % 8];
 
@@ -4275,6 +4399,8 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
           (sel.road ? 'up this road' : dirOf(sel));
       } else if (order.length) {
         const b = order[0], save = (mean - priceOf(b)) * litres;
+        state.cheapestNear = priceOf(b);
+        paintTariff();
         T.best.innerHTML =
           '<b>' + b.b + ' · ' + b.p + '</b> &middot; ' + priceOf(b).toFixed(2) +
           ' ' + car().priceUnit + ' &middot; save <b>' + save.toFixed(2) + ' &euro;</b> on ' +
@@ -5483,7 +5609,22 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     fit(); priceTrips(); paintTrip(); buildSeries(); paintReport(); tmPaint();
     show('map');                       // the demo opens on the pump map
     requestAnimationFrame(fit);        // once more after the first layout pass
-    return { frame, show, newTrip };
+    /* `repaint` redraws whatever view is open, right now. The vehicle switch
+       needs it: the prices, the names and the units of every station come
+       from the profile, so after a switch the pane on screen is describing
+       a car that is no longer under us. Leaving that to the next periodic
+       redraw made it a race - which is exactly how a screenshot caught the
+       pump map still listing petrol under the battery. */
+    /* Re-sign every station from the profile that is now in force. The road
+       slots re-read their name from `road` on every syncRoad; the town ones
+       hold theirs from when they were spawned, so they have to be asked
+       again — otherwise a switch left half the map wearing petrol signs. */
+    function rebrand() {
+      syncRoad();
+      sts.forEach(nameIt);
+    }
+
+    return { frame, show, newTrip, repaint: () => { rebrand(); show(view); } };
   })();
 
   /* ── physics: consumption follows speed ─────────────── */
