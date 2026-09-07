@@ -127,7 +127,9 @@ Tutto quello che segue è **ridisegnato ogni frame** dentro un clip a `y < YMAX`
    **prima** del traffico: l'impalcato sta in alto dove i veicoli lontani non
    arrivano mai, e così un'auto vicina passa comunque davanti a un ponte lontano
 7. **Traffico** — fino a 9 veicoli, disegnati dal più lontano
-8. **Foschia** — gradiente verticale sopra tutto
+8. ~~**Foschia** — gradiente verticale sopra tutto~~ — **tolta il 2026-09-07**:
+   la distanza si pagava due volte, e la seconda faceva virare il manto troppo
+   in fretta. Resta solo il mix vicino/lontano, su un `FOG_Z` più lungo
 
 ### Il suolo, una riga alla volta
 
@@ -137,8 +139,25 @@ nell'array `rows`, e il ciclo per frame si limita a piazzare rettangoli.
 
 Ogni materiale è dichiarato **due volte** in `P`, vicino e lontano (`asphN`/`asphF`,
 `grassN`/`grassF`, …), e ogni riga è la miscela delle due secondo
-`f = 1 − e^(−z/190)`. Il contrasto cala con la distanza come nella realtà, invece di
-essere una tinta piatta corretta solo dalla foschia finale.
+`f = fogAt(z) = 1 − e^(−z/FOG_Z)`. Il contrasto cala con la distanza come nella
+realtà, invece di essere una tinta piatta.
+
+**`FOG_Z` è la prospettiva aerea di tutta la scena**, non solo dell'asfalto: la
+profondità a cui una superficie è per il 63 % andata. Era scritta a mano come un
+`190` nudo in **quattro punti** — righe del suolo, traffico, cavalcavia, alberi —
+e finché è stata così la strada non si poteva rallentare senza che gli alberi
+accanto continuassero a sfumare più in fretta di lei. Ora è una costante sola.
+Su, giornata più limpida; giù, più foschia.
+
+Il 2026-09-07 è passata da **190 a 320** insieme alla rimozione del gradiente
+finale. Effetto sull'escursione di luminanza del manto fra 200 e 20 m:
+
+| | 200 m | 100 m | 50 m | 20 m | escursione |
+|---|---|---|---|---|---|
+| foschia + 190 | 150 | 124 | 92 | 60 | **90** |
+| senza foschia, 190 | 73 | 61 | 52 | 46 | **27** |
+| **senza foschia, 320** | 64 | 54 | 48 | 44 | **20** |
+| senza foschia, 520 | 57 | 49 | 45 | 43 | **14** |
 
 Sopra l'asfalto, in ordine: bande di sfalcio sul prato, **rotaie di rotolamento**
 (le uniche marcature che **non** scorrono), **grana** — 3 chiazze per riga scelte da
@@ -523,7 +542,8 @@ non avevano il problema.
 | Il logo sul cartellone è una sbavatura | il pavimento del raggio in `dotRing()` e il peso del font in `wordmark()` — **non** la larghezza `w * 0.86` |
 | Il manifesto True Cost è stirato | è impaginato 2.625:1: se cambi `KM_LO`/`KM_HI`/`KM_HALF` cambia anche `BOARD_TC` |
 | Sempre lo stesso albero | le soglie di specie in `drawTree()` (0.24 / 0.46 / 0.74) |
-| Troppo lattiginoso | gli stop del gradiente `hz` in fondo a `frame()` — e ricorda che la nebbia è contata **due volte**: lì e nel mix vicino/lontano di `P` |
+| La strada cambia colore troppo in fretta avvicinandosi | `FOG_Z`: su rallenta, giù accelera. È **una** costante per tutta la scena |
+| Troppo lattiginoso / troppo contrastato | `FOG_Z`, e i colori `*F` in `P`. Il gradiente `hz` in fondo a `frame()` non c'è più: la nebbia non è più contata due volte |
 | Asfalto slavato in lontananza | i colori `*F` in `P`, non la foschia |
 | I pannelli antiabbagliamento sfarfallano | passo e sfumatura in `blades()` (oggi 2.5 m, spenti oltre 150 m) |
 | Un veicolo lontano sembra un ritaglio | il velo di foschia in fondo a `drawVehicle()` |

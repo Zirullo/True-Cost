@@ -5,6 +5,57 @@ Ordine cronologico inverso (la più recente in alto). Ogni voce: **cosa**, **per
 
 ---
 
+## 2026-09-07 · La distanza si pagava due volte
+
+Tolta la **foschia**: il gradiente lattiginoso che chiudeva `frame()`, steso su
+tutto dall'orizzonte in giù. E `FOG_Z`, la profondità della prospettiva aerea,
+sale da **190 a 320**.
+
+**Il difetto era doppia contabilità.** La distanza veniva pagata una volta nel
+mix vicino/lontano che ogni materiale fa già — `f = 1 − e^(−z/FOG_Z)` fra la
+tinta vicina e quella lontana — e una seconda volta in quella velatura sopra. È
+la seconda a far virare il manto così in fretta durante l'avvicinamento. Il mix
+è la metà onesta: smorza il contrasto come fa l'aria. La velatura era un
+lenzuolo bianco steso sull'asfalto **sei metri davanti al cofano**.
+
+Escursione di luminanza del manto fra 200 e 20 m: da **90 livelli a 20**, cioè
+il colore cambia quattro volte e mezzo più lentamente.
+
+**Una costante sola, e non era così.** `190` era scritto a mano in **quattro
+punti** — righe del suolo, traffico, cavalcavia, alberi. Finché è stato così la
+strada non si poteva rallentare senza che gli alberi accanto continuassero a
+sfumare più in fretta di lei. Ora `FOG_Z` e `fogAt(z)` sono uno, e la scena
+tiene una sola atmosfera. Su per una giornata più limpida, giù per più foschia.
+
+**Come ci siamo arrivati, che è la parte che vale.** Roberto vedeva sfarfallare
+il manto e il sospetto era la foschia. La foschia è un `createLinearGradient` a
+stop costanti su un rettangolo fisso: non varia nel tempo, quindi non può
+strobare — l'ho detto, ma invece di fermarmi lì ho messo **due interruttori**,
+H per la foschia e G per la grana, perché la domanda si chiude guardando e non
+discutendo.
+
+La misura ha assolto la foschia e accusato la grana: due render con orologio e
+corsa congelati, identici in tutto tranne **20 cm di strada**, e sul manto
+vicino cambiava il **7.0 %** dei pixel con la grana accesa contro lo **0.2 %**
+con la grana spenta. Trentacinque volte, per venti centimetri. La ragione è che
+`band = ((travel + z) * 2.6)|0` e una riga dello schermo sta **sempre alla
+stessa profondità**: per quella riga si muove solo `travel`, e a 128 km/h la
+banda scatta una volta e mezza per fotogramma, rilanciando tutte le chiazze.
+
+**Ma non era nemmeno quella.** Provati tutti e due dal vivo, lo sfarfallio
+restava: è **locale a quella macchina**, non al codice. Gli interruttori sono
+stati tolti, la grana è rimasta accesa com'era. Quello che il giro ha prodotto è
+la diagnosi vera — *la strada cambia colore troppo in fretta* — che era un'altra
+cosa e nessuno dei due interruttori avrebbe trovato.
+
+> Nota per la prossima volta che qualcosa sfarfalla e non è il contenuto: il
+> sospettato è `bob`, che sposta la scena di una frazione di pixel per frame.
+> Il suolo è fatto di 138 rettangoli alti 1 px, e uno scorrimento sub-pixel li
+> fa ricampionare tutti a ogni fotogramma. Non si spegne togliendo qualcosa,
+> perché non è un contenuto: è aliasing. Si prova arrotondando `bob` al pixel.
+
+---
+
 ## 2026-09-07 · La barra in fondo se ne va
 
 Via il **control deck**: la striscia scura sotto la scena, con la firma

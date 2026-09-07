@@ -2516,6 +2516,20 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     const MED = -(HALF + 1.1);              // median wall, on our left
     const RAIL = HALF + SHOULDER;           // guardrail, past the right shoulder
 
+    /* ── aerial perspective: ONE distance for the whole scene ──
+       Every material fades towards P.hillFar as f = 1 - e^(-z/FOG_Z), so
+       FOG_Z is the depth at which a surface is 63 % of the way gone. It was
+       written out as a bare 190 in four separate places — tarmac rows,
+       traffic, overpasses, trees — which meant the road could not be slowed
+       down without the trees beside it fogging faster than it does. One
+       constant, so the whole scene keeps one atmosphere.
+
+       Raised from 190 to 320 together with the removal of the final haze
+       gradient: the road was changing colour too quickly on the approach.
+       Turn it UP for a clearer day, DOWN for a hazier one. */
+    const FOG_Z = 320;
+    const fogAt = z => 1 - Math.exp(-z / FOG_Z);
+
     /* ── palette: every material is stated twice, near and far ──
        each ground row is mixed between the two, so contrast falls off with
        distance the way it really does instead of being a flat fill. */
@@ -2562,7 +2576,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     const rows = [];
     for (let y = HZ + 1; y <= YMAX; y++) {
       const z = K / (y - HZ);
-      const f = 1 - Math.exp(-z / 190);          // 0 at the bonnet, ~1 far away
+      const f = fogAt(z);                        // 0 at the bonnet, ~1 far away
       rows.push({
         y: y, z: z, s: F / z, f: f,
         asph: mix(P.asphN, P.asphF, f),
@@ -2640,7 +2654,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       const w = c.w * s, h = yb - yt;
       if (h < 0.6 || xc < -600 || xc > 1747) return;
 
-      const fog = 1 - Math.exp(-c.z / 190);
+      const fog = fogAt(c.z);
       const x0 = xc - w / 2;
 
       ctx.fillStyle = 'rgba(0,0,0,.34)';                        // contact shadow
@@ -3382,7 +3396,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     function drawOverpass(z) {
       const a = Math.min(1, (Z_FAR - z) / 130);
       if (a <= 0) return;
-      const f = 1 - Math.exp(-z / 190);                  // aerial perspective
+      const f = fogAt(z);                                // aerial perspective
       const conc  = mix([190, 194, 190], P.hillFar, f * 0.85);   // lit concrete
       const shade = mix([138, 145, 145], P.hillFar, f * 0.85);   // the shaded faces
       const soff  = mix([ 92,  99, 102], P.hillFar, f * 0.85);   // the soffit
@@ -3482,7 +3496,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       const xc = sxOf(X, z);
       if (xc < -400 || xc > 1560) return;                // long gone sideways
 
-      const f = 1 - Math.exp(-z / 190);                  // aerial perspective
+      const f = fogAt(z);                                // aerial perspective
       const sp = hash(seed * 7 + 3);
       const g = TREE_GREEN[(hash(seed * 29 + 5) * TREE_GREEN.length) | 0];
       const lift = (hash(seed * 53 + 11) - 0.5) * 22;    // this tree's own shade
@@ -3721,6 +3735,16 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       ufoT = 0;
     });
 
+      /* The haze used to go here: a milky gradient over everything from the
+         horizon down. It is gone. Distance was being paid for TWICE — once
+         in the near/far mix every material already does through fogAt(), and
+         again in this wash on top — and the second payment is what made the
+         road change colour so fast on the approach. What is left is the
+         mix alone, over a longer FOG_Z, which is the honest half: it dulls
+         contrast the way air does, without laying a white sheet on the
+         tarmac six metres in front of the bonnet.
+
+*/
     function ufo() {
       if (ufoT < 0) return;
       const p = ufoT / UFO_DUR;
@@ -4059,15 +4083,14 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       overpasses();      // the bridges pass over the camera
       traffic.sort((a, b) => b.z - a.z).forEach(drawVehicle);
 
-      /* haze: thick at the horizon, gone by the time it reaches the dashboard */
-      const hz = ctx.createLinearGradient(0, HZ, 0, YMAX);
-      hz.addColorStop(0, 'rgba(192,207,218,.72)');
-      hz.addColorStop(0.12, 'rgba(188,203,215,.30)');
-      hz.addColorStop(0.34, 'rgba(186,201,213,.10)');
-      hz.addColorStop(1, 'rgba(186,201,213,0)');
-      ctx.fillStyle = hz;
-      ctx.fillRect(0, HZ, SW, YMAX - HZ);
-
+      /* The haze used to go here: a milky gradient over everything from the
+         horizon down. It is gone. Distance was being paid for TWICE — once
+         in the near/far mix every material already does through fogAt(), and
+         again in this wash on top — and the second payment is what made the
+         road change colour so fast on the approach. What is left is the
+         mix alone, over a longer FOG_Z, which is the honest half: it dulls
+         contrast the way air does, without laying a white sheet on the
+         tarmac six metres in front of the bonnet. */
       ctx.restore();
     }
 
