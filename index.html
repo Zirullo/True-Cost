@@ -3478,27 +3478,183 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       if (z0 > Z_FAR || z0 < 4) return;       // nothing in sight, or already beside us
 
       const zN = Math.max(4, z0 - 11), zF = z0 + 11;   // the plot runs 22 m along the road
-      ctx.globalAlpha = Math.min(1, (Z_FAR - z0) / 120);
+      const A = Math.min(1, (Z_FAR - z0) / 120);
+      ctx.globalAlpha = A;
 
-      /* the apron: concrete, so the station does not float on the grass */
-      quad([[ST_X - 3, 0, zN], [ST_X + 24, 0, zN], [ST_X + 24, 0, zF], [ST_X - 3, 0, zF]], '#9fa6aa');
+      /* ── the forecourt breathes the same air as everything else ──
+         It used to be painted in flat hex, so at 300 m a white canopy stood
+         in front of a landscape already halfway to the haze: the shape read
+         as a sticker, not as a building down the road. Every material of the
+         station is now mixed towards P.hillFar through fogAt(), exactly as
+         the trees and the bridges are, and the whole thing arrives out of
+         the distance instead of being pasted on top of it.
 
-      /* shop, set back behind the canopy */
-      quad([[ST_X + 16, 0, z0 + 4], [ST_X + 25, 0, z0 + 4], [ST_X + 25, 3.2, z0 + 4], [ST_X + 16, 3.2, z0 + 4]], '#e3e8ea');
-      quad([[ST_X + 17, 0.6, z0 + 4], [ST_X + 24, 0.6, z0 + 4], [ST_X + 24, 2.2, z0 + 4], [ST_X + 17, 2.2, z0 + 4]], '#38505e');
+         The other thing missing was LIGHT. Everything stood in one tone,
+         which is why it read as cardboard. There are three tones now — a
+         face turned to the sky, a face turned to us, a face turned away —
+         and the difference between them is the entire sense of volume. It
+         costs one extra colour per material and nothing per frame.
 
-      /* the canopy: four pillars, a white slab, a red fascia on the near edge.
-         A real one stands at 5 m, this one at 4.4: above that it leaves through
-         the top of the glass while you are still driving up to it. */
+         The price board below is untouched: it has its own palette because
+         it has to stay readable at 300 m, so it does not get to fade. */
+      const f = fogAt(z0);
+      const M = (c, k) => mix(c, P.hillFar, f * (k === undefined ? 0.85 : k));
+      const conc   = M([150, 156, 158]);       // the apron
+      const concD  = M([118, 124, 127]);       // its kerb, and whatever stands in shade
+      const paint  = M([214, 219, 218]);       // the line marking its edge
+      const wall   = M([228, 233, 235]);       // a wall facing the forecourt
+      const wallS  = M([174, 183, 188]);       // the same wall turned away from it
+      const roofC  = M([242, 245, 246]);       // copings: the one thing facing the sky
+      const glass  = M([ 42,  66,  82]);       // the shop window
+      const glassL = M([104, 134, 149]);       // the sky sitting in the top of it
+      const soffit = M([170, 179, 186]);       // the canopy, seen from underneath
+      const fascia = M([240, 243, 245]);       // its edge, in the light
+      const bandR  = M([188,  54,  46], 0.55); // the red stripe along that edge
+      const steel  = M([208, 215, 219]);       // pillars and pumps, lit side
+      const steelS = M([158, 167, 173]);       // pillars and pumps, shaded side
+      const dark   = M([ 52,  60,  66]);       // hoses, plinths, the dark details
+      const px = F / z0;                       // metres -> pixels out at the forecourt
+
+      /* ── the apron ────────────────────────────────────────────
+         Concrete, so the station does not float on the grass. The kerb along
+         the near edge is what the extra quad buys: a slab painted flat on the
+         ground has no thickness, and from an eye 1.2 m up a real forecourt
+         shows its lip before it shows its surface. */
+      const AX0 = ST_X - 3, AX1 = ST_X + 26;
+      quad([[AX0, 0, zN], [AX1, 0, zN], [AX1, 0, zF], [AX0, 0, zF]], conc);
+      quad([[AX0, 0, zN], [AX1, 0, zN], [AX1, 0.18, zN], [AX0, 0.18, zN]], concD);
+      if (px > 2.5)                            // the painted edge, road side
+        quad([[AX0 + 0.5, 0.01, zN], [AX0 + 0.75, 0.01, zN],
+              [AX0 + 0.75, 0.01, zF], [AX0 + 0.5, 0.01, zF]], paint);
+
+      /* what the canopy drops on the concrete. Nothing grounds a structure
+         like the dark shape of it lying on the floor: without this the whole
+         forecourt hovers a few centimetres up. */
+      ctx.globalAlpha = A * 0.22;
+      quad([[ST_X + 1.6, 0.02, zN + 1], [ST_X + 15.6, 0.02, zN + 1],
+            [ST_X + 15.6, 0.02, zF], [ST_X + 1.6, 0.02, zF]], 'rgb(26,34,42)');
+      ctx.globalAlpha = A;
+
+      /* ── the shop ─────────────────────────────────────────────
+         A box, not a billboard. It was one plane at a single z, which is why
+         it read as a flat white card: now it turns a corner — a long glazed
+         front looking out over the pumps, and the blind end wall we catch on
+         the near side of it. Two faces at two tones is all a box needs. */
+      const SX = ST_X + 16, SX1 = ST_X + 25.5;
+      const sz0 = z0 + 1.5, sz1 = z0 + 10.5, SH = 3.3;
+      quad([[SX, 0, sz0], [SX, 0, sz1], [SX, SH, sz1], [SX, SH, sz0]], wall);
+      quad([[SX, 0, sz0], [SX1, 0, sz0], [SX1, SH, sz0], [SX, SH, sz0]], wallS);
+      /* the glazing: one band the length of the front, with the sky caught in
+         the top of it. Glass is the only thing on a shop that is DARK, and it
+         is what tells you at a glance which way the building faces. */
+      quad([[SX, 0.75, sz0 + 0.9], [SX, 0.75, sz1 - 0.9],
+            [SX, 2.55, sz1 - 0.9], [SX, 2.55, sz0 + 0.9]], glass);
+      quad([[SX, 2.15, sz0 + 0.9], [SX, 2.15, sz1 - 0.9],
+            [SX, 2.55, sz1 - 0.9], [SX, 2.55, sz0 + 0.9]], glassL);
+      if (px > 4) {                            // the mullions, once they are a line
+        for (let m = 1; m <= 2; m++) {
+          const zm = sz0 + 0.9 + (sz1 - sz0 - 1.8) * m / 3;
+          quad([[SX, 0.75, zm], [SX, 0.75, zm + 0.13],
+                [SX, 2.55, zm + 0.13], [SX, 2.55, zm]], wallS);
+        }
+      }
+      /* the coping: a light lip all round the top, the one surface up here
+         that faces the sky rather than us */
+      quad([[SX, SH, sz0], [SX, SH, sz1], [SX, SH + 0.34, sz1], [SX, SH + 0.34, sz0]], roofC);
+      quad([[SX, SH, sz0], [SX1, SH, sz0], [SX1, SH + 0.34, sz0], [SX, SH + 0.34, sz0]],
+           M([214, 219, 221]));
+      /* a service door on the end wall. Nine metres of blind render is the
+         one surface here big enough to go back to reading as a card, and a
+         door is the cheapest thing that gives it a scale to be read at. */
+      if (px > 4)
+        quad([[SX + 4.6, 0, sz0], [SX + 6.2, 0, sz0],
+              [SX + 6.2, 2.1, sz0], [SX + 4.6, 2.1, sz0]], M([132, 142, 148]));
+
+      /* ── the canopy ───────────────────────────────────────────
+         Four pillars, and a slab we are always UNDER: at 1.2 m of eye height
+         against 4.4 m of clearance the top of it is never in view, so the big
+         quad is the SOFFIT and it is painted like one. It used to be
+         near-white, which is what a roof looks like from a drone and never
+         from a car. A real canopy stands at 5 m; this one at 4.4, or it
+         leaves through the top of the glass while you are still driving up. */
+      quad([[ST_X, 4.4, zN], [ST_X + 14, 4.4, zN],
+            [ST_X + 14, 4.4, zF], [ST_X, 4.4, zF]], soffit);
+      if (px > 5) {                            // the downlights buried in it
+        ctx.globalAlpha = A * 0.85;
+        for (let d = 0; d < 4; d++) {
+          const zd = zN + 2.4 + d * 5.2;
+          if (zd > zF - 1) break;
+          quad([[ST_X + 6.4, 4.36, zd], [ST_X + 7.6, 4.36, zd],
+                [ST_X + 7.6, 4.36, zd + 0.7], [ST_X + 6.4, 4.36, zd + 0.7]],
+               'rgb(255,242,214)');
+        }
+        ctx.globalAlpha = A;
+      }
+      /* the slab has two edges we can see: the long one down the road side
+         and the one facing us. Both carry the fascia and its red stripe — the
+         near edge on its own made the canopy read as a plane with a line
+         painted on it rather than as something with a thickness. */
+      quad([[ST_X, 3.9, zN], [ST_X, 3.9, zF], [ST_X, 4.4, zF], [ST_X, 4.4, zN]],
+           M([222, 227, 230]));
+      quad([[ST_X, 3.9, zN], [ST_X, 3.9, zF], [ST_X, 4.16, zF], [ST_X, 4.16, zN]],
+           M([160, 46, 39], 0.55));
+      quad([[ST_X, 3.9, zN], [ST_X + 14, 3.9, zN],
+            [ST_X + 14, 4.4, zN], [ST_X, 4.4, zN]], fascia);
+      quad([[ST_X, 3.9, zN], [ST_X + 14, 3.9, zN],
+            [ST_X + 14, 4.16, zN], [ST_X, 4.16, zN]], bandR);
+
+      /* the pillars, each with its own shaded cheek and a plinth at the foot.
+         A post in one flat grey is a stick; the same post in two greys is a
+         column, and the plinth is what stops it being pushed into the
+         concrete like a pin. */
       [[ST_X + 1, zN + 2], [ST_X + 13, zN + 2], [ST_X + 1, zF - 2], [ST_X + 13, zF - 2]]
-        .forEach(pl => pillar(pl[0], pl[1], 3.9, 0.22, '#ccd4d9'));
-      quad([[ST_X, 4.4, zN], [ST_X + 14, 4.4, zN], [ST_X + 14, 4.4, zF], [ST_X, 4.4, zF]], '#eef2f4');
-      quad([[ST_X, 3.9, zN], [ST_X + 14, 3.9, zN], [ST_X + 14, 4.4, zN], [ST_X, 4.4, zN]], '#d0d7dc');
-      quad([[ST_X, 3.9, zN], [ST_X + 14, 3.9, zN], [ST_X + 14, 4.15, zN], [ST_X, 4.15, zN]], '#c4362f');
+        .forEach(pl => {
+          pillar(pl[0], pl[1], 3.9, 0.26, steel);
+          quad([[pl[0] + 0.07, 0, pl[1]], [pl[0] + 0.26, 0, pl[1]],
+                [pl[0] + 0.26, 3.9, pl[1]], [pl[0] + 0.07, 3.9, pl[1]]], steelS);
+          pillar(pl[0], pl[1], 0.3, 0.36, concD);
+        });
 
-      /* two pumps under it */
-      pillar(ST_X + 4, z0, 1.9, 0.45, '#dfe4e7');
-      pillar(ST_X + 10, z0, 1.9, 0.45, '#dfe4e7');
+      /* ── the islands, the pumps, and whoever is filling up ────
+         Pumps standing straight on the tarmac look dropped there. Real ones
+         sit on a raised island with a kerb, which is also what gives the
+         forecourt a floor plan: two islands, a lane between them, and the car
+         that happens to be in that lane. */
+      [ST_X + 4, ST_X + 10].forEach(X => {
+        const iz0 = z0 - 3.5, iz1 = z0 + 3.5;
+        quad([[X - 0.9, 0.03, iz0], [X + 0.9, 0.03, iz0],
+              [X + 0.9, 0.03, iz1], [X - 0.9, 0.03, iz1]], M([140, 146, 149]));
+        quad([[X - 0.9, 0, iz0], [X + 0.9, 0, iz0],
+              [X + 0.9, 0.16, iz0], [X - 0.9, 0.16, iz0]], concD);
+        quad([[X - 0.9, 0, iz0], [X - 0.9, 0, iz1],
+              [X - 0.9, 0.16, iz1], [X - 0.9, 0.16, iz0]], concD);
+      });
+
+      /* one car at the pumps on about half the stations — drawn from hash()
+         on the station's own index, so it is the same car every time you pass
+         this one and never a flicker. It goes through the scene's own vehicle
+         routine, parked: nothing about a stationary car differs from a slow
+         one, and a second way of drawing a car is a second car to keep. */
+      if (z0 < 240 && hash(idx * 211 + 17) > 0.42)
+        drawVehicle({ x: ST_X + 7, z: z0 + 1.2, w: 1.85, h: 1.48,
+                      color: CAR_COLORS[(hash(idx * 313 + 29) * CAR_COLORS.length) | 0] });
+
+      [ST_X + 4, ST_X + 10].forEach(X => {
+        quad([[X - 0.55, 0.16, z0], [X + 0.55, 0.16, z0],
+              [X + 0.55, 0.34, z0], [X - 0.55, 0.34, z0]], dark);      // plinth
+        quad([[X - 0.45, 0.34, z0], [X + 0.45, 0.34, z0],
+              [X + 0.45, 1.95, z0], [X - 0.45, 1.95, z0]], steel);     // the body
+        quad([[X + 0.14, 0.34, z0], [X + 0.45, 0.34, z0],
+              [X + 0.45, 1.95, z0], [X + 0.14, 1.95, z0]], steelS);    // its shaded cheek
+        quad([[X - 0.5, 1.95, z0], [X + 0.5, 1.95, z0],
+              [X + 0.5, 2.08, z0], [X - 0.5, 2.08, z0]], steelS);      // the cap on top
+        if (px > 6) {
+          quad([[X - 0.3, 1.34, z0], [X + 0.3, 1.34, z0],
+                [X + 0.3, 1.72, z0], [X - 0.3, 1.72, z0]], dark);      // the display
+          quad([[X - 0.62, 0.85, z0], [X - 0.45, 0.85, z0],
+                [X - 0.45, 1.28, z0], [X - 0.62, 1.28, z0]], dark);    // nozzle in its boot
+        }
+      });
 
       /* ── the price board, the only thing that HAS to be readable ──
          It carries BOTH prices: the litre and the kWh, one row each, of
