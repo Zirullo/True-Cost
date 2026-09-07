@@ -77,7 +77,7 @@
   `t.veh`, il log e il Report mostrano solo la metà della vettura in uso, e i
   diciotto viaggi hanno un gemello elettrico sulle stesse tratte col consumo
   derivato dalla curva viva. Sullo stesso mese e sugli stessi 1194 km:
-  **€ 151.61 contro € 131.84**, con l'ordine dei viaggi che si rovescia fra
+  **€ 151.61 contro € 131.33**, con l'ordine dei viaggi che si rovescia fra
   autostrada e città. Con essi una serie storica dei prezzi elettrici
   **derivata e dichiarata tale**, e una velatura di colore sul cockpit che si
   ferma al vetro — [01-decisioni.md](01-decisioni.md)

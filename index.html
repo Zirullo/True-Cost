@@ -2183,8 +2183,24 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       subUnit: 'kW',
       subVal:  s => Math.round(s.currentKw),
       gearVal: s => s.engineOn ? 'D' : 'P',
-      /* kWh / 100 km in traction, from 06-archivio-bev.md */
-      per100: v => 0.00055 * v * v + 0.030 * v + 13.0,
+      /* kWh / 100 km in traction, from 06-archivio-bev.md — RE-CALIBRATED.
+         The inherited curve carried a constant of 13.0, which is a WLTP
+         number: it has the cycle's accelerations baked into it. But this
+         model charges acceleration separately, in update(), so the battery
+         car was paying for the same kilowatt-hour twice — and it was the
+         only one of the four doing it, because the petrol car's own
+         constant is legitimately standing in for a thermal engine's
+         efficiency collapsing at light load, which a motor does not have.
+
+         What replaces it is the road load itself: 0.5·rho·CdA·v3 for the
+         air and crr·m·g·v for the tyres, plus 0.5 kW of auxiliaries, over
+         an 87 % driveline. CdA 0.75, crr 0.011, 1600 kg — an Avenger. Fit
+         over 70-150 km/h, because a motorway is what this demo drives.
+
+         At 128 it barely moved, 25.9 -> 24.1, which is the point: the
+         headline comparison was never the thing that was wrong. Below
+         50 it halves, and that is the double count coming out. */
+      per100: v => 0.00115 * v * v - 0.014 * v + 7.0,
       /* ready and standing still: only the auxiliaries — climate and
          electronics — about 0.4 kW. Not zero, but nothing like 0.7 L/h */
       idleRate: 0.4,
@@ -5060,13 +5076,49 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         }));
       });
 
+      /* ── the same month, driven electric ──────────────────────────
+         Read off the curve, because a battery car has no petrol self to be
+         discounted from — but NOT off the curve alone, and this is the
+         correction the re-calibration forced.
+
+         `per100` is a cruise curve and `kmh` is an AVERAGE. A trip is not
+         driven at its average: the Torino-Milano hour is 120 on the
+         autostrada and 30 on the ramps, and because consumption is convex
+         in speed, reading the mean under-reads the trip. That is Jensen,
+         it is worth about a quarter on a motorway run, and the old curve
+         was hiding it inside the 13.0 constant that has just gone.
+
+         So the same trick the hybrid twin uses, in the other direction:
+         one factor per character, and `char` already knows which. They are
+         not invented either — each one is the ratio between a plausible
+         speed profile for that character, driven through this very curve
+         and charged for its own stops, and what the curve says at the
+         average that profile produces:
+
+           road  120 km/h with ramps at 31, one slowdown every 12 km
+           mix    95 / 62 / 30, a stop every other kilometre
+           city   46 and 24, two and a half stops per kilometre
+
+         which land at 19.8 / 14.8 / 12.4 kWh per 100 km. Those are the
+         figures an Avenger returns on those three kinds of day.
+
+         ONE DECLARED SIMPLIFICATION, and it is why these are typed here
+         rather than driven live: the stops above are charged at a real
+         car's recovery, 65 % of the kinetic energy back. The live model
+         only regenerates while the BRAKE PEDAL is held, and the pedal in
+         here sheds 20 km/h per second — hard enough that the 45 kW ceiling
+         turns most of a stop into heat. On a motorway the two agree, which
+         is where this demo is driven. In town the log is the more honest
+         of the two, and closing that gap means giving the live car
+         lift-off regeneration. */
+      const BEV_C = { road: 1.46, mix: 1.45, city: 1.60 };
       petrol.forEach(t => {
         const kmh = t.km / (t.min / 60);
         TRIPS.push(Object.assign({}, t, {
           veh: 'bev',
           /* kWh / 100 km. The field is still called per100 - the same debt the
              live state carries, and the PHEV will settle it for both. */
-          per100: PT.bev.per100(kmh)
+          per100: PT.bev.per100(kmh) * BEV_C[t.char]
         }));
       });
 

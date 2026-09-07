@@ -87,7 +87,7 @@ altra auto apre riproducibile. La lotteria comincia dalla prima ricarica.
 | ICE | 48.09 km | 5.02 L | € 9.55 |
 | HEV | 48.09 km | 3.07 L | € 6.30 |
 | **PHEV** | 48.09 km | **0.68 L + 11.40 kWh** | **€ 4.25** |
-| BEV | 48.09 km | 12.43 kWh | € 3.11 |
+| BEV | 48.09 km | 11.57 kWh | € 2.89 |
 
 Si infila fra ibrido ed elettrico senza che sia stato tipato niente: è la curva a
 dirlo.

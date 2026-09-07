@@ -22,15 +22,45 @@ contro 0.25 domestici → +136%).
 
 ## Le formule che girano
 
-**In trazione**, calibrata su Jeep Avenger BEV 54 kWh — questa è arrivata intatta
-dall'archivio ed è `PT.bev.per100`:
+**In trazione**, calibrata su Jeep Avenger BEV 54 kWh. La curva arrivata
+dall'archivio è stata **ritarata il 2026-09-07** — vedi sotto — e adesso `PT.bev.per100` è:
 
 ```js
-kWh100 = 0.00055·v² + 0.030·v + 13.0        // kWh / 100 km
+kWh100 = 0.00115·v² − 0.014·v + 7.0          // kWh / 100 km
 ```
 
-A 128 km/h fa 25.9 kWh/100 km: a tariffa di casa sono **0.065 €/km**, contro i
+A 128 km/h fa 24.1 kWh/100 km: a tariffa di casa sono **0.060 €/km**, contro i
 **0.153 €/km** che l'ICE segna alla stessa velocità. È quello il confronto.
+
+### Perché è stata ritarata
+
+La curva vecchia portava una costante di **13.0 kWh/100**, che è un numero da
+ciclo WLTP: **ha le accelerazioni già dentro**. Ma da quando esiste
+[04 §3b](04-modello-costi.md) l'accelerazione la paga `accCost`, a parte. Il BEV
+stava quindi **pagando due volte lo stesso kWh** — ed era l'unico dei quattro a
+farlo, perché la costante dell'ICE sta legittimamente coprendo il crollo di
+rendimento di un termico a basso carico, che un motore elettrico non ha.
+
+Al suo posto c'è il carico stradale vero: `½·ρ·CdA·v³` per l'aria e `crr·m·g·v`
+per le gomme, più 0.5 kW di ausiliari, diviso per un driveline all'87 %. **CdA
+0.75, crr 0.011, 1600 kg** — un Avenger. Fit sui **70–150 km/h**, perché quello
+che questa demo guida è un'autostrada.
+
+| km/h | vecchia | nuova | fisica |
+|---|---|---|---|
+| 30 | 14.4 | **7.6** | 8.2 |
+| 50 | 15.9 | **9.2** | 9.3 |
+| 90 | 20.2 | **15.1** | 15.0 |
+| 128 | 25.9 | **24.1** | 24.1 |
+| 130 | 26.2 | **24.6** | 24.6 |
+
+**In autostrada non si è mosso quasi niente** (−7 % a 128), ed è il punto: il
+confronto di testa non era la cosa sbagliata. Sotto i 50 si dimezza, e quello è
+il doppio conteggio che esce.
+
+Il fotogramma d'apertura, che è **derivato** e non tipato
+(`OPEN_KM × per100(128) / 100`), segue da sé: da **12.43 kWh / € 3.11** a
+**11.57 kWh / € 2.89**. Verificato sul simulatore, non solo sulla carta.
 
 **In rigenerazione** — e qui l'archivio è stato superato, vedi in fondo:
 
@@ -121,7 +151,47 @@ Ogni viaggio porta `t.veh`, e le viste mostrano solo la metà della vettura in
 uso. I diciotto viaggi hanno un gemello elettrico sulle stesse tratte, col
 consumo derivato da `PT.bev.per100` sulla velocità media — e l'ordine del mese
 si rovescia, perché in autostrada l'elettrico è caro e in città è economico.
-Stesso mese, stessi 1194 km: **€ 151.61 contro € 131.84**.
+Stesso mese, stessi 1194 km: **€ 151.61 contro € 131.33**.
+
+### `BEV_C`: la media non è l'andatura
+
+Con la costante da WLTP tolta, leggere la curva **solo** sulla velocità media è
+diventato sbagliato in modo visibile, e va detto perché.
+
+`per100` è una curva di crociera, `kmh` è una **media**. Un viaggio non si guida
+alla propria media: l'ora Torino–Milano è 120 in autostrada e 30 sulle rampe, e
+siccome il consumo è **convesso** nella velocità, leggere la media **sotto-stima**
+il viaggio. È la disuguaglianza di Jensen, in autostrada vale circa un quarto, e
+la vecchia costante di 13.0 la stava nascondendo.
+
+Quindi lo stesso mestiere di `HEV_F`, nell'altro verso: **un fattore per
+carattere**, e `char` già sa quale. Non sono inventati nemmeno questi — ognuno è
+il rapporto fra un profilo di velocità plausibile per quel carattere, fatto
+passare **dentro questa curva** e addebitato delle proprie fermate, e quello che
+la curva dice alla media che quel profilo produce:
+
+| | profilo | kWh/100 reali | media | `BEV_C` |
+|---|---|---|---|---|
+| **road** | 120 con rampe a 31, un rallentamento ogni 12 km | 19.8 | 81.7 | **1.46** |
+| **mix** | 95 / 62 / 30, una fermata sì e una no | 14.8 | 59.6 | **1.45** |
+| **city** | 46 e 24, due fermate e mezza al chilometro | 12.4 | 33.5 | **1.60** |
+
+Sono le cifre che un Avenger restituisce in quelle tre giornate. Il totale del
+mese quasi non si muove — **218.6 → 217.7 kWh** — ma la **distribuzione** sì:
+l'autostrada rincara, la città cala del 14 %. Che è la forma giusta, e quella che
+la curva vecchia appiattiva.
+
+### Una semplificazione dichiarata
+
+È la ragione per cui questi numeri sono **tipati qui** invece che guidati dal vivo.
+Le fermate qui sopra sono addebitate al recupero di un'auto vera, **65 % della
+cinetica**. Il modello vivo rigenera **solo col pedale del freno premuto**, e il
+pedale qui dentro toglie **20 km/h al secondo**: così forte che il tetto dei 45 kW
+manda in calore la maggior parte di una frenata.
+
+**In autostrada i due coincidono**, ed è lì che questa demo si guida. In città il
+log è il più onesto dei due, e chiudere quel divario vuol dire dare all'auto viva
+la **rigenerazione in rilascio** — vedi [08-domande-aperte.md](08-domande-aperte.md).
 
 La serie storica dei prezzi elettrici è **derivata** da quella dei carburanti,
 smorzata al 55 %, e la vista lo dichiara (`EST. MARKET`). Dettagli e ragioni in

@@ -232,7 +232,7 @@ contrario. Non è stato arrangiato, cade fuori dalla fisica — ed è la cosa pi
 interessante che il confronto abbia da dire.
 
 Il totale, sullo stesso mese e sugli stessi **1194 km**: **€ 151.61 a benzina
-contro € 131.84 in elettrico**. Meno di quanto la retorica dell'elettrico
+contro € 131.33 in elettrico**. Meno di quanto la retorica dell'elettrico
 lascerebbe pensare, e il motivo si legge nel pannello: quei kWh sono comprati
 alle colonnine a 0.60, non al muro di casa a 0.25.
 

@@ -52,7 +52,16 @@ Da chiarire quando serve. Non bloccano il lavoro, ma cambiano le scelte.
   acceso per 3:34, € 0.08 — l'1 % di questo viaggio, su nessuna distanza»*. Gli
   €/km istantanei restano 0 a vettura ferma: a 0 km/h non sono definiti
 - **Curva consumo**: ereditata dal simulatore precedente. Su quale vettura vogliamo
-  tararla davvero?
+  tararla davvero? — **il BEV è stato staccato dall'eredità il 2026-09-07** e adesso
+  sta su carico stradale fisico ([06-archivio-bev.md](06-archivio-bev.md)). L'ICE e
+  i due ibridi restano quelli della foto, e reggono bene il confronto con la realtà
+- **Rigenerazione solo col pedale del freno**: `update()` recupera energia
+  unicamente quando `held.brake` è vero, e il pedale toglie **20 km/h al secondo** —
+  così forte che il tetto dei 45 kW manda in calore la maggior parte di una
+  frenata. Un'auto elettrica vera recupera soprattutto **in rilascio**, dove qui
+  non torna niente. In autostrada non si vede; in città fa una differenza grande, ed
+  è il motivo per cui il gemello elettrico dei diciotto viaggi ha un `BEV_C` tipato
+  invece di essere guidato dal vivo. Vale la pena dare regen al rilascio?
 
 ## Fedeltà visiva
 

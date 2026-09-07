@@ -250,7 +250,7 @@ ed è la tesi del prodotto messa sullo schermo prima che qualcuno tocchi un coma
 |---|---|---|---|
 | ICE | 48.09 km | 5.02 L | **€ 9.55** |
 | HEV | 48.09 km | 3.07 L | **€ 6.30** |
-| BEV | 48.09 km | 12.43 kWh | **€ 3.11** |
+| BEV | 48.09 km | 11.57 kWh | **€ 2.89** |
 
 L'ICE tiene la coppia della foto, `openUnits: 5.02` / `openCost: 9.55`, incoerenza
 ereditata compresa (non sono mai stati il prodotto l'uno dell'altro: nemmeno

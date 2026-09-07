@@ -60,7 +60,7 @@ precedente, plausibile per una compatta a benzina.
 ### Le altre due curve
 
 ```js
-bev: v => 0.00055·v² + 0.030·v + 13.0                 // kWh / 100 km
+bev: v => 0.00115·v² − 0.014·v + 7.0                  // kWh / 100 km
 hev: v => ice(v) · (0.90 − 0.10·e^(−v/45))            // L / 100 km, solo motore
 ```
 
@@ -141,7 +141,7 @@ derivano dalla propria curva a `OPEN_KMH`:
 |---|---|---|---|
 | ICE | 48.09 km | 5.02 L | € 9.55 |
 | HEV | 48.09 km | 3.07 L | € 6.30 |
-| BEV | 48.09 km | 12.43 kWh | € 3.11 |
+| BEV | 48.09 km | 11.57 kWh | € 2.89 |
 
 Stessa strada, tre conti — [12-full-hybrid.md](12-full-hybrid.md).
 
