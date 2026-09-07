@@ -1880,9 +1880,9 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     refuelPrice: 2.15,        // what the fuel in the tank actually cost
     marketPrice: 1.85,        // live average around the vehicle: the centre the
                               // stations along the road scatter around
-    tankCapacity: 45, tankLiters: 27.5,
-    tripKm: OPEN_KM, tripLiters: 5.02, tripCost: 9.55,
-    instantEurKm: 0.14, instantL100: 7.14,
+    tankCapacity: 45, tankUnits: 27.5,
+    tripKm: OPEN_KM, tripUnits: 5.02, tripCost: 9.55,
+    instantEurKm: 0.14, instantPer100: 7.14,
     /* ── added with the BEV variant ── */
     vehicle: 'ice',           // which profile in PT is under us
     currentKw: 33,            // motor power, signed: negative is regeneration
@@ -1905,7 +1905,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
      stay single copies of one piece of logic instead of forking.
 
      A NOTE ON NAMES, and it is a debt, not a design: the state fields are
-     still called tripLiters / tankLiters / instantL100. Under the BEV
+     still called tripUnits / tankUnits / instantPer100. Under the BEV
      profile they carry kWh. Renaming them means touching the app module
      (Cost history, Report, Trips), which belongs to the next pass; the
      PHEV will force the issue properly, because it burns both. The full
@@ -2279,7 +2279,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
   }
 
   function resetTrip() {
-    state.tripKm = 0; state.tripLiters = 0; state.tripCost = 0;
+    state.tripKm = 0; state.tripUnits = 0; state.tripCost = 0;
   }
   /* The cluster's counters and the trip the app is recording are one
      thing. RESET has to move both, or from that moment on the Trips pane
@@ -2336,9 +2336,9 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
      ══════════════════════════════════════════════════════════ */
   const garage = {};        // vehicle id -> the state that vehicle was left in
   const CARRY = ['engineOn', 'targetSpeed', 'currentSpeed', 'currentRpm',
-                 'currentKw', 'gear', 'shiftLock', 'refuelPrice', 'tankLiters',
-                 'tripKm', 'tripLiters', 'tripCost', 'instantEurKm',
-                 'instantL100', 'chargedOut', 'buffKwh', 'hevMode'];
+                 'currentKw', 'gear', 'shiftLock', 'refuelPrice', 'tankUnits',
+                 'tripKm', 'tripUnits', 'tripCost', 'instantEurKm',
+                 'instantPer100', 'chargedOut', 'buffKwh', 'hevMode'];
 
   function stash(id) {
     const box = {};
@@ -2362,9 +2362,9 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       engineOn: true, targetSpeed: 0, currentSpeed: 0,
       currentRpm: 0, currentKw: 0, gear: 0, shiftLock: 0,
       refuelPrice: price,
-      tankLiters: P.startLevel,
-      tripKm: OPEN_KM, tripLiters: units, tripCost: cost,
-      instantEurKm: 0, instantL100: 0,
+      tankUnits: P.startLevel,
+      tripKm: OPEN_KM, tripUnits: units, tripCost: cost,
+      instantEurKm: 0, instantPer100: 0,
       chargedOut: false,       // has this charge been bought away from home?
       /* the hybrid is handed over with its buffer part full, the way one
          comes back from a service: enough to pull away silently */
@@ -2513,7 +2513,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
          Boarding the battery AFTER moving the slider already reads the new
          tariff, because fresh() prices the opening drive at whatever it
          says then. This is the same two acts in the other order. */
-      state.tripCost = state.tripLiters * state.homeTariff;
+      state.tripCost = state.tripUnits * state.homeTariff;
     }
     paintTariff();
   });
@@ -2610,7 +2610,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
   function refuel() {
     const st = road.station();
     if (st.dist > REFUEL_RANGE) return;     // no station within reach
-    state.tankLiters  = car().capacity;
+    state.tankUnits  = car().capacity;
     state.refuelPrice = st.price;
     state.chargedOut  = true;      // this energy did NOT come off the wall at home
     promptPrice.textContent = st.price.toFixed(2) + ' ' + car().priceUnit;
@@ -3859,7 +3859,13 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
        road it stands. Same metre of road, same tree — they never shimmer,
        and no two in view are the same. */
     const TREE_STEP = 11;                   // m between slots (some stay empty)
-    const TREE_GAP = 26;                    // m of clearance kept around a station
+    /* Clearance around a forecourt, and it is deliberately LOPSIDED: the
+       station has to be seen coming. A row of trees standing right up to
+       its edge hid the price board until it was too close to read, so the
+       verge is cleared for a long approach — 100 m, about 2.8 s at 130 —
+       and closes again just past the plot. Behind us it does not matter. */
+    const TREE_GAP_IN = 100;                // m of clearance BEFORE a station
+    const TREE_GAP_OUT = 26;                // m kept clear just past it
     const TREE_FAR = 300;                   // past this the backdrop treeline does the job
 
     /* the greens a verge actually holds: cypress dark, poplar bright, olive,
@@ -3951,7 +3957,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         if (z < 6 || z > TREE_FAR) continue;
         if (side > 0) {                                             // keep the forecourt clear
           const m = s % ST_EVERY;
-          if (m < TREE_GAP || m > ST_EVERY - TREE_GAP) continue;
+          if (m < TREE_GAP_OUT || m > ST_EVERY - TREE_GAP_IN) continue;
         }
         if (overpassAt(s) < OVP_GAP) continue;                      // and the bridge deck
         const X = side * (near + hash(n * 37 + salt) * span), seed = n * 3 + salt;
@@ -3995,7 +4001,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
 
        One depth per object, not per polygon: the station is judged at its
        totem's z and a bridge at its deck's. Nothing on this verge is long
-       enough in z for that to show — trees keep TREE_GAP clear of a
+       enough in z for that to show — trees keep TREE_GAP_IN/OUT clear of a
        forecourt and OVP_GAP of a deck, which is more than either is deep. */
     let VERGE = [];
     const at = (z, draw) => VERGE.push({ z: z, draw: draw });
@@ -4704,24 +4710,24 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
           for by the month, not by the trip. Cost history scrolls them all;
           REPORT selects, totals and sends them. ── */
     const TRIPS = [
-      { back: 1,  route: 'Torino &ndash; Milano',  km: 142.6, min: 95,  l100: 6.0, char: 'road', fill: 2, u: 0.62, v: 0.93, biz: 1 },
-      { back: 2,  route: 'Commute &middot; A55',   km: 38.4,  min: 34,  l100: 7.6, char: 'mix',  fill: 5, u: 0.44, v: 0.55, biz: 0 },
-      { back: 4,  route: 'Milano &ndash; Genova',  km: 118.9, min: 88,  l100: 6.1, char: 'road', fill: 3, u: 0.28, v: 0.06, biz: 1 },
-      { back: 6,  route: 'City &middot; Torino',   km: 22.7,  min: 41,  l100: 9.4, char: 'city', fill: 4, u: 0.71, v: 0.62, biz: 0 },
-      { back: 7,  route: 'Torino &ndash; Asti',    km: 61.3,  min: 47,  l100: 6.4, char: 'road', fill: 1, u: 0.19, v: 0.77, biz: 1 },
-      { back: 8,  route: 'Client &middot; Rivoli', km: 31.8,  min: 44,  l100: 8.7, char: 'city', fill: 2, u: 0.55, v: 0.31, biz: 1 },
-      { back: 9,  route: 'Commute &middot; A55',   km: 38.1,  min: 37,  l100: 7.8, char: 'mix',  fill: 3, u: 0.83, v: 0.12, biz: 0 },
-      { back: 11, route: 'Milano &ndash; Brescia', km: 96.4,  min: 71,  l100: 6.2, char: 'road', fill: 4, u: 0.37, v: 0.68, biz: 1 },
-      { back: 12, route: 'City &middot; Milano',   km: 27.5,  min: 52,  l100: 9.9, char: 'city', fill: 5, u: 0.66, v: 0.24, biz: 1 },
-      { back: 14, route: 'Torino &ndash; Aosta',   km: 113.2, min: 82,  l100: 6.6, char: 'road', fill: 2, u: 0.08, v: 0.49, biz: 1 },
-      { back: 15, route: 'Weekend &middot; Langhe',km: 88.7,  min: 79,  l100: 7.1, char: 'mix',  fill: 3, u: 0.91, v: 0.85, biz: 0 },
-      { back: 17, route: 'Commute &middot; A55',   km: 38.6,  min: 33,  l100: 7.5, char: 'mix',  fill: 1, u: 0.23, v: 0.41, biz: 0 },
-      { back: 19, route: 'Site &middot; Novara',   km: 74.9,  min: 63,  l100: 6.9, char: 'mix',  fill: 4, u: 0.48, v: 0.17, biz: 1 },
-      { back: 21, route: 'Milano &ndash; Bergamo', km: 58.2,  min: 49,  l100: 6.5, char: 'road', fill: 2, u: 0.74, v: 0.58, biz: 1 },
-      { back: 23, route: 'City &middot; Torino',   km: 19.4,  min: 38,  l100: 10.2,char: 'city', fill: 6, u: 0.14, v: 0.72, biz: 0 },
-      { back: 25, route: 'Torino &ndash; Cuneo',   km: 101.7, min: 76,  l100: 6.3, char: 'road', fill: 3, u: 0.59, v: 0.09, biz: 1 },
-      { back: 27, route: 'Client &middot; Chivasso',km: 42.3, min: 46,  l100: 8.1, char: 'mix',  fill: 5, u: 0.33, v: 0.87, biz: 1 },
-      { back: 29, route: 'Milano &ndash; Piacenza',km: 79.5,  min: 61,  l100: 6.4, char: 'road', fill: 2, u: 0.87, v: 0.36, biz: 1 }
+      { back: 1,  route: 'Torino &ndash; Milano',  km: 142.6, min: 95,  per100: 6.0, char: 'road', fill: 2, u: 0.62, v: 0.93, biz: 1 },
+      { back: 2,  route: 'Commute &middot; A55',   km: 38.4,  min: 34,  per100: 7.6, char: 'mix',  fill: 5, u: 0.44, v: 0.55, biz: 0 },
+      { back: 4,  route: 'Milano &ndash; Genova',  km: 118.9, min: 88,  per100: 6.1, char: 'road', fill: 3, u: 0.28, v: 0.06, biz: 1 },
+      { back: 6,  route: 'City &middot; Torino',   km: 22.7,  min: 41,  per100: 9.4, char: 'city', fill: 4, u: 0.71, v: 0.62, biz: 0 },
+      { back: 7,  route: 'Torino &ndash; Asti',    km: 61.3,  min: 47,  per100: 6.4, char: 'road', fill: 1, u: 0.19, v: 0.77, biz: 1 },
+      { back: 8,  route: 'Client &middot; Rivoli', km: 31.8,  min: 44,  per100: 8.7, char: 'city', fill: 2, u: 0.55, v: 0.31, biz: 1 },
+      { back: 9,  route: 'Commute &middot; A55',   km: 38.1,  min: 37,  per100: 7.8, char: 'mix',  fill: 3, u: 0.83, v: 0.12, biz: 0 },
+      { back: 11, route: 'Milano &ndash; Brescia', km: 96.4,  min: 71,  per100: 6.2, char: 'road', fill: 4, u: 0.37, v: 0.68, biz: 1 },
+      { back: 12, route: 'City &middot; Milano',   km: 27.5,  min: 52,  per100: 9.9, char: 'city', fill: 5, u: 0.66, v: 0.24, biz: 1 },
+      { back: 14, route: 'Torino &ndash; Aosta',   km: 113.2, min: 82,  per100: 6.6, char: 'road', fill: 2, u: 0.08, v: 0.49, biz: 1 },
+      { back: 15, route: 'Weekend &middot; Langhe',km: 88.7,  min: 79,  per100: 7.1, char: 'mix',  fill: 3, u: 0.91, v: 0.85, biz: 0 },
+      { back: 17, route: 'Commute &middot; A55',   km: 38.6,  min: 33,  per100: 7.5, char: 'mix',  fill: 1, u: 0.23, v: 0.41, biz: 0 },
+      { back: 19, route: 'Site &middot; Novara',   km: 74.9,  min: 63,  per100: 6.9, char: 'mix',  fill: 4, u: 0.48, v: 0.17, biz: 1 },
+      { back: 21, route: 'Milano &ndash; Bergamo', km: 58.2,  min: 49,  per100: 6.5, char: 'road', fill: 2, u: 0.74, v: 0.58, biz: 1 },
+      { back: 23, route: 'City &middot; Torino',   km: 19.4,  min: 38,  per100: 10.2,char: 'city', fill: 6, u: 0.14, v: 0.72, biz: 0 },
+      { back: 25, route: 'Torino &ndash; Cuneo',   km: 101.7, min: 76,  per100: 6.3, char: 'road', fill: 3, u: 0.59, v: 0.09, biz: 1 },
+      { back: 27, route: 'Client &middot; Chivasso',km: 42.3, min: 46,  per100: 8.1, char: 'mix',  fill: 5, u: 0.33, v: 0.87, biz: 1 },
+      { back: 29, route: 'Milano &ndash; Piacenza',km: 79.5,  min: 61,  per100: 6.4, char: 'road', fill: 2, u: 0.87, v: 0.36, biz: 1 }
     ];
     const rowsT = [];
     /* the month is written out here rather than left to toLocaleDateString,
@@ -4769,23 +4775,23 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
          log and the car under you had better agree about the same month. */
       const HEV_F = { road: 0.88, mix: 0.72, city: 0.58 };
       petrol.forEach(t => {
-        TRIPS.push(Object.assign({}, t, { veh: 'hev', l100: t.l100 * HEV_F[t.char] }));
+        TRIPS.push(Object.assign({}, t, { veh: 'hev', per100: t.per100 * HEV_F[t.char] }));
       });
 
       petrol.forEach(t => {
         const kmh = t.km / (t.min / 60);
         TRIPS.push(Object.assign({}, t, {
           veh: 'bev',
-          /* kWh / 100 km. The field is still called l100 - the same debt the
+          /* kWh / 100 km. The field is still called per100 - the same debt the
              live state carries, and the PHEV will settle it for both. */
-          l100: PT.bev.per100(kmh)
+          per100: PT.bev.per100(kmh)
         }));
       });
 
       TRIPS.forEach(t => {
         const d = new Date(); d.setDate(d.getDate() - t.back);
         t.date = ('0' + d.getDate()).slice(-2) + ' ' + MON[d.getMonth()];
-        t.lit  = t.km * t.l100 / 100;
+        t.units  = t.km * t.per100 / 100;
         t.kmh  = t.km / (t.min / 60);
 
         /* 25 bars whose MEAN is 1: the shape of the trip, with no price in
@@ -4851,7 +4857,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         t.paid = t.veh === 'bev'
           ? PRICES.chargeAgo(t.back + t.fill, t.u, t.v, PT.bev.energyBase)
           : PRICES.pumpAgo(t.back + t.fill, t.u, t.v);
-        t.eur  = t.lit * t.paid;
+        t.eur  = t.units * t.paid;
         t.epk  = t.eur / t.km;
         t.bars = t.raw.map(v => v * t.epk);
       });
@@ -4929,11 +4935,11 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       /* a past trip is read in the units of the car that DROVE it, which is
          the one under us: the log only ever shows this vehicle's own half */
       const e = !PT[t.veh].liquid;
-      T.sub.innerHTML   = t.km.toFixed(1) + ' km &middot; ' + t.lit.toFixed(2) +
+      T.sub.innerHTML   = t.km.toFixed(1) + ' km &middot; ' + t.units.toFixed(2) +
                           (e ? ' kWh' : ' L') +
                           ' &middot; ' + (h ? h + 'h ' + m + 'm' : m + ' min');
       T.c1.textContent = t.epk.toFixed(2);  T.l1.innerHTML = '&euro;/KM AVG';
-      T.c2.textContent = t.l100.toFixed(1);
+      T.c2.textContent = t.per100.toFixed(1);
       T.l2.innerHTML = (e ? 'KWH' : 'L') + ' / 100 KM';
       T.c3.textContent = Math.round(t.kmh); T.l3.innerHTML = 'AVG KM/H';
       T.c4.textContent = t.paid.toFixed(2);
@@ -4949,11 +4955,11 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       T.lab.innerHTML     = 'THIS TRIP &middot; COST SO FAR';
       T.total.textContent = state.tripCost.toFixed(2);
       T.sub.innerHTML     = state.tripKm.toFixed(1) + ' km &middot; ' +
-                            state.tripLiters.toFixed(2) +
+                            state.tripUnits.toFixed(2) +
                             (car().liquid ? ' L burned' : ' kWh used');
       T.c1.textContent = state.instantEurKm.toFixed(2); T.l1.innerHTML = '&euro;/KM NOW';
       T.c2.textContent = avg.toFixed(2);                T.l2.innerHTML = '&euro;/KM AVG';
-      T.c3.textContent = state.instantL100.toFixed(1);
+      T.c3.textContent = state.instantPer100.toFixed(1);
       T.l3.innerHTML = (car().liquid ? 'L' : 'KWH') + ' / 100 KM';
       T.c4.textContent = state.refuelPrice.toFixed(2);
       T.l4.innerHTML = (car().liquid ? 'TANK &euro;/L' : 'CHARGE &euro;/KWH');
@@ -5152,7 +5158,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       const mean = prices.length ? prices.reduce((a, b) => a + b, 0) / prices.length : 0;
       /* what a fill would take: litres under a tank, kWh under a battery.
          The saving quoted in the footer is against THAT, whichever it is. */
-      const fillUnits = Math.max(5, state.tankCapacity - state.tankLiters);
+      const fillUnits = Math.max(5, state.tankCapacity - state.tankUnits);
 
       world.forEach(s => { s.row.hidden = !inScope(s); });
       order.forEach((s, rank) => {
@@ -5743,8 +5749,8 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
        needs, the VAT line an accountant looks for first. */
     const RP = {
       list: $('rp-list'), cnt: $('rp-cnt'), id: $('rp-id'),
-      eur: $('rp-eur'), km: $('rp-km'), lit: $('rp-lit'), epk: $('rp-epk'),
-      l100: $('rp-l100'), paid: $('rp-paid'),
+      eur: $('rp-eur'), km: $('rp-km'), units: $('rp-lit'), epk: $('rp-epk'),
+      per100: $('rp-l100'), paid: $('rp-paid'),
       splitpc: $('rp-splitpc'), splitbar: $('rp-splitbar'),
       biz: $('rp-biz'), prv: $('rp-prv'), vat: $('rp-vat'),
       env: $('rp-env'), send: $('rp-send'),
@@ -5823,13 +5829,13 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       const sel = TRIPS.filter(t => picked.has(t));
       const o = { n: sel.length, km: 0, lit: 0, eur: 0, bizEur: 0, bizKm: 0 };
       sel.forEach(t => {
-        o.km += t.km; o.lit += t.lit; o.eur += t.eur;
+        o.km += t.km; o.units += t.units; o.eur += t.eur;
         if (t.biz) { o.bizEur += t.eur; o.bizKm += t.km; }
       });
       o.prvEur = o.eur - o.bizEur;
       o.epk    = o.km ? o.eur / o.km : 0;
-      o.l100   = o.km ? o.lit / o.km * 100 : 0;
-      o.paid   = o.lit ? o.eur / o.lit : 0;
+      o.per100   = o.km ? o.units / o.km * 100 : 0;
+      o.paid   = o.units ? o.eur / o.units : 0;
       o.vat    = o.bizEur * (VAT_RATE / (1 + VAT_RATE));
       o.recov  = o.vat * VAT_RECOV;
       /* the period the claim covers, taken from the trips and not from the chip */
@@ -5942,9 +5948,9 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
 
       RP.eur.textContent  = o.eur.toFixed(2);
       RP.km.textContent   = o.km.toFixed(0);
-      RP.lit.textContent  = o.lit.toFixed(1);
+      RP.units.textContent  = o.units.toFixed(1);
       RP.epk.textContent  = o.epk.toFixed(3);
-      RP.l100.textContent = o.l100.toFixed(1);
+      RP.per100.textContent = o.per100.toFixed(1);
       RP.paid.textContent = o.paid.toFixed(2);
 
       const pc = o.eur ? o.bizEur / o.eur * 100 : 0;
@@ -6091,9 +6097,9 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
 
     let rule = 'smart', closeAfter = 300, assign = 'ask';
     let paused = false, armed = 0, kept = false;
-    let tKm = 0, tLit = 0, tEur = 0, tSec = 0, idleSec = 0, idleEur = 0;
+    let tKm = 0, tUnits = 0, tEur = 0, tSec = 0, idleSec = 0, idleEur = 0;
     let tStart = new Date();
-    let lastTKm = 0, lastTLit = 0, lastTEur = 0;
+    let lastTKm = 0, lastTUnits = 0, lastTEur = 0;
     let flash = 0, flashMsg = '';
     let pend = null, pendBiz = '1';
 
@@ -6119,7 +6125,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
        moved while Cost history says it has */
     (function seedTrip() {
       tKm  = lastTKm  = state.tripKm;
-      tLit = lastTLit = state.tripLiters;
+      tUnits = lastTUnits = state.tripUnits;
       tEur = lastTEur = state.tripCost;
       tSec = tKm / 78 * 3600;                       // ~37 min at a motorway average
       idleSec = 214;                                // two lights and a toll booth
@@ -6171,11 +6177,11 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
          let the car drive on while the log stays where it is, and it cannot
          do that by reading state.tripKm alone. */
       const dKm  = state.tripKm - lastTKm,
-            dLit = state.tripLiters - lastTLit,
+            dUnits = state.tripUnits - lastTUnits,
             dEur = state.tripCost - lastTEur;
-      lastTKm = state.tripKm; lastTLit = state.tripLiters; lastTEur = state.tripCost;
+      lastTKm = state.tripKm; lastTUnits = state.tripUnits; lastTEur = state.tripCost;
       if (dKm >= 0 && !paused) {
-        tKm += dKm; tLit += dLit; tEur += dEur; tSec += dt;
+        tKm += dKm; tUnits += dUnits; tEur += dEur; tSec += dt;
         /* at a standstill the wheels turn no euros: everything the tank
            loses is the cost of being switched on and going nowhere */
         if (state.engineOn && state.currentSpeed < 1) { idleSec += dt; idleEur += dEur; }
@@ -6212,7 +6218,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         : 'RECORDING';
       TM.eur.textContent  = tEur.toFixed(2);
       TM.sub.innerHTML    = 'since ' + hhmm(tStart) + ' &middot; ' +
-                            tLit.toFixed(2) + (car().liquid ? ' L burned' : ' kWh used');
+                            tUnits.toFixed(2) + (car().liquid ? ' L burned' : ' kWh used');
       TM.dur.textContent  = hms(tSec);
       TM.km.textContent   = tKm.toFixed(1);
       TM.epk.textContent  = (tKm > 0.05 ? tEur / tKm : 0).toFixed(2);
@@ -6248,8 +6254,8 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
 
     /* ── closing one, opening the next ── */
     function resetCounters() {
-      tKm = 0; tLit = 0; tEur = 0; tSec = 0; idleSec = 0; idleEur = 0;
-      lastTKm = state.tripKm; lastTLit = state.tripLiters; lastTEur = state.tripCost;
+      tKm = 0; tUnits = 0; tEur = 0; tSec = 0; idleSec = 0; idleEur = 0;
+      lastTKm = state.tripKm; lastTUnits = state.tripUnits; lastTEur = state.tripCost;
       tStart = new Date();
       paused = false; armed = 0;
     }
@@ -6260,7 +6266,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       const t = {
         back: 0, date: today(), start: tStart, end: new Date(), why: why,
         km: tKm, min: min, kmh: tKm / (min / 60),
-        lit: tLit, l100: tKm > 0.05 ? tLit / tKm * 100 : 0,
+        units: tUnits, per100: tKm > 0.05 ? tUnits / tKm * 100 : 0,
         eur: tEur, epk: epk, paid: state.refuelPrice,
         idleSec: idleSec, idleEur: idleEur,
         biz: byTime(tStart) ? 1 : 0, live: true, fixed: true
@@ -6342,7 +6348,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     TM.pause.addEventListener('click', () => {
       paused = !paused;
       if (!paused) {
-        lastTKm = state.tripKm; lastTLit = state.tripLiters; lastTEur = state.tripCost;
+        lastTKm = state.tripKm; lastTUnits = state.tripUnits; lastTEur = state.tripCost;
       }
       flashUp(paused ? 'PAUSED — THESE KM WILL NOT BE CLAIMED' : 'RECORDING AGAIN');
       tmPaint(); TM.pause.blur();
@@ -6373,12 +6379,12 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       if (!pend || TM.merge.disabled) return;
       const p = lastOwn();
       if (!p) return;
-      p.km += pend.km; p.lit += pend.lit; p.eur += pend.eur; p.min += pend.min;
+      p.km += pend.km; p.units += pend.units; p.eur += pend.eur; p.min += pend.min;
       p.idleSec += pend.idleSec; p.idleEur += pend.idleEur;
       p.kmh  = p.km / (p.min / 60);
-      p.l100 = p.lit / p.km * 100;
+      p.per100 = p.units / p.km * 100;
       p.epk  = p.eur / p.km;
-      p.paid = p.lit ? p.eur / p.lit : p.paid;
+      p.paid = p.units ? p.eur / p.units : p.paid;
       p.bars = pend.bars.slice();
       p.raw  = p.epk ? p.bars.map(v => v / p.epk) : p.bars.slice();
       paintRows();
@@ -6528,7 +6534,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
        Standing still with the key on: a running engine burns 0.7 L/h that
        covers no ground, an electric car draws about 0.4 kW for climate and
        electronics. Neither is zero, and neither buys any distance. */
-    let stepU, instL100, instEurKm;
+    let stepU, instPer100, instEurKm;
     if (v < 1) {
       stepU = state.engineOn ? (P.idleRate / 3600) * dt : 0;
 
@@ -6551,7 +6557,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
           state.hevMode = 'EV';
         }
       }
-      instL100 = 0;
+      instPer100 = 0;
       instEurKm = 0;                      // at 0 km/h €/km is not defined
     } else {
       stepU = stepKm * (P.per100(v) / 100);
@@ -6656,10 +6662,10 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
          it stays one. A frame that covered no ground says nothing about
          consumption, so the figure simply stands still. */
       if (stepKm > 0) {
-        instL100  = (stepU / stepKm) * 100;
+        instPer100  = (stepU / stepKm) * 100;
         instEurKm = (stepU / stepKm) * state.refuelPrice;
       } else {
-        instL100  = state.instantL100;
+        instPer100  = state.instantPer100;
         instEurKm = state.instantEurKm;
       }
     }
@@ -6678,7 +6684,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
        them but the three places that print them: the cost bars sample the
        trip's own euros and kilometres, not these. */
     const kInst = Math.min(1, dt * INST_DAMP);
-    state.instantL100  += (instL100  - state.instantL100)  * kInst;
+    state.instantPer100  += (instPer100  - state.instantPer100)  * kInst;
     state.instantEurKm += (instEurKm - state.instantEurKm) * kInst;
 
     /* the readout under the dial, and each driveline answers differently.
@@ -6698,13 +6704,13 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     }
 
     state.tripKm     += stepKm;
-    state.tripLiters += stepU;
+    state.tripUnits += stepU;
     /* units times the price of what is in the tank or the battery — which
        for a moving car is exactly stepKm * instantEurKm, and for a standing
        one is the idle draw the branch above worked out. Under regeneration
        every one of these goes the other way, the trip cost included. */
     state.tripCost   += stepU * state.refuelPrice;
-    state.tankLiters  = Math.max(0, Math.min(P.capacity, state.tankLiters - stepU));
+    state.tankUnits  = Math.max(0, Math.min(P.capacity, state.tankUnits - stepU));
   }
 
   /* ── render ─────────────────────────────────────────── */
@@ -6727,7 +6733,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     el.rpm.classList.toggle('regen', !P.liquid && state.currentKw < -0.5);
 
     el.dist.textContent   = state.tripKm.toFixed(2);
-    el.cons.textContent   = state.tripLiters.toFixed(2);
+    el.cons.textContent   = state.tripUnits.toFixed(2);
     el.total.textContent  = 'EUR ' + state.tripCost.toFixed(2);
     el.refuel.textContent = state.refuelPrice.toFixed(2) + ' ' + P.priceUnit;
 
@@ -6741,7 +6747,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
 
     syncRefuelPrompt(st.dist, performance.now());
 
-    const lvl = Math.max(0, Math.min(1, state.tankLiters / P.capacity));
+    const lvl = Math.max(0, Math.min(1, state.tankUnits / P.capacity));
     el.fuelbar.setAttribute('width', (lvl * 100).toFixed(1));
 
     /* the buffer, and it is the only thing on this panel that MOVES while
