@@ -3575,14 +3575,25 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       /* the pillars, each with its own shaded cheek and a plinth at the foot.
          A post in one flat grey is a stick; the same post in two greys is a
          column, and the plinth is what stops it being pushed into the
-         concrete like a pin. */
-      [[ST_X + 1, zN + 2], [ST_X + 13, zN + 2], [ST_X + 1, zF - 2], [ST_X + 13, zF - 2]]
-        .forEach(pl => {
-          pillar(pl[0], pl[1], 3.9, 0.26, steel);
-          quad([[pl[0] + 0.07, 0, pl[1]], [pl[0] + 0.26, 0, pl[1]],
-                [pl[0] + 0.26, 3.9, pl[1]], [pl[0] + 0.07, 3.9, pl[1]]], steelS);
-          pillar(pl[0], pl[1], 0.3, 0.36, concD);
-        });
+         concrete like a pin.
+
+         They go up in TWO calls, and that is the point of the helper: the
+         far pair stands at zF - 2 and the near pair at zN + 2, eighteen
+         metres apart, with the pumps sitting between them. Painting all
+         four in one go put the near pillar behind a pump nine metres
+         FURTHER away, and a column crossed by something that should be
+         behind it is the one error the eye reads as parallax — the pillar
+         appears to slide through the forecourt at its own speed.
+
+         It is the same lesson verge() learned for the whole verge, one
+         scale down: inside an object, too, the order has to be depth. */
+      const pillars = z => [ST_X + 1, ST_X + 13].forEach(X => {
+        pillar(X, z, 3.9, 0.26, steel);
+        quad([[X + 0.07, 0, z], [X + 0.26, 0, z],
+              [X + 0.26, 3.9, z], [X + 0.07, 3.9, z]], steelS);
+        pillar(X, z, 0.3, 0.36, concD);
+      });
+      pillars(zF - 2);                         // behind the pumps
 
       /* ── the islands, the pumps, and whoever is filling up ────
          Pumps standing straight on the tarmac look dropped there. Real ones
@@ -3624,6 +3635,8 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
                 [X - 0.45, 1.28, z0], [X - 0.62, 1.28, z0]], dark);    // nozzle in its boot
         }
       });
+
+      pillars(zN + 2);                         // and the near pair in front of them
 
       /* ── the price board, the only thing that HAS to be readable ──
          It carries BOTH prices: the litre and the kWh, one row each, of
