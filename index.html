@@ -3054,23 +3054,25 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         const xc = sxOf(X, z);
         const yTop = syOf(5.6, z), yBot = syOf(3.4, z);
         if (yBot < -RISE - 40 || xc - w > SW + 160) continue;
-        ctx.globalAlpha = Math.min(1, (320 - z) / 90);
-        const lw = Math.max(0.6, 0.16 * F / z);
-        ctx.fillStyle = '#5e666b';                        // the two legs
-        ctx.fillRect(xc - w * 0.3, yBot, lw, syOf(0, z) - yBot);
-        ctx.fillRect(xc + w * 0.3, yBot, lw, syOf(0, z) - yBot);
-        ctx.fillStyle = '#1d6142';                        // the panel
-        ctx.fillRect(xc - w / 2, yTop, w, yBot - yTop);
-        ctx.strokeStyle = '#e7efe9';
-        ctx.lineWidth = Math.max(0.5, 0.06 * F / z);
-        ctx.strokeRect(xc - w / 2, yTop, w, yBot - yTop);
-        const h = yBot - yTop;
-        if (h > 6) {                                      // unreadable legend
-          ctx.fillStyle = 'rgba(232,240,234,.9)';
-          ctx.fillRect(xc - w * 0.34, yTop + h * 0.24, w * 0.52, h * 0.13);
-          ctx.fillRect(xc - w * 0.34, yTop + h * 0.55, w * 0.40, h * 0.13);
-        }
-        ctx.globalAlpha = 1;
+        at(z, () => {
+          ctx.globalAlpha = Math.min(1, (320 - z) / 90);
+          const lw = Math.max(0.6, 0.16 * F / z);
+          ctx.fillStyle = '#5e666b';                        // the two legs
+          ctx.fillRect(xc - w * 0.3, yBot, lw, syOf(0, z) - yBot);
+          ctx.fillRect(xc + w * 0.3, yBot, lw, syOf(0, z) - yBot);
+          ctx.fillStyle = '#1d6142';                        // the panel
+          ctx.fillRect(xc - w / 2, yTop, w, yBot - yTop);
+          ctx.strokeStyle = '#e7efe9';
+          ctx.lineWidth = Math.max(0.5, 0.06 * F / z);
+          ctx.strokeRect(xc - w / 2, yTop, w, yBot - yTop);
+          const h = yBot - yTop;
+          if (h > 6) {                                      // unreadable legend
+            ctx.fillStyle = 'rgba(232,240,234,.9)';
+            ctx.fillRect(xc - w * 0.34, yTop + h * 0.24, w * 0.52, h * 0.13);
+            ctx.fillRect(xc - w * 0.34, yTop + h * 0.55, w * 0.40, h * 0.13);
+          }
+          ctx.globalAlpha = 1;
+        });
       }
     }
 
@@ -3276,29 +3278,30 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         const xc = sxOf(KM_X, z), w = 2 * KM_HALF * F / z, h = yBot - yTop;
         if (yTop > YMAX || xc + w / 2 < -260) continue;   // below the dash, or gone left
 
-        ctx.globalAlpha = Math.min(1, (340 - z) / 110);
+        at(z, () => {
+          ctx.globalAlpha = Math.min(1, (340 - z) / 110);
 
-        /* two legs down to the grass */
-        const lw = Math.max(0.6, 0.18 * F / z);
-        ctx.fillStyle = '#5b6670';
-        ctx.fillRect(sxOf(KM_X - KM_HALF * 0.5, z) - lw / 2, yBot, lw, Math.max(0, syOf(0, z) - yBot));
-        ctx.fillRect(sxOf(KM_X + KM_HALF * 0.5, z) - lw / 2, yBot, lw, Math.max(0, syOf(0, z) - yBot));
+          /* two legs down to the grass */
+          const lw = Math.max(0.6, 0.18 * F / z);
+          ctx.fillStyle = '#5b6670';
+          ctx.fillRect(sxOf(KM_X - KM_HALF * 0.5, z) - lw / 2, yBot, lw, Math.max(0, syOf(0, z) - yBot));
+          ctx.fillRect(sxOf(KM_X + KM_HALF * 0.5, z) - lw / 2, yBot, lw, Math.max(0, syOf(0, z) - yBot));
 
-        /* the panel. The two artworks alternate, both stamped full bleed.
-           (round: s is accumulated, not exact) */
-        ctx.imageSmoothingQuality = 'high';
-        if (Math.round(s / KM_EVERY) % 2) {
-          ctx.drawImage(BOARD_TC, xc - w / 2, yTop, w, h);
-        } else {
-          ctx.drawImage(LOGO, xc - w / 2, yTop, w, h);
-        }
-        ctx.strokeStyle = 'rgba(200,220,236,.7)';
-        ctx.lineWidth = Math.max(0.4, 0.05 * F / z);
-        ctx.strokeRect(xc - w / 2, yTop, w, h);
+          /* the panel. The two artworks alternate, both stamped full bleed.
+             (round: s is accumulated, not exact) */
+          ctx.imageSmoothingQuality = 'high';
+          if (Math.round(s / KM_EVERY) % 2) {
+            ctx.drawImage(BOARD_TC, xc - w / 2, yTop, w, h);
+          } else {
+            ctx.drawImage(LOGO, xc - w / 2, yTop, w, h);
+          }
+          ctx.strokeStyle = 'rgba(200,220,236,.7)';
+          ctx.lineWidth = Math.max(0.4, 0.05 * F / z);
+          ctx.strokeRect(xc - w / 2, yTop, w, h);
 
-        ctx.globalAlpha = 1;
+          ctx.globalAlpha = 1;
+        });
       }
-      ctx.globalAlpha = 1;
     }
 
 
@@ -3476,7 +3479,10 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       const idx = Math.floor(travel / ST_EVERY) + 1;
       const z0 = idx * ST_EVERY - travel;
       if (z0 > Z_FAR || z0 < 4) return;       // nothing in sight, or already beside us
+      at(z0, () => drawStation(idx, z0));
+    }
 
+    function drawStation(idx, z0) {
       const zN = Math.max(4, z0 - 11), zF = z0 + 11;   // the plot runs 22 m along the road
       const A = Math.min(1, (Z_FAR - z0) / 120);
       ctx.globalAlpha = A;
@@ -3785,7 +3791,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       for (let n = first; ; n++) {
         const z = n * OVP_EVERY + OVP_FIRST - travel;
         if (z > Z_FAR) break;
-        if (z > 2) drawOverpass(z);
+        if (z > 2) at(z, () => drawOverpass(z));
       }
     }
 
@@ -3972,10 +3978,12 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
           if (m < TREE_GAP || m > ST_EVERY - TREE_GAP) continue;
         }
         if (overpassAt(s) < OVP_GAP) continue;                      // and the bridge deck
-        ctx.globalAlpha = Math.min(1, (TREE_FAR - z) / 70);
-        drawTree(side * (near + hash(n * 37 + salt) * span), z, n * 3 + salt);
+        const X = side * (near + hash(n * 37 + salt) * span), seed = n * 3 + salt;
+        at(z, () => {
+          ctx.globalAlpha = Math.min(1, (TREE_FAR - z) / 70);
+          drawTree(X, z, seed);
+        });
       }
-      ctx.globalAlpha = 1;
     }
 
     /* Lateral offsets are the whole trick: a tree at 9.5 m leaves the frame
@@ -3984,6 +3992,48 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     function trees() {
       treeRow(0, -1, 19.5, 12);    // left: beyond the opposite carriageway
       treeRow(7,  1,  9.5, 13);    // right: from just past the guardrail outwards
+    }
+
+    /* ── the verge, painted once, farthest first ──────────────
+       Trees, billboards, motorway signs, the forecourt and the bridges all
+       stand on the same ground and read their distance the same way — z is
+       (their own metre mark) minus travel — so they have always MOVED
+       together. What was wrong was the order they were painted in: one
+       whole CATEGORY at a time, every tree, then every board, then the
+       station, then the bridges. That is a lie about depth, and the eye
+       catches it at once. A tree twenty metres away was being painted over
+       by a service area seventy metres away: the near thing kept being
+       swallowed by the far one, and what you see when that happens is not
+       a wrong overlap, it is the trees appearing to slide at a speed of
+       their own against the rest of the world.
+
+       So none of them paints itself any more. Each hands its drawing to
+       at(z, ...) with the depth it wants to be judged at, and the verge is
+       painted in one pass, back to front.
+
+       The barriers still go on top of the whole lot, and that is not a
+       compromise: the median wall and the guardrail are the nearest things
+       to the camera on their side of the road, so down any column of pixels
+       the barrier is nearer than whatever stands beyond it. Last is where
+       they belong. Same for the traffic, which runs nearer still.
+
+       One depth per object, not per polygon: the station is judged at its
+       totem's z and a bridge at its deck's. Nothing on this verge is long
+       enough in z for that to show — trees keep TREE_GAP clear of a
+       forecourt and OVP_GAP of a deck, which is more than either is deep. */
+    let VERGE = [];
+    const at = (z, draw) => VERGE.push({ z: z, draw: draw });
+
+    function verge() {
+      VERGE.length = 0;
+      trees();
+      kmSigns();          // the STELLANTIS boards, on the left
+      signs();            // the green motorway signs, on the right
+      stations();
+      overpasses();
+      VERGE.sort((a, b) => b.z - a.z);
+      for (let i = 0; i < VERGE.length; i++) VERGE[i].draw();
+      ctx.globalAlpha = 1;
     }
 
     /* ── background: sky, sun, clouds, ridges ───────────────── */
@@ -4470,13 +4520,13 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
 
       backdrop();
       ground();
-      trees();            // behind the barriers: they must occlude the trunks
-      kmSigns();          // the km billboards stand out on the left verge
-      medianWall();
-      guardrail();
-      signs();
-      stations();
-      overpasses();      // the bridges pass over the camera
+      /* everything standing on the verge — trees, boards, signs, the
+         forecourt, the bridges — in ONE pass, sorted back to front. See
+         verge(): painting them a category at a time is what made the trees
+         look as though they were moving at a speed of their own. */
+      verge();
+      medianWall();      // the barriers are the nearest things on their side
+      guardrail();       // of the road, so they belong on top of all of it
       traffic.sort((a, b) => b.z - a.z).forEach(drawVehicle);
 
       /* The haze used to go here: a milky gradient over everything from the
