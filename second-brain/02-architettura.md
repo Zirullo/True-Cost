@@ -47,17 +47,25 @@ sul display — accanto ai prezzi contro cui va confrontata. Vedi
 
 ### `PT`, i profili di powertrain
 
-Un oggetto per motorizzazione (`PT.ice`, `PT.bev`, il PHEV verrà), e `car()` che
-restituisce quello attivo secondo `state.vehicle`. Dentro un profilo sta tutto
-ciò che i due veicoli non condividono: **curva di consumo** (`per100`), unità ed
-etichette del cluster, capacità e livello di partenza, prezzo iniziale, consumo
-da fermo (`idleRate`), se ha un **cambio** (`hasGears`), e per l'elettrico i
-parametri della rigenerazione.
+Un oggetto per motorizzazione (`PT.ice`, `PT.hev`, `PT.bev`, il PHEV verrà), e
+`car()` che restituisce quello attivo secondo `state.vehicle`. Dentro un profilo
+sta tutto ciò che i veicoli non condividono: **curva di consumo** (`per100`),
+unità ed etichette del cluster, capacità e livello di partenza, prezzo iniziale,
+consumo da fermo (`idleRate`), quanto costa **guadagnare velocità** (`accCost`),
+e per chi ce l'ha i parametri della rigenerazione e del tampone.
+
+**Due bandiere, e vogliono dire cose diverse.** `liquid` riguarda i **libri**: le
+unità sono litri e si fa il pieno a una pompa. `hasGears` riguarda la
+**trasmissione**: ci sono rapporti discreti fra cui saltare. Erano la stessa
+domanda finché le auto erano due; il full hybrid le separa, perché è un e-CVT che
+compra benzina — [12-full-hybrid.md](12-full-hybrid.md).
 
 Il punto è che `update()` e `render()` **non si biforcano**: calcolano `stepU`,
 l'energia del passo nell'unità del profilo, e da lì discendono costo del viaggio,
-livello e €/km per entrambi. Un terzo veicolo è un terzo oggetto, non un terzo
-ramo.
+livello e €/km per tutti. I due slot sotto al tachimetro non hanno più un
+ternario: ogni profilo porta `subVal(state)` e `gearVal(state)` e risponde per sé
+— giri e marcia, giri e modo ibrido, o kW firmati e `D`. Un terzo veicolo è un
+terzo oggetto, non un terzo ramo, ed è andata davvero così.
 
 `garage` conserva lo stato di ciascun veicolo mentre non lo si guida (`CARRY`
 elenca i campi che viaggiano), così lo switch è una porta fra due auto e non un

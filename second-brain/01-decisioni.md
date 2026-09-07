@@ -5,6 +5,73 @@ Ordine cronologico inverso (la più recente in alto). Ogni voce: **cosa**, **per
 
 ---
 
+## 2026-09-07 · Un'auto che il risparmio se lo guadagna
+
+Terza motorizzazione: il **full hybrid**. Non si attacca mai a una presa, compra
+benzina al litro alle stesse pompe dell'ICE, e la barra di regia diventa
+**ICE · HEV · BEV** — l'ordine in cui l'elettrificazione succede davvero. «V»
+adesso **cicla** invece di alternare.
+
+**Perché non è una curva più bassa e basta.** Sarebbe stato tre righe. Ma un
+numero digitato afferma il vantaggio, non lo dimostra: frenare non cambierebbe
+niente, e la cosa che rende un ibrido un ibrido è proprio che frenare cambia
+tutto. Quindi la curva è **solo il motore** (la benzina per il guadagno Atkinson,
+niente recupero dentro), e sopra c'è un **tampone di 0.50 kWh** che si riempie in
+frenata e si svuota in ripresa, con l'assistenza che si smorza quando è vuoto. A
+128 costanti l'ibrido è meglio del **10%**; in stop-and-go del **59%**. Quel
+divario è la cosa da mostrare, e un polinomio non avrebbe potuto mostrarlo.
+
+**Il km si ferma a zero, e non va sotto.** È la differenza dichiarata rispetto al
+BEV: un'auto a batteria spende subito l'energia della frenata e il km costa meno
+di niente; un ibrido può solo parcheggiarla e spenderla dopo, come benzina che non
+brucia. Alzare il piede ferma il carburante, ma niente restituisce un litro già
+bruciato.
+
+**Ha costretto a separare due bandiere.** `hasGears` era usato in ~25 punti come
+sinonimo di «è termico». L'ibrido è un e-CVT: nessun rapporto, tutto in litri. Ora
+`liquid` decide i libri e `hasGears` solo la trasmissione. Con essi il render ha
+perso il suo ternario: ogni profilo porta `subVal` e `gearVal`, e nello slot che
+sull'ICE ha la marcia l'ibrido scrive **EV · HV · CHG**, con i giri che seguono la
+potenza e cadono a **zero** mentre l'auto è ancora in movimento.
+
+**E ha fatto emergere un difetto vecchio, che valeva per tutti e tre.** `per100` è
+una curva di crociera: non contiene l'energia per raggiungere una velocità, ma la
+frenata la restituiva tutta. Energia gratis. Sul BEV era solo scenografia sul
+numero istantaneo; sull'ibrido dieci fermate in città venivano **zero**. Adesso
+l'accelerazione si paga, su tutti e tre. A velocità costante il termine è zero — la
+crociera di riferimento legge ancora 7.14 — ma il modello vivo finalmente dice
+quello che il log diceva già: **in città si spende più che in autostrada**. Prima
+diceva il contrario, e contraddiceva i suoi stessi diciotto viaggi.
+
+**E i readout si assestano invece di scattare.** Col costo dell'accelerazione, il
+€/km schizzava al valore pieno nel frame stesso della pressione: non è un readout
+veloce, è un readout illeggibile. Ora le due cifre vive inseguono la fisica con
+τ ≈ 0.6 s, come già facevano i giri e i kW. **I libri leggono ancora `stepU`
+grezzo** — i totali del viaggio sono identici al centesimo di millilitro — perché
+i due campi sono letti solo dai tre posti che li stampano. Sull'ibrido si legge
+persino il gomito in cui il tampone finisce e il termico subentra.
+
+Lo smorzamento ha scoperchiato un bug vecchio: il **primo frame ha `dt = 0`** (il
+loop imposta `lastFrame` e si chiama subito), quindi `stepU/stepKm` era `0/0`. Era
+un NaN che il frame dopo sovrascriveva in silenzio; con i readout smorzati non si
+sarebbe mai più lavato via. Ora un frame che non copre strada lascia la cifra dov'è.
+
+**E tutte e tre aprono sullo stesso viaggio.** Prima BEV e HEV partivano da zero, e
+al momento dello scambio non c'era niente da confrontare: da una parte € 9.55 su
+48 km, dall'altra un contatore vuoto. Ora ogni auto si sale con gli stessi 48.09 km
+alle spalle — **€ 9.55 · € 6.30 · € 3.11** — che è la tesi del prodotto messa sullo
+schermo prima che qualcuno tocchi un comando. L'ICE tiene la coppia della foto,
+incoerenza ereditata compresa; gli altri due dicono quello che la loro curva dice
+di quel viaggio, perché sul loro pannello nessun numero deve contraddirne un altro.
+Conseguenza: la tariffa di casa ora ri-prezza **tutto** il viaggio del BEV e non
+solo la carica, il che è semplicemente vero finché non si compra a un totem.
+
+Sulla Torino–Milano: **€ 16.71 benzina · € 14.71 ibrido · € 19.43 elettrico**, e
+la freccia si rovescia — per il benzina è il viaggio conveniente del mese, per gli
+altri due è quello caro — [12-full-hybrid.md](12-full-hybrid.md).
+
+---
+
 ## 2026-09-07 · La distanza si pagava due volte
 
 Tolta la **foschia**: il gradiente lattiginoso che chiudeva `frame()`, steso su

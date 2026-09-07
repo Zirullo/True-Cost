@@ -18,10 +18,16 @@
 ## Prossimo passo
 
 - **Il debito dei nomi**: `tripLiters`, `tankLiters`, `instantL100`, `t.l100`
-  contengono kWh sotto il profilo elettrico. Va sciolto col PHEV, che brucia
-  entrambi — [06-archivio-bev.md](06-archivio-bev.md)
-- **Il PHEV**, terzo profilo in `PT` — ed è quello che forzerà la mano sui nomi,
+  contengono kWh sotto il profilo elettrico. Resta **tutto** del PHEV: il full
+  hybrid non lo ha forzato, perché compra solo litri e il suo tampone sta fuori
+  dai libri — [06-archivio-bev.md](06-archivio-bev.md),
+  [12-full-hybrid.md](12-full-hybrid.md)
+- **Il PHEV**, quarto profilo in `PT` — ed è quello che forzerà la mano sui nomi,
   perché brucia benzina **e** kWh nello stesso viaggio
+- **Il taglio in rilascio**: in coasting senza freno tutti e tre pagano ancora il
+  consumo di crociera, mentre un motore vero taglia l'iniezione. È il simmetrico
+  del costo dell'accelerazione, che è stato fatto —
+  [12-full-hybrid.md](12-full-hybrid.md)
 - **Il pieno visto dall'app**: oggi premere «R» aggiorna il cluster ma l'app non se
   ne accorge, se non nel prezzo del serbatoio. Un evento nel grafico («qui hai fatto
   il pieno a 1.78») legherebbe la scelta della stazione al costo dei km successivi
@@ -30,6 +36,18 @@
   [01-decisioni.md](01-decisioni.md)
 
 ## Fatto
+
+- ✅ **Il full hybrid, e un'auto che il risparmio se lo guadagna** (2026-09-07):
+  terza motorizzazione in `PT`, barra di regia **ICE · HEV · BEV** e «V» che
+  cicla. La curva è **solo il motore**; sopra c'è un tampone da 0.50 kWh che si
+  riempie in frenata e si svuota in ripresa, con la barretta che lo mostra nel
+  pannello. E-CVT: i giri seguono la potenza e cadono a **zero** in elettrico,
+  con **EV · HV · CHG** al posto della marcia. Da fermo il motore è spento — zero
+  contro 0.7 L/h. A 128 costanti −10%, in stop-and-go −59%, e **il km si ferma a
+  zero, mai sotto**. Con esso `liquid` separato da `hasGears`, e
+  **l'accelerazione che si paga su tutti e tre**, che ha messo d'accordo il
+  modello vivo con i suoi stessi diciotto viaggi —
+  [12-full-hybrid.md](12-full-hybrid.md), [01-decisioni.md](01-decisioni.md)
 
 - ✅ **Un cartello, due prezzi** (2026-09-07): il cartellone delle stazioni
   porta il litro **e** il kWh, una riga per uno e dello stesso peso, con icona

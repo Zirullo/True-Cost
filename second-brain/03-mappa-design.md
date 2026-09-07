@@ -4,6 +4,16 @@ Tutte le coordinate sono in **pixel dell'immagine di riferimento**
 (`True-Cost project picture.jpg`, 1147 × 641) e coincidono con le unità del
 `viewBox` dell'SVG. Origine in alto a sinistra.
 
+> **La velatura in cabina vive dentro la maschera.** `#tint` copre tutta la scena
+> ma `--dashmask` ne scopre solo l'abitacolo: la banda **y 0.31 → 1.00**. Uno stop
+> scritto a 0% o a 100% non si vede mai. E l'angolo conta: a **168deg** su una
+> scena larga 2.17 volte la sua altezza il gradiente corre in diagonale, quindi la
+> sinistra della plancia sta molto più indietro della destra. ICE e BEV se lo
+> possono permettere, essendo di una tinta sola da capo a fondo; l'ibrido no, e
+> infatti la prima volta è uscito **identico al benzina** al centro plancia. Chi
+> deve cambiare *attraverso* l'abitacolo usa **180deg** e stop fra .32 e 1 —
+> [12-full-hybrid.md](12-full-hybrid.md).
+
 > **La scena è più larga della foto.** Dal 2026-09-04 va da 0 a **1720**: foto e
 > cluster restano larghi 1147 e ancorati a sinistra — tutto quello che c'è in questa
 > nota è quindi invariato — e da x 1147 in poi c'è la plancia disegnata col display

@@ -57,6 +57,49 @@ Il termine quadratico è la resistenza aerodinamica, quello lineare l'efficienza
 crescente del motore che sale di carico. È la curva ereditata dal simulatore
 precedente, plausibile per una compatta a benzina.
 
+### Le altre due curve
+
+```js
+bev: v => 0.00055·v² + 0.030·v + 13.0                 // kWh / 100 km
+hev: v => ice(v) · (0.90 − 0.10·e^(−v/45))            // L / 100 km, solo motore
+```
+
+L'ibrido **legge** la curva benzina invece di copiarne i coefficienti: ritarare
+l'una ritara l'altra. Il fattore è il guadagno del ciclo Atkinson, più forte a
+basso carico: 0.80 a fermo, 0.894 a 128. Dentro non c'è nessun recupero — quello
+lo guadagna il tampone, in `update()` — [12-full-hybrid.md](12-full-hybrid.md).
+
+### 3b · L'accelerazione si paga
+
+`per100` è una curva di **crociera**: dice cosa costa *tenere* una velocità, non
+*raggiungerla*. Finché nessuno restituiva energia non si vedeva; con la frenata
+rigenerativa l'auto veniva accreditata di energia cinetica mai addebitata, cioè
+carburante gratis. Da qui, su tutti e tre i profili:
+
+```js
+if (v > v0) stepU += ½·mass·((v/3.6)² − (v0/3.6)²)/3.6e6 · accCost
+```
+
+`accCost` è il cambio fra un kWh alla ruota e l'unità del pieno: **0.382 L/kWh**
+ICE, **0.323** ibrido, **1.136 kWh/kWh** BEV. A velocità costante il termine è
+esattamente zero, quindi la crociera di riferimento legge ancora 7.14 L/100 km.
+Ma adesso **in città si spende più che in autostrada**, come dicevano già i
+diciotto viaggi seminati e come il modello vivo negava.
+
+### 3c · I readout si assestano
+
+L'energia del passo cade tutta nel frame in cui la chiedi, e il **libro** la legge
+grezza. Il **quadrante** la mostra smorzata, come ogni consumo istantaneo vero:
+
+```js
+instantL100  += (target − instantL100)  · min(1, dt · INST_DAMP)   // 1.6, τ ≈ 0.6 s
+instantEurKm += (target − instantEurKm) · min(1, dt · INST_DAMP)
+```
+
+Nessun totale cambia: `instantL100` e `instantEurKm` sono letti solo dai tre posti
+che li stampano, e le barre di costo campionano `tripKm` / `tripCost`. Se la salita
+in accelerazione va resa più o meno progressiva, **`INST_DAMP` è l'unica manopola**.
+
 ## 4 · Costo per chilometro
 
 ```js
@@ -89,6 +132,18 @@ foto). La barra `#fuelbar` è larga `livello × 100` unità SVG.
 Sono quelli della foto — 48.09 km, 5.02 L, EUR 9.55 — perché all'apertura la
 schermata coincida col riferimento. Non sono reciprocamente coerenti (l'immagine
 originale non lo era); dopo un RESET tutto torna coerente.
+
+**E sono lo stesso viaggio per tutte e tre le motorizzazioni.** `OPEN_KM` è
+condiviso; l'ICE porta `openUnits` / `openCost` tipati (la foto), gli altri due li
+derivano dalla propria curva a `OPEN_KMH`:
+
+| | distanza | consumo | totale |
+|---|---|---|---|
+| ICE | 48.09 km | 5.02 L | € 9.55 |
+| HEV | 48.09 km | 3.07 L | € 6.30 |
+| BEV | 48.09 km | 12.43 kWh | € 3.11 |
+
+Stessa strada, tre conti — [12-full-hybrid.md](12-full-hybrid.md).
 
 ## Se vuoi ritarare
 

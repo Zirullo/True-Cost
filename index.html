@@ -83,6 +83,9 @@ body{
 .veh-opt:hover:not(:disabled):not(.on){color:#a9c1d4}
 .veh-opt.on{color:#04121b}
 .veh-opt[data-v="ice"].on{background:var(--amber)}
+/* the hybrid is BOTH, and the button says so before the word does: petrol
+   amber running into the cyan the electric side of the car is drawn in */
+.veh-opt[data-v="hev"].on{background:linear-gradient(100deg,var(--amber) 0%,#7fd6f5 100%)}
 .veh-opt[data-v="bev"].on{background:var(--green)}
 #regia .rg-note{
   margin-left:auto;font-size:9px;letter-spacing:1.2px;text-transform:uppercase;
@@ -120,6 +123,49 @@ body{
           mask-size:100% 100%;
   -webkit-mask-repeat:no-repeat;
           mask-repeat:no-repeat;
+}
+/* ── WHERE THE STOPS HAVE TO GO, and it caught me out ────────────
+   #tint covers the whole stage but --dashmask only REVEALS the cockpit:
+   everything below the line of the glass. On a 1720x791 stage that band
+   maps to gradient positions 37 % - 84 %, and nothing outside it is ever
+   painted. Stops written at 0 % and 100 % are therefore invisible, which
+   is exactly how the hybrid first came out looking like the petrol car:
+   its cool end sat at 0 %, up in the windshield, and the only thing on
+   the dashboard was the same tan-to-brown the ICE already had.
+
+   The petrol and battery gradients get away with it because they are one
+   hue from end to end. Anything that has to CHANGE across the cockpit has
+   to say so between 35 % and 85 %.
+
+   And the hybrid does have to change: it is lit from two sides. Warm down
+   on the console where the engine still is, cooling to teal as it climbs
+   towards the glass - the only cabin of the three that is two colours at
+   once, which is the whole truth about the car. Teal rather than the BEV's
+   sky blue, so a glance at the top of the dash cannot mistake one for the
+   other, and nowhere near GREEN, which on this cockpit means exactly one
+   thing: energy coming back.
+
+   THE ANGLE IS 180, NOT 168, AND THAT MATTERS HERE. On a stage 2.17 times
+   as wide as it is tall, 168deg carries a real horizontal component: the
+   gradient runs down-and-right, so the left of the dashboard sits far
+   earlier along it than the right. The other two get away with that as
+   well, being one hue end to end. This one would have come out cool on the
+   driver's side and identical to the petrol car across the centre stack -
+   not "cool above, warm below" but "cool on the left", which says nothing
+   about a hybrid. Straight down, and the split is the same at every x. */
+#stage.hev #tint{
+  /* half of it is cool, and a cool cast needs more to read on dark trim -
+     the same reason the battery takes .36 where petrol takes .17 */
+  opacity:.30;
+  /* Vertical, so these ARE fractions of the stage height, and the cockpit
+     is the band from .31 (the line of the glass) to 1. The middle stop is
+     a near-neutral on purpose: interpolating straight from teal to amber
+     walks through GREEN, and `color` as the blend mode would lay that hue
+     on the trim at full strength. Letting the saturation fall away instead
+     reads as the light changing across the cabin, which is the thing being
+     said, and keeps green meaning only what it means here. */
+  background:linear-gradient(180deg,
+             #6ec9c9 32%, #adb5b2 60%, #c79a58 78%, #8a5a2a 100%);
 }
 /* petrol runs warm, the battery runs cold */
 #stage.bev #tint{
@@ -812,6 +858,12 @@ body{
 #cluster #ic-plug{display:none}
 #cluster.bev #ic-plug{display:inline}
 #cluster.bev #ic-pump{display:none}
+/* ── the cockpit under a hybrid ───────────────────────────────────
+   It stays amber: this is a car that goes to a pump, and dressing it in
+   cyan would tell the eye a lie the price panel then contradicts. Only
+   the buffer gauge is cold, and it takes the icon's row - a bar that
+   moves while you drive earns that space more than a pictogram does. */
+#cluster.hev #ic-pump{display:none}
 .hit{cursor:pointer}
 .hit:hover text{fill:#fff}
 #tick-group line.on{stroke:#eaf6ff;opacity:.95}
@@ -1015,6 +1067,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
   <span class="rg-lbl">Vehicle</span>
   <div id="veh-switch" role="group" aria-label="Vehicle type">
     <button class="veh-opt on" data-v="ice" type="button">ICE</button>
+    <button class="veh-opt"    data-v="hev" type="button">HEV</button>
     <button class="veh-opt"    data-v="bev" type="button">BEV</button>
   </div>
   <span class="rg-note">each vehicle keeps its own trip &middot; the speed carries over</span>
@@ -1197,6 +1250,16 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       </g>
       <text id="lvlE" x="812" y="392" text-anchor="middle" font-size="14" fill="#dcece4">E</text>
       <text id="lvlF" x="916" y="392" text-anchor="middle" font-size="14" fill="#dcece4">F</text>
+      <!-- the hybrid buffer: a second, shorter bar under the tank, shown only
+           on a car that has one. It is the one gauge in the panel that moves
+           while you drive - it fills under braking and empties on the pull
+           away - and it is cyan because that half of the car is electric,
+           on a panel that is otherwise all petrol. -->
+      <g id="vs-buff" style="display:none">
+        <text x="864" y="400" text-anchor="middle" font-size="10" letter-spacing="1.1" fill="#8fcfe0">HYBRID BATTERY</text>
+        <rect id="buff-box" x="806" y="404" width="116" height="8" rx="2" fill="#0a1a20" stroke="#3f5f6a" stroke-width=".9"/>
+        <rect id="buffbar" x="808" y="406" width="60" height="4" rx="1.5" fill="#5fdcff"/>
+      </g>
       <g id="ic-pump" filter="url(#glow)" transform="translate(852,398)">
         <path d="M4,2 h13 a2,2 0 0 1 2,2 v16 h-17 v-16 a2,2 0 0 1 2,-2 z" fill="#39e08a"/>
         <path d="M21,7 l4,3 v9 a2.6,2.6 0 0 1 -5.2,0 v-4" fill="none" stroke="#39e08a" stroke-width="2.2" stroke-linecap="round"/>
@@ -1695,8 +1758,8 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
            Press <strong>ENGINE</strong> on the deck (or <strong>&ldquo;E&rdquo;</strong>) to switch the engine off: the car coasts to a stop, and a running engine standing still burns about <strong>0.7 L/h</strong> that buys no distance at all — the cost of going nowhere.</p>
       </div>
       <div class="help-section" style="border-left-color:#c9a6ff;grid-column:1/-1">
-        <div class="help-section-title" style="color:#c9a6ff">⇄ Petrol or electric</div>
-        <p>The bar <strong>above the cockpit</strong> — deliberately outside it, because no real car has this button — switches the vehicle under you between <strong>ICE</strong> and <strong>BEV</strong> (<strong>&ldquo;V&rdquo;</strong> on the keyboard). Each one keeps <strong>its own trip, its own tank or battery and its own last price paid</strong>, so nothing is ever half petrol and half electric. In the electric car the revs become <strong>kW</strong>, the gear becomes <strong>D</strong>, the tank becomes <strong>charge</strong>, and the signs along the road quote <strong>&euro; / kWh</strong>. Set what you pay at home on the <strong>home tariff</strong> slider: the charge in the battery came off that wall, which is why the totems outside — asking two to three times as much — are the whole argument. And when you <strong>brake</strong>, the motor hands energy back: the kW go negative, and <strong>the cost of that kilometre turns green and drops below zero</strong>. <em>The centre display still keeps one ledger, and it is written in litres: adapting the five app views to the battery is the next step.</em></p>
+        <div class="help-section-title" style="color:#c9a6ff">⇄ Petrol, hybrid or electric</div>
+        <p>The bar <strong>above the cockpit</strong> — deliberately outside it, because no real car has this button — walks the vehicle under you along <strong>ICE · HEV · BEV</strong> (<strong>&ldquo;V&rdquo;</strong> on the keyboard cycles through them), which is the order electrification actually happens in. Each one keeps <strong>its own trip, its own tank or battery and its own last price paid</strong>, so nothing is ever half one car and half another.</p><p>In the <strong>electric</strong> car the revs become <strong>kW</strong>, the gear becomes <strong>D</strong>, the tank becomes <strong>charge</strong>, and the signs along the road quote <strong>&euro; / kWh</strong>. Set what you pay at home on the <strong>home tariff</strong> slider: the charge in the battery came off that wall, which is why the totems outside — asking two to three times as much — are the whole argument. And when you <strong>brake</strong>, the motor hands energy back: the kW go negative, and <strong>the cost of that kilometre turns green and drops below zero</strong>.</p><p>The <strong>full hybrid</strong> never plugs in at all. It buys petrol, by the litre, at the same pumps — and everything it saves it has to <em>earn</em>. Braking fills a small buffer, the <strong>HYBRID BATTERY</strong> bar in the vehicle panel, and the next time you pull away that buffer does the driving: the <strong>MODE</strong> slot reads <strong>EV</strong>, and the revs fall to <strong>zero</strong> while the car is still moving. It has no gears to hunt between — an e-CVT holds the engine wherever it is most efficient — so the rev counter follows the <em>power</em> you are asking for and not the road speed. Standing at a light it burns <strong>nothing</strong>, against the 0.7 L/h of the petrol car. But the cost of a hybrid kilometre stops at <strong>zero</strong> and never goes under: lifting off stops the fuel, and nothing can hand back a litre already burnt. Which is why at a steady 128 it is only about a tenth better than the petrol car, and in stop-and-go it is a different vehicle — <strong>that gap is the thing to watch</strong>.</p><p><em>The centre display still keeps one ledger, and it is written in litres: the hybrid fits it exactly, the battery does not yet.</em></p>
       </div>
       <div class="help-section" style="border-left-color:#8fd8f5;grid-column:1/-1">
         <div class="help-section-title" style="color:#8fd8f5">▣ Centre display</div>
@@ -1785,6 +1848,30 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
   const UPSHIFT = 2600, DOWNSHIFT = 1250;    // rpm; the gap between them is the hysteresis
   const SHIFT_LOCK = 0.6;                    // s before another shift is allowed
 
+  /* how fast the two live consumption figures chase the physics. 1.6 is a
+     time constant of about 0.6 s: slow enough that pulling away RAMPS the
+     number instead of stamping it, quick enough that lifting off is still
+     answered while your foot remembers doing it. The revs use 9 and the
+     kW 6, and both are meant to be quicker — they follow the engine, and
+     the engine really does respond that fast. */
+  const INST_DAMP = 1.6;
+
+  /* ══════════════════════════════════════════════════════════
+     THE OPENING FRAME — one drive, and all three cars have just done it
+     ──────────────────────────────────────────────────────────
+     Every vehicle is boarded with the SAME trip already behind it: the
+     reference photo's 48.09 km at its cruise. What differs is the bill,
+     and that is the whole argument of the product stated before anyone
+     touches a control — the same road, three numbers.
+
+     The ICE keeps the photo's own pair, 5.02 L and EUR 9.55, inherited
+     incoherence and all (they were never each other's product; the source
+     image was not consistent either). The other two are not free to be
+     scenographic: they state what their own curve says that drive costs
+     them, so nothing on their panel contradicts anything else on it.
+     ══════════════════════════════════════════════════════════ */
+  const OPEN_KM = 48.09, OPEN_KMH = 128;
+
   const state = {
     engineOn: true,
     targetSpeed: 128, currentSpeed: 128, currentRpm: 2250,
@@ -1794,14 +1881,18 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     marketPrice: 1.85,        // live average around the vehicle: the centre the
                               // stations along the road scatter around
     tankCapacity: 45, tankLiters: 27.5,
-    tripKm: 48.09, tripLiters: 5.02, tripCost: 9.55,
+    tripKm: OPEN_KM, tripLiters: 5.02, tripCost: 9.55,
     instantEurKm: 0.14, instantL100: 7.14,
     /* ── added with the BEV variant ── */
     vehicle: 'ice',           // which profile in PT is under us
     currentKw: 33,            // motor power, signed: negative is regeneration
     homeTariff: 0.25,         // €/kWh the driver pays at home, set on the bar
     chargedOut: false,        // true once a charge is bought away from home
-    cheapestNear: 0           // best price the pump map last found, for the tariff row
+    cheapestNear: 0,          // best price the pump map last found, for the tariff row
+    /* ── added with the full hybrid ── */
+    buffKwh: 0,               // kWh in the hybrid buffer. Energy, never money:
+                              // it is the one quantity in here the books ignore
+    hevMode: 'HV'             // EV / HV / CHG — what the driveline is doing
   };
 
   /* ══════════════════════════════════════════════════════════
@@ -1817,11 +1908,26 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
      still called tripLiters / tankLiters / instantL100. Under the BEV
      profile they carry kWh. Renaming them means touching the app module
      (Cost history, Report, Trips), which belongs to the next pass; the
-     PHEV will force the issue properly, because it burns both.
+     PHEV will force the issue properly, because it burns both. The full
+     hybrid deliberately does NOT force it: it buys litres and nothing
+     else, and the energy it moves through its buffer never reaches the
+     books — see `buffKwh`, which is kWh and stays out of the ledger.
+
+     TWO FLAGS, AND THEY MEAN DIFFERENT THINGS. `liquid` is about the
+     BOOKS: this vehicle's units are litres and it fills up at a pump.
+     `hasGears` is about the DRIVELINE: it has discrete ratios to hunt
+     between. They used to be the same question because there were only
+     two cars. The full hybrid is the one that separates them — an e-CVT
+     with no ratios at all, buying petrol by the litre.
      ══════════════════════════════════════════════════════════ */
+
+  /* the eight signs on the road, shared by everything that burns petrol */
+  const FUEL_BRANDS = ['Eni', 'Q8', 'IP', 'Tamoil', 'Esso', 'Api', 'Repsol', 'Beyfin'];
+
   const PT = {
     ice: {
       id: 'ice',
+      liquid: true, theme: '',
       unit: ' L', priceUnit: '€/L',
       subLabel: 'RPM', gearLabel: 'GEAR',
       levelLabel: 'Fuel Level', paidLabel: 'Last Refuel Price:',
@@ -1834,16 +1940,98 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       keyOn: '&#9679; Engine off', keyOff: '&#9679; Engine on',
       refuelVerb: 'refuel', refuelDone: 'Tank full &mdash; refuelled at',
       chip: 'GASOLINE', mapTab: 'Pumps',
-      brands: ['Eni', 'Q8', 'IP', 'Tamoil', 'Esso', 'Api', 'Repsol', 'Beyfin'],
+      brands: FUEL_BRANDS,
       hasGears: true,
+      /* the two readouts under the dial. Every vehicle answers for its own
+         pair rather than render() asking who it is: revs and the gear the
+         box has actually selected. */
+      subUnit: 'rpm',
+      subVal:  s => Math.round(s.currentRpm),
+      gearVal: s => s.currentSpeed < 1 ? 'N' : s.gear + 1,
       /* L / 100 km, calibrated on the reference cluster */
       per100: v => 0.000282 * v * v - 0.0163 * v + 4.61,
+      /* the photo's own trip, and the only one in here that is TYPED rather
+         than worked out — because it is a photograph, not a calculation */
+      openUnits: 5.02, openCost: 9.55,
       /* a running engine standing still burns 0.7 L/h and covers no ground */
-      idleRate: 0.7
+      idleRate: 0.7,
+      /* what it costs to GAIN speed — see the note in update(). 1350 kg, and
+         a conventional petrol engine turning about 27 % of a litre's 9.7 kWh
+         into motion, so a kWh of kinetic energy costs 0.38 L */
+      mass: 1350, accCost: 0.382
+    },
+
+    /* ── THE FULL HYBRID ────────────────────────────────────────────
+       It never plugs in. It buys petrol, by the litre, at the same pumps
+       and the same prices as the ICE — so `liquid` is true, `energyBase`
+       is absent, and every panel that quotes money keeps quoting €/L.
+
+       What makes it worth its own profile is that its advantage is EARNED
+       rather than typed. The curve below is only the engine: the petrol
+       curve improved by the Atkinson cycle, and nothing else. Everything
+       that makes a hybrid remarkable in town — the engine shutting off,
+       the braking that fills a buffer, the buffer that then does the
+       driving — happens live in update(), kilometre by kilometre. Which
+       is why at a steady 128 this car is barely 11 % better than the
+       petrol one, and in stop-and-go it is a different vehicle. That gap
+       IS the thing to show, and typing one number could not have shown it.
+
+       And one honest difference from the BEV, which the code must never
+       blur: the cost of a kilometre here bottoms out at ZERO. Braking
+       stops the fuel; it cannot hand any back. */
+    hev: {
+      id: 'hev',
+      liquid: true, theme: 'hev',
+      unit: ' L', priceUnit: '€/L',
+      subLabel: 'RPM', gearLabel: 'MODE',
+      levelLabel: 'Fuel Level', paidLabel: 'Last Refuel Price:',
+      lo: 'E', hi: 'F',
+      /* a hybrid carries a smaller tank than its petrol twin: the battery
+         and its electronics take the room back */
+      capacity: 43, startLevel: 26.0,
+      startPrice: 2.05,
+      priceDecimals: 2,
+      /* "Ready", not "Engine": at a standstill this car is silent, and the
+         key does not promise a running engine */
+      keyOn: '&#9679; Ready off', keyOff: '&#9679; Ready on',
+      refuelVerb: 'refuel', refuelDone: 'Tank full &mdash; refuelled at',
+      chip: 'FULL HYBRID', mapTab: 'Pumps',
+      brands: FUEL_BRANDS,
+      /* no discrete ratios at all — an e-CVT holds the engine wherever it
+         is most efficient — but a tank and a pump all the same */
+      hasGears: false,
+      subUnit: 'rpm',
+      subVal:  s => Math.round(s.currentRpm),
+      gearVal: s => s.hevMode,
+      /* the ENGINE-ONLY curve: the petrol one times the Atkinson gain,
+         which is worth more at light load, where a conventional engine
+         wastes the most. No recovery is inside this number. Reading
+         PT.ice.per100 rather than copying its coefficients is deliberate:
+         re-calibrate the petrol car and the hybrid follows it. */
+      per100: v => PT.ice.per100(v) * (0.90 - 0.10 * Math.exp(-v / 45)),
+      /* standing still the engine is OFF, and that is the single most
+         quotable number in this demo: 0.7 L/h against nothing at all */
+      idleRate: 0,
+      idleCharge: 1.6,              // L/h, but only when the buffer needs it
+      mass: 1450, regenEta: 0.68, regenKwMax: 40,
+      /* the buffer, in kWh. 0.50 is not the pack — it is the SOC WINDOW a
+         hybrid actually uses, a sliver in the middle of a bigger battery,
+         and it is why the electric range is a couple of kilometres rather
+         than fifty. Small enough to fill on one long braking sequence and
+         empty on one climb, which is exactly the rhythm to watch. */
+      buffCap: 0.50, buffStart: 0.30,
+      accCost: 0.323,               // 1 / kwhPerL: the Atkinson engine's own rate
+      /* the exchange rate between the two energies: petrol holds about
+         9.7 kWh per litre and this engine turns roughly 32 % of it into
+         motion, so a kWh out of the buffer saves about a third of a litre */
+      kwhPerL: 3.10,
+      assistKwMax: 25,              // kW the motor can put on the road
+      chargeKw: 6.0, chargeEta: 0.90
     },
 
     bev: {
       id: 'bev',
+      liquid: false, theme: 'bev',
       unit: ' kWh', priceUnit: '€/kWh',
       subLabel: 'kW', gearLabel: 'DRIVE',
       levelLabel: 'Charge', paidLabel: 'Last Charge Price:',
@@ -1866,6 +2054,9 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       brands: ['Enel X Way', 'Ionity', 'Be Charge', 'Ewiva',
                'A2A E-moving', 'Free To X', 'Atlante', 'Neogy'],
       hasGears: false,
+      subUnit: 'kW',
+      subVal:  s => Math.round(s.currentKw),
+      gearVal: s => s.engineOn ? 'D' : 'P',
       /* kWh / 100 km in traction, from 06-archivio-bev.md */
       per100: v => 0.00055 * v * v + 0.030 * v + 13.0,
       /* ready and standing still: only the auxiliaries — climate and
@@ -1878,7 +2069,11 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
          friction brakes and does not pay for the whole stop. */
       mass: 1600,                   // kg, kerb weight with a driver
       regenEta: 0.65,               // motor + inverter + battery, round trip
-      regenKwMax: 45                // kW the motor can absorb
+      regenKwMax: 45,               // kW the motor can absorb
+      /* the units here are already kWh, so this is only the loss between the
+         battery and the road: 88 % out, which is why it costs 1.14 kWh of
+         charge to put 1 kWh of motion into a car */
+      accCost: 1.136
     }
   };
 
@@ -2044,6 +2239,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     spd: $('spd'), rpm: $('rpmTxt'), eurKm: $('eurKm'), dist: $('dist'),
     cons: $('cons'), total: $('total'), refuel: $('refuel'), local: $('local'),
     localDist: $('localDist'), fuelbar: $('fuelbar'), gear: $('gearTxt'),
+    buffbar: $('buffbar'),
     /* the labels the vehicle switch rewrites — they change once, on a
        switch, not once a frame */
     rpmLbl: $('rpmLbl'), gearLbl: $('gearLbl'), consUnit: $('consUnit'),
@@ -2142,7 +2338,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
   const CARRY = ['engineOn', 'targetSpeed', 'currentSpeed', 'currentRpm',
                  'currentKw', 'gear', 'shiftLock', 'refuelPrice', 'tankLiters',
                  'tripKm', 'tripLiters', 'tripCost', 'instantEurKm',
-                 'instantL100', 'chargedOut'];
+                 'instantL100', 'chargedOut', 'buffKwh', 'hevMode'];
 
   function stash(id) {
     const box = {};
@@ -2151,17 +2347,29 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
   }
 
   /* getting into a vehicle for the first time: standing, key on, with
-     whatever it was last filled or charged with */
+     whatever it was last filled or charged with — and with the opening
+     frame's drive already behind it, the same drive in every car */
   function fresh(id) {
     const P = PT[id];
+    const price = P.startPrice === null ? state.homeTariff : P.startPrice;
+    /* the battery's opening charge came off the wall at home, so its
+       opening trip has to be priced at whatever the slider says NOW, not
+       at a number baked in before the driver touched it */
+    const units = P.openUnits != null ? P.openUnits
+                                      : OPEN_KM * P.per100(OPEN_KMH) / 100;
+    const cost  = P.openCost  != null ? P.openCost : units * price;
     return {
       engineOn: true, targetSpeed: 0, currentSpeed: 0,
       currentRpm: 0, currentKw: 0, gear: 0, shiftLock: 0,
-      refuelPrice: P.startPrice === null ? state.homeTariff : P.startPrice,
+      refuelPrice: price,
       tankLiters: P.startLevel,
-      tripKm: 0, tripLiters: 0, tripCost: 0,
+      tripKm: OPEN_KM, tripLiters: units, tripCost: cost,
       instantEurKm: 0, instantL100: 0,
-      chargedOut: false        // has this charge been bought away from home?
+      chargedOut: false,       // has this charge been bought away from home?
+      /* the hybrid is handed over with its buffer part full, the way one
+         comes back from a service: enough to pull away silently */
+      buffKwh: P.buffStart || 0,
+      hevMode: 'EV'
     };
   }
 
@@ -2197,6 +2405,12 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
           if (GEARS[i] * v >= DOWNSHIFT) { state.gear = i; break; }
         }
         state.currentRpm = Math.max(RPM_IDLE, GEARS[state.gear] * v);
+      } else if (P.buffCap) {
+        /* an e-CVT has no ratio to pick: the engine settles at the revs the
+           power actually being asked for needs, which is what update() will
+           hold it at from the next frame on */
+        state.currentRpm = v < 1 ? 0
+          : Math.max(1000, Math.min(4200, 1000 + P.per100(v) / 100 * v * P.kwhPerL * 45));
       } else {
         /* and the motor starts at the power cruising there actually takes,
            so the kW readout settles instead of sweeping up from zero */
@@ -2217,10 +2431,18 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     $('ap-tab-map').textContent = P.mapTab;
     /* the electric history is modelled, not measured, and the panel says so
        rather than letting a demo quote it as a published figure */
-    $('pv-now-l').textContent  = P.hasGears ? 'MARKET NOW' : 'EST. MARKET';
-    $('mp-tariff').hidden      = P.hasGears;   // a tank has no home tariff
-    $('cluster').classList.toggle('bev', !P.hasGears);
-    $('stage').classList.toggle('bev', !P.hasGears);
+    $('pv-now-l').textContent  = P.liquid ? 'MARKET NOW' : 'EST. MARKET';
+    $('mp-tariff').hidden      = P.liquid;     // a tank has no home tariff
+    /* the colour of the car: one theme class at a time, taken from the
+       profile rather than worked out from a flag, so a fourth vehicle is a
+       fourth string and not a fourth condition */
+    ['cluster', 'stage'].forEach(n => {
+      const c = $(n).classList;
+      c.remove('bev', 'hev');
+      if (P.theme) c.add(P.theme);
+    });
+    /* the buffer bar belongs to whoever has a buffer, and nobody else */
+    $('vs-buff').style.display = P.buffCap ? '' : 'none';
     $('nv-price-l').innerHTML  = P.priceUnit + ' THERE';
     $('rp-verb').textContent   = P.refuelVerb;
     $('rp-done-lbl').innerHTML = P.refuelDone;
@@ -2241,12 +2463,16 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
   document.querySelectorAll('.veh-opt').forEach(b => {
     b.addEventListener('click', () => { applyProfile(b.dataset.v); b.blur(); });
   });
-  /* "V" throws the switch from the keyboard, for a demo run without a mouse */
+  /* "V" walks the switch along from the keyboard, for a demo run without a
+     mouse. It CYCLES rather than toggles, in the order the profiles are
+     written in PT — which is the order electrification happens in: petrol,
+     hybrid, battery, and round again. */
   window.addEventListener('keydown', e => {
     if (e.key !== 'v' && e.key !== 'V') return;
     if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
     e.preventDefault();
-    applyProfile(state.vehicle === 'ice' ? 'bev' : 'ice');
+    const ids = Object.keys(PT);
+    applyProfile(ids[(ids.indexOf(state.vehicle) + 1) % ids.length]);
   });
 
   /* ── the home tariff ────────────────────────────────────
@@ -2264,7 +2490,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
   function paintTariff() {
     tariffVal.textContent = state.homeTariff.toFixed(2) + ' €/kWh';
     const c = state.cheapestNear;
-    if (!c || car().hasGears) { tariffVs.innerHTML = '&mdash;'; return; }
+    if (!c || car().liquid) { tariffVs.innerHTML = '&mdash;'; return; }
     const times = c / Math.max(0.01, state.homeTariff);
     tariffVs.innerHTML = 'cheapest in range <b>' + c.toFixed(2) + '</b> &middot; ' +
                          times.toFixed(1) + '&times; what you pay at home';
@@ -2274,7 +2500,21 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     state.homeTariff = parseFloat(tariffEl.value);
     /* the charge in the battery came off that wall, so moving the slider
        re-prices it - unless it has since been bought at a totem */
-    if (state.vehicle === 'bev' && !state.chargedOut) state.refuelPrice = state.homeTariff;
+    if (state.vehicle === 'bev' && !state.chargedOut) {
+      state.refuelPrice = state.homeTariff;
+      /* and the TRIP re-prices with it, all of it. Until a charge is bought
+         at a totem every kilometre this car has covered came off that one
+         wall at that one price, the opening drive included - so the euros
+         are simply the energy times the slider, and saying otherwise would
+         leave the total contradicting the price printed above it. The
+         moment `chargedOut` goes true the trip is a mix of two prices, only
+         the accumulation knows it, and this branch stops firing.
+
+         Boarding the battery AFTER moving the slider already reads the new
+         tariff, because fresh() prices the opening drive at whatever it
+         says then. This is the same two acts in the other order. */
+      state.tripCost = state.tripLiters * state.homeTariff;
+    }
     paintTariff();
   });
 
@@ -2442,7 +2682,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
      read them: the totems along the road paint them, and the pump map lists
      them — a station passed on the verge and its row on the map have to say
      the same name, or they are not the same station. */
-  const BRANDS = PT.ice.brands;      // the fuel signs, and the only list past trips know
+  const BRANDS = FUEL_BRANDS;        // the fuel signs, and the only list past trips know
   const PLACES = ['Via Emilia', 'Tangenziale Ovest', 'Casello Nord', 'Corso Francia',
                   'SS9 km 12', 'Viale Europa', 'Zona Industriale', 'Raccordo Sud',
                   'Piazza Trento', 'Via Torino', 'Strada del Portone', 'Via Nizza',
@@ -3191,9 +3431,9 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
        A1 actually looks like. The place is the area's own name and belongs
        to neither: it goes in the headline band. */
     const stationSigns = i => {
-      const j = (i * 3 + Math.floor(i / PLACES.length)) % PT.ice.brands.length;
+      const j = (i * 3 + Math.floor(i / PLACES.length)) % FUEL_BRANDS.length;
       return {
-        fuel: PT.ice.brands[j],
+        fuel: FUEL_BRANDS[j],
         elec: PT.bev.brands[j % PT.bev.brands.length],
         p: PLACES[(i * 5) % PLACES.length]
       };
@@ -4249,6 +4489,16 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       return dKm;
     }
 
+    /* Opening a new trip has to rebase this the way resetCounters() rebases
+       the recorder, or the first frame afterwards reads the whole distance
+       between two vehicles' odometers as one 200 m sample and files a bar
+       that never happened. The dKm < 0 guard above only ever caught the
+       case where the other car had driven LESS. */
+    function resetSampler() {
+      lastKm = state.tripKm; lastEur = state.tripCost;
+      segKm = 0; segEur = 0;
+    }
+
     /* ── past trips: fictional, but dated off today, and each one
           openable. `min` turns a row into a page: without it a past trip
           could only repeat what the row says. `char` is the shape of its
@@ -4315,7 +4565,33 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
          arranged, and it is the most interesting thing this comparison has
          to say. Throw the switch on the same log and watch the order of the
          month turn over. */
-      TRIPS.slice().forEach(t => {
+      const petrol = TRIPS.slice();     // the eighteen, before either twin
+
+      /* ── the same month, driven hybrid ────────────────────────────
+         And this twin is built the OTHER way round, on purpose. The
+         electric one comes off a curve because a battery car has no petrol
+         self to be measured against. The hybrid has one: it IS that car,
+         with a recovery bolted on. So its consumption is the petrol trip's
+         own figure, discounted by how much of that trip was stop-and-go —
+         which is the only thing a hybrid is really paid for, and the one
+         thing `char` already knows about each of the eighteen.
+
+         A cruising curve could not have said this: the typed petrol figures
+         carry the queues and the lights inside them, and it is precisely
+         those the hybrid gives back.
+
+         The three numbers are not invented: they are what the LIVE model
+         returns when it is driven at each of those trips' own average
+         speeds. On a steady 80 km/h — the motorway trips' average — the
+         Atkinson curve alone gives 0.88, and there is nothing to recover.
+         In town the recovery and the engine shutting off do the rest. The
+         log and the car under you had better agree about the same month. */
+      const HEV_F = { road: 0.88, mix: 0.72, city: 0.58 };
+      petrol.forEach(t => {
+        TRIPS.push(Object.assign({}, t, { veh: 'hev', l100: t.l100 * HEV_F[t.char] }));
+      });
+
+      petrol.forEach(t => {
         const kmh = t.km / (t.min / 60);
         TRIPS.push(Object.assign({}, t, {
           veh: 'bev',
@@ -4471,7 +4747,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       T.total.textContent = t.eur.toFixed(2);
       /* a past trip is read in the units of the car that DROVE it, which is
          the one under us: the log only ever shows this vehicle's own half */
-      const e = t.veh === 'bev';
+      const e = !PT[t.veh].liquid;
       T.sub.innerHTML   = t.km.toFixed(1) + ' km &middot; ' + t.lit.toFixed(2) +
                           (e ? ' kWh' : ' L') +
                           ' &middot; ' + (h ? h + 'h ' + m + 'm' : m + ' min');
@@ -4493,13 +4769,13 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       T.total.textContent = state.tripCost.toFixed(2);
       T.sub.innerHTML     = state.tripKm.toFixed(1) + ' km &middot; ' +
                             state.tripLiters.toFixed(2) +
-                            (car().hasGears ? ' L burned' : ' kWh used');
+                            (car().liquid ? ' L burned' : ' kWh used');
       T.c1.textContent = state.instantEurKm.toFixed(2); T.l1.innerHTML = '&euro;/KM NOW';
       T.c2.textContent = avg.toFixed(2);                T.l2.innerHTML = '&euro;/KM AVG';
       T.c3.textContent = state.instantL100.toFixed(1);
-      T.l3.innerHTML = (car().hasGears ? 'L' : 'KWH') + ' / 100 KM';
+      T.l3.innerHTML = (car().liquid ? 'L' : 'KWH') + ' / 100 KM';
       T.c4.textContent = state.refuelPrice.toFixed(2);
-      T.l4.innerHTML = (car().hasGears ? 'TANK &euro;/L' : 'CHARGE &euro;/KWH');
+      T.l4.innerHTML = (car().liquid ? 'TANK &euro;/L' : 'CHARGE &euro;/KWH');
       T.ctitle.innerHTML = 'COST PER KM &middot; LAST 5 KM';
       T.ax0.innerHTML = '&minus;5.0 km';
       T.ax1.textContent = 'now';
@@ -4693,7 +4969,9 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       const min = prices.length ? Math.min.apply(null, prices) : 0;
       const max = prices.length ? Math.max.apply(null, prices) : 0;
       const mean = prices.length ? prices.reduce((a, b) => a + b, 0) / prices.length : 0;
-      const litres = Math.max(5, state.tankCapacity - state.tankLiters);
+      /* what a fill would take: litres under a tank, kWh under a battery.
+         The saving quoted in the footer is against THAT, whichever it is. */
+      const fillUnits = Math.max(5, state.tankCapacity - state.tankLiters);
 
       world.forEach(s => { s.row.hidden = !inScope(s); });
       order.forEach((s, rank) => {
@@ -4725,15 +5003,15 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
           ' ' + car().priceUnit + ' &middot; ' + (distOf(sel) / 1000).toFixed(1) + ' km ' +
           (sel.road ? 'up this road' : dirOf(sel));
       } else if (order.length) {
-        const b = order[0], save = (mean - priceOf(b)) * litres;
+        const b = order[0], save = (mean - priceOf(b)) * fillUnits;
         state.cheapestNear = priceOf(b);
         paintTariff();
         T.best.innerHTML =
           '<b>' + b.b + ' · ' + b.p + '</b> &middot; ' + priceOf(b).toFixed(2) +
           ' ' + car().priceUnit + ' &middot; save <b>' + save.toFixed(2) + ' &euro;</b> on ' +
-          (car().hasGears ? 'this tank' : 'a charge') +
+          (car().liquid ? 'this tank' : 'a charge') +
           ' &middot; <span style="color:#8fa6ba">tap ' +
-          (car().hasGears ? 'a station ' : '') + 'to navigate</span>';
+          (car().liquid ? 'a station ' : '') + 'to navigate</span>';
       } else {
         T.best.innerHTML = '<span style="color:#8fa6ba">Nothing in range &mdash; widen the search</span>';
       }
@@ -5022,7 +5300,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         NAV.dist.textContent = 'ARRIVED';
         NAV.unit.textContent = '';
         NAV.street.textContent = cur.st;
-        NAV.then.innerHTML = (car().hasGears ? 'pull in and fill up' : 'plug in and charge') +
+        NAV.then.innerHTML = (car().liquid ? 'pull in and fill up' : 'plug in and charge') +
                              ' &middot; ' + NAV.price.textContent + ' ' + car().priceUnit;
       } else {
         const m = Math.max(0, cur.m);
@@ -5063,7 +5341,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
        or a refuel changes the tank. */
     let builtOn = '';
     /* the sign a stop wore, in the market being read */
-    const stopBrand = s => car().hasGears ? s.bIce : s.bBev;
+    const stopBrand = s => car().liquid ? s.bIce : s.bBev;
     const seriesKey = () => state.vehicle + ':' + state.marketPrice + ':' + state.refuelPrice;
     function buildSeries() {
       /* under the battery the chart reads the derived electric market — same
@@ -5239,7 +5517,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         PV.foot.innerHTML = stops.length
           ? '<b>' + stops.length + ' stops</b> in this window &middot; we paid <span class="' + cls + '">' +
             (dd > 0 ? '+' : '') + dd.toFixed(3) + ' ' + car().priceUnit + '</span> against the ' +
-            (car().hasGears ? 'national average' : 'modelled charging market') + ' &middot; ' +
+            (car().liquid ? 'national average' : 'modelled charging market') + ' &middot; ' +
             '<span style="color:#5f7a92">tap a dot</span>'
           : '<span style="color:#5f7a92">No stop in this window &mdash; widen the range</span>';
       }
@@ -5251,7 +5529,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       const dd = s.eur - base[s.d], cls = dd > 0 ? 'up' : 'dn';
       PV.foot.innerHTML =
         '<b>' + fmtDay(s.d) + '</b> &middot; ' + stopBrand(s) + ' · ' + s.p + ' &middot; ' +
-        s.lit.toFixed(1) + (car().hasGears ? ' L' : ' kWh') +
+        s.lit.toFixed(1) + (car().liquid ? ' L' : ' kWh') +
         ' &middot; <b>' + s.eur.toFixed(3) + ' ' + car().priceUnit + '</b> &middot; ' +
         (s.lit * s.eur).toFixed(2) + ' &euro; &middot; <span class="' + cls + '">' +
         (dd > 0 ? '+' : '') + dd.toFixed(3) + '</span> vs market';
@@ -5396,7 +5674,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       csv: { name: 'CSV EXPORT',
         env: o => 'file <b>truecost-' + REPORT_ID.toLowerCase() + '.csv</b> &middot; ' + o.n +
                   ' rows &middot; date, route, km, ' +
-                  (car().hasGears ? 'litres, &euro;/L' : 'kWh, &euro;/kWh') +
+                  (car().liquid ? 'litres, &euro;/L' : 'kWh, &euro;/kWh') +
                   ', &euro;, use, cost centre',
         steps: o => ['Flattening ' + o.n + ' trips',
                      'Writing 11 columns',
@@ -5465,7 +5743,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         ? o.n + (o.n === 1 ? ' TRIP' : ' TRIPS') + ' · ' + o.range
         : 'NOTHING SELECTED';
 
-      const e = !car().hasGears;
+      const e = !car().liquid;
       $('rp-lit-l').textContent  = e ? 'KWH' : 'LITRES';
       $('rp-l100-l').innerHTML   = (e ? 'KWH' : 'L') + ' / 100 KM';
       $('rp-paid-l').innerHTML   = '&euro;/' + (e ? 'KWH' : 'L') + ' PAID';
@@ -5753,7 +6031,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         : 'RECORDING';
       TM.eur.textContent  = tEur.toFixed(2);
       TM.sub.innerHTML    = 'since ' + hhmm(tStart) + ' &middot; ' +
-                            tLit.toFixed(2) + ' L burned';
+                            tLit.toFixed(2) + (car().liquid ? ' L burned' : ' kWh used');
       TM.dur.textContent  = hms(tSec);
       TM.km.textContent   = tKm.toFixed(1);
       TM.epk.textContent  = (tKm > 0.05 ? tEur / tKm : 0).toFixed(2);
@@ -5931,7 +6209,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
 
     /* the deck's RESET TRIP zeroes the cluster; the recorded trip has to
        start over with it, or the two would disagree from that moment on */
-    function newTrip() { resetCounters(); flashUp('COUNTERS RESET — NEW TRIP OPEN'); }
+    function newTrip() { resetCounters(); resetSampler(); flashUp('COUNTERS RESET — NEW TRIP OPEN'); }
 
     /* ── the beat ──────────────────────────────────────── */
     let accSlow = 0, accMap = 0, lastMkt = state.marketPrice;
@@ -6069,13 +6347,50 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
        Standing still with the key on: a running engine burns 0.7 L/h that
        covers no ground, an electric car draws about 0.4 kW for climate and
        electronics. Neither is zero, and neither buys any distance. */
-    let stepU;
+    let stepU, instL100, instEurKm;
     if (v < 1) {
       stepU = state.engineOn ? (P.idleRate / 3600) * dt : 0;
-      state.instantL100  = 0;
-      state.instantEurKm = 0;             // at 0 km/h €/km is not defined
+
+      /* ── a hybrid standing still ─────────────────────────────────────
+         The engine is OFF, and that is the whole sentence: 0.7 L/h against
+         nothing at all is the cheapest thing this demo has to say. It only
+         wakes up if the buffer has run down far enough that the car would
+         not be able to pull away on the motor — and then it runs at its
+         efficient point, putting what it burns into the buffer rather than
+         into the road. That is the CHG mode, and it is why the number is
+         allowed to be non-zero at a red light without being a lie. */
+      if (P.buffCap) {
+        if (!state.engineOn) {
+          state.hevMode = 'OFF';
+        } else if (state.buffKwh < P.buffCap * 0.30) {
+          stepU = (P.idleCharge / 3600) * dt;
+          state.buffKwh = Math.min(P.buffCap, state.buffKwh + stepU * P.kwhPerL);
+          state.hevMode = 'CHG';
+        } else {
+          state.hevMode = 'EV';
+        }
+      }
+      instL100 = 0;
+      instEurKm = 0;                      // at 0 km/h €/km is not defined
     } else {
       stepU = stepKm * (P.per100(v) / 100);
+
+      /* ── PAYING FOR SPEED ────────────────────────────────────────────
+         per100 is a CRUISE curve: it says what holding a speed costs and
+         nothing whatever about reaching it. For a long time that did not
+         matter, because nothing in here ever gave energy back. Braking
+         does — and a car that is credited for kinetic energy it was never
+         charged for is being handed free fuel. It showed up the moment the
+         hybrid arrived: ten stops in town came out at literally zero.
+
+         So speed gained is now bought, at the profile's own exchange rate
+         between a kWh at the wheel and the unit it fills up with. At a
+         constant speed the term is exactly zero, which is why the reference
+         cruise still reads 7.14 L / 100 km and nothing calibrated moved. */
+      if (P.accCost && v > v0) {
+        const kin = 0.5 * P.mass * ((v / 3.6) ** 2 - (v0 / 3.6) ** 2) / 3.6e6;  // kWh
+        stepU += kin * P.accCost;
+      }
 
       /* ── REGENERATION, and it is why the BEV is worth showing ────────
          Braking hands kinetic energy back through the motor, so this step
@@ -6083,21 +6398,120 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
          readout goes below zero. What comes back is capped by the power
          the motor can absorb, which is exactly why a hard stop still needs
          friction brakes and does not refund the whole thing. */
-      if (P.regenEta && state.engineOn && held.brake && v < v0) {
-        const a = v0 / 3.6, b = v / 3.6;                    // m/s
-        const joules = 0.5 * P.mass * (a * a - b * b);
-        const cap = P.regenKwMax * dt / 3600;               // the motor's ceiling
-        stepU -= Math.min(joules * P.regenEta / 3.6e6, cap);
+      const braking = P.regenEta && state.engineOn && held.brake && v < v0;
+      const recover = braking
+        ? Math.min(0.5 * P.mass * ((v0 / 3.6) ** 2 - (v / 3.6) ** 2) * P.regenEta / 3.6e6,
+                   P.regenKwMax * dt / 3600)                // the motor's ceiling
+        : 0;
+
+      if (P.buffCap) {
+        /* ── THE HYBRID, and the whole difference is in these lines ─────
+           The same braking energy, and it goes somewhere else. A battery
+           car spends it immediately and the kilometre costs less than
+           nothing. A hybrid can only PARK it — in a buffer the size of a
+           sliver — and spend it later, as petrol it then does not burn.
+
+           So the cost of a hybrid kilometre bottoms out at ZERO and never
+           goes under. Lifting off stops the fuel; nothing can hand back a
+           litre that is already burnt. */
+        const want = stepU;              // what the engine alone would burn
+        stepU = 0;
+        if (!state.engineOn) {
+          state.hevMode = 'OFF';         // coasting to a stop, and burning nothing
+        } else if (braking) {
+          state.buffKwh = Math.min(P.buffCap, state.buffKwh + recover);
+          state.hevMode = 'CHG';
+        } else {
+          /* how much of this step the motor is ALLOWED to carry: all of it
+             at walking-and-town speeds, a thinning share as the air starts
+             to cost real power, and never more than the motor's own kW */
+          let share = v <= 35 ? 1 : Math.max(0.15, 1 - (v - 35) / 110);
+          /* and it backs off as the buffer empties, instead of scraping the
+             floor and staying there. A hybrid that has just spent its charge
+             drives like the petrol car for a while — which is the honest
+             reason the same car returns different figures on the same road,
+             and the reason the bar in the panel is worth watching at all. */
+          const soc = state.buffKwh / P.buffCap;
+          if (soc < 0.35) share *= soc / 0.35;
+          const use = Math.min(want * share * P.kwhPerL,
+                               P.assistKwMax * dt / 3600,
+                               state.buffKwh);
+          state.buffKwh -= use;
+          stepU = want - use / P.kwhPerL;
+
+          /* and when the sliver is nearly gone the engine tops it back up,
+             burning a little extra now to save more later.
+
+             The hysteresis is the whole trick, and it needs a LATCH rather
+             than a threshold: once topping up has started it runs to half
+             full and only then lets go. A bare "below a quarter" test would
+             stop the moment it crossed back, park the car permanently on the
+             floor of its own buffer, and there would be nothing left to
+             assist with. Wide apart, it also stops the car shuttling energy
+             through the battery for nothing on a motorway, where every round
+             trip through it LOSES a tenth of itself. */
+          const topping = state.hevMode === 'CHG' && state.buffKwh < P.buffCap * 0.60;
+          if (state.buffKwh < P.buffCap * 0.30 || topping) {
+            const chg = Math.min(P.chargeKw * dt / 3600, P.buffCap * 0.60 - state.buffKwh);
+            state.buffKwh += chg;
+            stepU += chg / P.kwhPerL / P.chargeEta;
+            state.hevMode = 'CHG';
+          } else {
+            state.hevMode = stepU < want * 0.02 ? 'EV' : 'HV';
+          }
+        }
+      } else {
+        stepU -= recover;
       }
       /* net, so the figure the app reads is what the step really cost —
-         and under regeneration it is negative, as it should be */
-      state.instantL100  = (stepU / stepKm) * 100;
-      state.instantEurKm = (stepU / stepKm) * state.refuelPrice;
+         and under regeneration it is negative, as it should be.
+
+         The guard is not defensive noise. A frame of zero length does
+         happen — the very first one does, because the loop sets lastFrame
+         and then calls itself, and a browser can hand out two callbacks on
+         the same timestamp — and it makes this 0/0. It used to be a NaN
+         that the next frame quietly overwrote; now that the readouts are
+         damped a NaN would never wash out again, because anything added to
+         it stays one. A frame that covered no ground says nothing about
+         consumption, so the figure simply stands still. */
+      if (stepKm > 0) {
+        instL100  = (stepU / stepKm) * 100;
+        instEurKm = (stepU / stepKm) * state.refuelPrice;
+      } else {
+        instL100  = state.instantL100;
+        instEurKm = state.instantEurKm;
+      }
     }
 
-    /* the readout under the dial: revs for an engine, signed power for a
-       motor. Smoothed like the revs are, so neither number twitches. */
-    if (!P.hasGears) {
+    /* ── the readouts SETTLE, they do not snap ───────────────────────
+       stepU above is a physical fact and it lands whole: ask for speed and
+       the engine burns for it in that very frame, which is why the trip,
+       the tank and the euros go on reading it raw. A cluster does not SHOW
+       it that way. An instant-consumption readout with no damping is not a
+       fast readout, it is an unreadable one — it flicks to forty and back
+       in the time a foot moves, and the eye gets a flash instead of a
+       figure. Every real one settles over about a second.
+
+       So the two live numbers WALK to where the physics already is, the
+       same way the revs and the kW already do. Nothing downstream reads
+       them but the three places that print them: the cost bars sample the
+       trip's own euros and kilometres, not these. */
+    const kInst = Math.min(1, dt * INST_DAMP);
+    state.instantL100  += (instL100  - state.instantL100)  * kInst;
+    state.instantEurKm += (instEurKm - state.instantEurKm) * kInst;
+
+    /* the readout under the dial, and each driveline answers differently.
+       An e-CVT holds no ratio, so its revs follow the POWER being asked
+       for and not the road speed: they fall to zero the moment the car goes
+       electric, and they fly up on a throttle stab without the speedometer
+       moving. That disconnect is the most recognisable thing about a full
+       hybrid, and it comes out of the same stepU everything else reads. */
+    if (P.buffCap) {
+      const kw = (stepU / Math.max(dt, 1e-6)) * 3600 * P.kwhPerL;
+      const rpmTarget = (state.engineOn && stepU > 1e-9)
+        ? Math.max(1000, Math.min(4200, 1000 + kw * 45)) : 0;
+      state.currentRpm += (rpmTarget - state.currentRpm) * Math.min(1, dt * 9);
+    } else if (!P.hasGears) {
       const kwTarget = state.engineOn ? (stepU / Math.max(dt, 1e-6)) * 3600 : 0;
       state.currentKw += (kwTarget - state.currentKw) * Math.min(1, dt * 6);
     }
@@ -6116,11 +6530,11 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
   function render() {
     const P = car();
     el.spd.textContent    = Math.round(state.currentSpeed);
-    /* revs for an engine, signed kW for a motor — same slot, same size */
-    el.rpm.textContent    = P.hasGears ? Math.round(state.currentRpm)
-                                       : Math.round(state.currentKw);
-    el.gear.textContent   = P.hasGears ? (state.currentSpeed < 1 ? 'N' : state.gear + 1)
-                                       : (state.engineOn ? 'D' : 'P');
+    /* two slots, three cars, and no branch here: revs and a gear, revs and
+       a hybrid mode, or signed kW and D. Each profile answers for its own
+       pair — same slot, same size, a different sentence. */
+    el.rpm.textContent    = P.subVal(state);
+    el.gear.textContent   = P.gearVal(state);
 
     /* the money shot: under regeneration the cost of the kilometre is
        BELOW ZERO, and both the € / km and the kW turn green to say so.
@@ -6129,7 +6543,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     const back = ekm < 0;
     el.eurKm.textContent = ekm.toFixed(2);
     el.eurKm.classList.toggle('regen', back);
-    el.rpm.classList.toggle('regen', !P.hasGears && state.currentKw < -0.5);
+    el.rpm.classList.toggle('regen', !P.liquid && state.currentKw < -0.5);
 
     el.dist.textContent   = state.tripKm.toFixed(2);
     el.cons.textContent   = state.tripLiters.toFixed(2);
@@ -6149,9 +6563,16 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     const lvl = Math.max(0, Math.min(1, state.tankLiters / P.capacity));
     el.fuelbar.setAttribute('width', (lvl * 100).toFixed(1));
 
+    /* the buffer, and it is the only thing on this panel that MOVES while
+       you drive: it fills under braking and empties on the next pull away.
+       Without it the hybrid's whole model would work in the dark. */
+    if (P.buffCap) {
+      const b = Math.max(0, Math.min(1, state.buffKwh / P.buffCap));
+      el.buffbar.setAttribute('width', (b * 100).toFixed(1));
+    }
+
     rpmVal.innerHTML = Math.round(state.currentSpeed) + ' km/h <em>· ' +
-                       (P.hasGears ? Math.round(state.currentRpm) + ' rpm'
-                                   : Math.round(state.currentKw) + ' kW') + '</em>';
+                       P.subVal(state) + ' ' + P.subUnit + '</em>';
 
     paintDial(state.currentSpeed);
   }

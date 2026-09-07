@@ -23,6 +23,7 @@ Punto di ingresso: leggi questo file, poi salta alla nota che ti serve.
 | [09-strada.md](09-strada.md) | La strada procedurale nel parabrezza: prospettiva, curve, traffico | Per ritoccare l'effetto velocità |
 | [10-pubblicazione.md](10-pubblicazione.md) | Dove vive la demo, come si pubblica, come si torna indietro | Per aggiornare il link pubblico o recuperare una versione |
 | [11-plancia-estesa.md](11-plancia-estesa.md) | La metà destra disegnata a mano e il display centrale | Per ritoccare la plancia estesa o lavorare sull'app |
+| [12-full-hybrid.md](12-full-hybrid.md) | Il full hybrid: curva del solo motore, tampone, e-CVT, e il costo dell'accelerazione | Per ritarare l'ibrido o capire perché il km si ferma a zero |
 
 ## File del progetto
 
