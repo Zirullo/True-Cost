@@ -3039,48 +3039,11 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       studs(RAIL, 25, 0.90, 0.11, '#ffb43c', '#d9a05a', Z_RAIL);// amber delineators
     }
 
-    /* a motorway sign every so often: it enters small, swells and leaves over
-       the roof in about a second — nothing reads as fast as that */
-    function signs() {
-      const EVERY = 500;
-      const start = Math.ceil((travel + 40) / EVERY) * EVERY;
-      for (let s = start; s < travel + Z_FAR; s += EVERY) {
-        const z = s - travel;
-        if (z > 320) continue;
-        if (s % ST_EVERY === 0) continue;   // that slot belongs to a fuel station
-        if (overpassAt(s) < 20) continue;   // and this one to an overpass: the sign
-                                            // would stand inside the deck
-        const X = RAIL + 2.2, w = 4.2 * F / z;
-        const xc = sxOf(X, z);
-        const yTop = syOf(5.6, z), yBot = syOf(3.4, z);
-        if (yBot < -RISE - 40 || xc - w > SW + 160) continue;
-        at(z, () => {
-          ctx.globalAlpha = Math.min(1, (320 - z) / 90);
-          const lw = Math.max(0.6, 0.16 * F / z);
-          ctx.fillStyle = '#5e666b';                        // the two legs
-          ctx.fillRect(xc - w * 0.3, yBot, lw, syOf(0, z) - yBot);
-          ctx.fillRect(xc + w * 0.3, yBot, lw, syOf(0, z) - yBot);
-          ctx.fillStyle = '#1d6142';                        // the panel
-          ctx.fillRect(xc - w / 2, yTop, w, yBot - yTop);
-          ctx.strokeStyle = '#e7efe9';
-          ctx.lineWidth = Math.max(0.5, 0.06 * F / z);
-          ctx.strokeRect(xc - w / 2, yTop, w, yBot - yTop);
-          const h = yBot - yTop;
-          if (h > 6) {                                      // unreadable legend
-            ctx.fillStyle = 'rgba(232,240,234,.9)';
-            ctx.fillRect(xc - w * 0.34, yTop + h * 0.24, w * 0.52, h * 0.13);
-            ctx.fillRect(xc - w * 0.34, yTop + h * 0.55, w * 0.40, h * 0.13);
-          }
-          ctx.globalAlpha = 1;
-        });
-      }
-    }
-
-
     /* ── STELLANTIS billboards ────────────────────────────────
        One every 300 m, on the LEFT, just beyond the opposite carriageway
        (which ends at -17.9 m): the right-hand verge already carries the
-       green motorway signs and the fuel stations, so the two would fight.
+       fuel stations, and two things asking to be read on the same side of
+       the glass would fight.
 
        They alternate: the plain STELLANTIS wordmark, then the same board
        carrying TRUE COST under it, then plain again. At 130 km/h that is a
@@ -3995,7 +3958,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     }
 
     /* ── the verge, painted once, farthest first ──────────────
-       Trees, billboards, motorway signs, the forecourt and the bridges all
+       Trees, billboards, the forecourt and the bridges all
        stand on the same ground and read their distance the same way — z is
        (their own metre mark) minus travel — so they have always MOVED
        together. What was wrong was the order they were painted in: one
@@ -4028,7 +3991,6 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       VERGE.length = 0;
       trees();
       kmSigns();          // the STELLANTIS boards, on the left
-      signs();            // the green motorway signs, on the right
       stations();
       overpasses();
       VERGE.sort((a, b) => b.z - a.z);
