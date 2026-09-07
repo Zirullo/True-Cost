@@ -104,11 +104,29 @@ righe dentro `applyProfile()`.
 `lastPlug` nel render evita di riscrivere cinque nodi DOM sessanta volte al secondo
 per dire la stessa cosa.
 
-**La barra livello resta il serbatoio**, sempre, su ogni auto che ne ha uno. Il
-pacco ha la sua, lo slot `vs-buff`: porta il **PLUG-IN BATTERY** finché c'è carica,
-poi passa la mano al **HYBRID BUFFER** sotto — lo stesso passaggio di mano che fa
-tutta la macchina, disegnato una volta. Un pacco vuoto piantato a zero per il resto
-della guidata avrebbe detto la cosa vera e non mostrato niente.
+**La barra livello resta il serbatoio**, sempre, su ogni auto che ne ha uno.
+
+Sotto, il plug-in ha **due gauge affiancate** e nessuna delle due se ne va mai
+(gruppo `vs-pack`, che sostituisce il `vs-buff` a tutta larghezza dell'ibrido):
+
+| | larghezza | colore | cos'è |
+|---|---|---|---|
+| **PLUG-IN** | 74 px | viola `#a58cf0` | il pacco, **comprato** a un muro al prezzo dello slider |
+| **BUFFER** | 36 px | ciano `#5fdcff` | la fetta che l'auto si **guadagna** frenando |
+
+Le larghezze sono le taglie: 11.4 kWh contro 0.50. E i due colori non sono
+decorazione — dicono la differenza fra le due metà di questa macchina: energia
+**pagata** contro energia **guadagnata**.
+
+**Il pacco vuoto resta in vista.** Una prima versione gli faceva passare la mano al
+tampone quando finiva, e su una macchina in cui *«la batteria è finita»* è metà di
+quello che c'è da vedere quella era la metà sbagliata da nascondere. Adesso la
+scatola vuota **è** la lettura, e a scendere è la scritta: `#b9a6f0` con carica,
+`#5c5175` a zero. Così «scarico» si legge invece di dover essere notato.
+
+Misurate: 0/70 all'apertura con l'etichetta già spenta, 70/70 appena attaccato,
+35/70 a metà, e 0/70 con il tampone a 32/32 quando la carica è finita e l'ibrido
+ha ripreso a respirare. HEV e ICE non vedono questo gruppo affatto.
 
 ## Il tema: viola, e per esclusione
 

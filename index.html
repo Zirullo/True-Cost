@@ -1283,6 +1283,31 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         <rect id="buff-box" x="806" y="404" width="116" height="8" rx="2" fill="#0a1a20" stroke="#3f5f6a" stroke-width=".9"/>
         <rect id="buffbar" x="808" y="406" width="60" height="4" rx="1.5" fill="#5fdcff"/>
       </g>
+      <!-- and the plug-in carries TWO stores at once, so it gets the row
+           split rather than handed back and forth. Wide gauge on the left,
+           the pack that was bought at a wall; narrow one on the right, the
+           sliver the car makes for itself out of its own braking - and the
+           widths are the sizes, 11.4 kWh against 0.50.
+
+           Both stay on screen when either is empty. A flat pack that
+           vanished would have said the true thing and shown nothing, and on
+           this car "the battery is dead" is half of what there is to see:
+           the empty box IS the reading. The label dims instead, so flat is
+           legible rather than absent.
+
+           Violet for the pack and cyan for the buffer is not decoration:
+           one is energy the driver BOUGHT, at the price on the tariff
+           slider, and the other is energy the car EARNED and never paid
+           for. It is the whole difference between the two halves of this
+           vehicle, and the panel can say it in a colour. -->
+      <g id="vs-pack" style="display:none">
+        <text id="pk-lbl" x="843" y="400" text-anchor="middle" font-size="9" letter-spacing="1" fill="#b9a6f0">PLUG-IN</text>
+        <text id="bf-lbl" x="904" y="400" text-anchor="middle" font-size="9" letter-spacing="1" fill="#8fcfe0">BUFFER</text>
+        <rect x="806" y="404" width="74" height="8" rx="2" fill="#140f22" stroke="#5a4a80" stroke-width=".9"/>
+        <rect id="packbar" x="808" y="406" width="70" height="4" rx="1.5" fill="#a58cf0"/>
+        <rect x="886" y="404" width="36" height="8" rx="2" fill="#0a1a20" stroke="#3f5f6a" stroke-width=".9"/>
+        <rect id="packbuff" x="888" y="406" width="0" height="4" rx="1.5" fill="#5fdcff"/>
+      </g>
       <g id="ic-pump" filter="url(#glow)" transform="translate(852,398)">
         <path d="M4,2 h13 a2,2 0 0 1 2,2 v16 h-17 v-16 a2,2 0 0 1 2,-2 z" fill="#39e08a"/>
         <path d="M21,7 l4,3 v9 a2.6,2.6 0 0 1 -5.2,0 v-4" fill="none" stroke="#39e08a" stroke-width="2.2" stroke-linecap="round"/>
@@ -1782,7 +1807,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       </div>
       <div class="help-section" style="border-left-color:#c9a6ff;grid-column:1/-1">
         <div class="help-section-title" style="color:#c9a6ff">⇄ Petrol, hybrid or electric</div>
-        <p>The bar <strong>above the cockpit</strong> — deliberately outside it, because no real car has this button — walks the vehicle under you along <strong>ICE · HEV · PHEV · BEV</strong> (<strong>&ldquo;V&rdquo;</strong> on the keyboard cycles through them), which is the order electrification actually happens in. Each one keeps <strong>its own trip, its own tank or battery and its own last price paid</strong>, so nothing is ever half one car and half another.</p><p>In the <strong>electric</strong> car the revs become <strong>kW</strong>, the gear becomes <strong>D</strong>, the tank becomes <strong>charge</strong>, and the signs along the road quote <strong>&euro; / kWh</strong>. Set what you pay at home on the <strong>home tariff</strong> slider: the charge in the battery came off that wall, which is why the totems outside — asking two to three times as much — are the whole argument. And when you <strong>brake</strong>, the motor hands energy back: the kW go negative, and <strong>the cost of that kilometre turns green and drops below zero</strong>.</p><p>The <strong>full hybrid</strong> never plugs in at all. It buys petrol, by the litre, at the same pumps — and everything it saves it has to <em>earn</em>. Braking fills a small buffer, the <strong>HYBRID BATTERY</strong> bar in the vehicle panel, and the next time you pull away that buffer does the driving: the <strong>MODE</strong> slot reads <strong>EV</strong>, and the revs fall to <strong>zero</strong> while the car is still moving. It has no gears to hunt between — an e-CVT holds the engine wherever it is most efficient — so the rev counter follows the <em>power</em> you are asking for and not the road speed. Standing at a light it burns <strong>nothing</strong>, against the 0.7 L/h of the petrol car. But the cost of a hybrid kilometre stops at <strong>zero</strong> and never goes under: lifting off stops the fuel, and nothing can hand back a litre already burnt. Which is why at a steady 128 it is only about a tenth better than the petrol car, and in stop-and-go it is a different vehicle — <strong>that gap is the thing to watch</strong>.</p><p>The <strong>plug-in hybrid</strong> is that same hybrid with a pack you fill at home, and it is the only car here that spends <strong>two energies in one trip</strong>. Press <strong>&ldquo;P&rdquo;</strong> to plug it in: it takes <strong>11.4 kWh</strong> off the wall at your own tariff, and that charge is good for <strong>about 38 km &mdash; give or take eight, drawn afresh every time</strong>, because the one thing a plug-in is famous for is never doing the same distance twice. While it lasts the consumption slot counts <strong>kWh</strong>, the price under it reads <strong>&euro; / kWh</strong>, the revs sit at <strong>zero</strong> and the kilometre costs about <strong>six cents</strong>. The kilometre after it, with nothing else on the panel moving, it is the full hybrid again at three times that &mdash; and the <strong>PLUG-IN BATTERY</strong> bar hands its slot over to the hybrid buffer. It never charges at a totem: this car buys electricity at home and petrol on the road, which is what makes the two prices on the billboard outside an argument instead of a menu.</p><p><em>The centre display now keeps two columns &mdash; litres and kWh &mdash; because one of these four cars buys both. Cost history and the Report show them side by side; the cluster has one slot and shows whichever is being spent.</em></p>
+        <p>The bar <strong>above the cockpit</strong> — deliberately outside it, because no real car has this button — walks the vehicle under you along <strong>ICE · HEV · PHEV · BEV</strong> (<strong>&ldquo;V&rdquo;</strong> on the keyboard cycles through them), which is the order electrification actually happens in. Each one keeps <strong>its own trip, its own tank or battery and its own last price paid</strong>, so nothing is ever half one car and half another.</p><p>In the <strong>electric</strong> car the revs become <strong>kW</strong>, the gear becomes <strong>D</strong>, the tank becomes <strong>charge</strong>, and the signs along the road quote <strong>&euro; / kWh</strong>. Set what you pay at home on the <strong>home tariff</strong> slider: the charge in the battery came off that wall, which is why the totems outside — asking two to three times as much — are the whole argument. And when you <strong>brake</strong>, the motor hands energy back: the kW go negative, and <strong>the cost of that kilometre turns green and drops below zero</strong>.</p><p>The <strong>full hybrid</strong> never plugs in at all. It buys petrol, by the litre, at the same pumps — and everything it saves it has to <em>earn</em>. Braking fills a small buffer, the <strong>HYBRID BATTERY</strong> bar in the vehicle panel, and the next time you pull away that buffer does the driving: the <strong>MODE</strong> slot reads <strong>EV</strong>, and the revs fall to <strong>zero</strong> while the car is still moving. It has no gears to hunt between — an e-CVT holds the engine wherever it is most efficient — so the rev counter follows the <em>power</em> you are asking for and not the road speed. Standing at a light it burns <strong>nothing</strong>, against the 0.7 L/h of the petrol car. But the cost of a hybrid kilometre stops at <strong>zero</strong> and never goes under: lifting off stops the fuel, and nothing can hand back a litre already burnt. Which is why at a steady 128 it is only about a tenth better than the petrol car, and in stop-and-go it is a different vehicle — <strong>that gap is the thing to watch</strong>.</p><p>The <strong>plug-in hybrid</strong> is that same hybrid with a pack you fill at home, and it is the only car here that spends <strong>two energies in one trip</strong>. Press <strong>&ldquo;P&rdquo;</strong> to plug it in: it takes <strong>11.4 kWh</strong> off the wall at your own tariff, and that charge is good for <strong>about 38 km &mdash; give or take eight, drawn afresh every time</strong>, because the one thing a plug-in is famous for is never doing the same distance twice. While it lasts the consumption slot counts <strong>kWh</strong>, the price under it reads <strong>&euro; / kWh</strong>, the revs sit at <strong>zero</strong> and the kilometre costs about <strong>six cents</strong>. The kilometre after it, with nothing else on the panel moving, it is the full hybrid again at three times that. Under the tank there are <strong>two gauges side by side</strong> and both stay on screen: <strong>PLUG-IN</strong>, wide and violet, the charge you bought at a wall &mdash; and <strong>BUFFER</strong>, narrow and cyan, the sliver the car earns back from its own braking. An empty plug-in gauge is a reading, not an absence: it is half of what there is to see on this car. It never charges at a totem: this car buys electricity at home and petrol on the road, which is what makes the two prices on the billboard outside an argument instead of a menu.</p><p><em>The centre display now keeps two columns &mdash; litres and kWh &mdash; because one of these four cars buys both. Cost history and the Report show them side by side; the cluster has one slot and shows whichever is being spent.</em></p>
       </div>
       <div class="help-section" style="border-left-color:#8fd8f5;grid-column:1/-1">
         <div class="help-section-title" style="color:#8fd8f5">▣ Centre display</div>
@@ -2341,6 +2366,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     cons: $('cons'), total: $('total'), refuel: $('refuel'), local: $('local'),
     localDist: $('localDist'), fuelbar: $('fuelbar'), gear: $('gearTxt'),
     buffbar: $('buffbar'), buffLbl: $('buff-lbl'),
+    packbar: $('packbar'), packbuff: $('packbuff'), pkLbl: $('pk-lbl'),
     /* the labels the vehicle switch rewrites — they change once, on a
        switch, not once a frame */
     rpmLbl: $('rpmLbl'), gearLbl: $('gearLbl'), consUnit: $('consUnit'),
@@ -2530,7 +2556,6 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     const P = car(), e = onPlug();
     el.consUnit.textContent  = e ? P.evUnit      : P.unit;
     el.refuelLbl.textContent = e ? P.evPaidLabel : P.paidLabel;
-    if (P.evCap) el.buffLbl.textContent = e ? 'PLUG-IN BATTERY' : 'HYBRID BUFFER';
   }
 
   function applyProfile(id, boot) {
@@ -2605,10 +2630,11 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       c.remove('bev', 'hev', 'phev');
       if (P.theme) c.add(P.theme);
     });
-    /* the second bar belongs to whoever has a second store of energy, and
-       nobody else. On the hybrid it is the sliver; on the plug-in it is the
-       pack first and the sliver afterwards — see render(). */
-    $('vs-buff').style.display = (P.buffCap || P.evCap) ? '' : 'none';
+    /* the second store of energy, and how many of them there are. A hybrid
+       has one and takes the full-width gauge; the plug-in has two at the
+       same time and takes the split one. A petrol car has neither. */
+    $('vs-buff').style.display = (P.buffCap && !P.evCap) ? '' : 'none';
+    $('vs-pack').style.display = P.evCap ? '' : 'none';
     $('nv-price-l').innerHTML  = P.priceUnit + ' THERE';
     $('rp-verb').textContent   = P.refuelVerb;
     $('rp-done-lbl').innerHTML = P.refuelDone;
@@ -7107,16 +7133,21 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     /* the buffer, and it is the only thing on this panel that MOVES while
        you drive: it fills under braking and empties on the next pull away.
        Without it the hybrid's whole model would work in the dark. */
-    if (P.buffCap || P.evCap) {
-      /* on the plug-in this bar carries the PACK until the pack is gone,
-         and then hands the slot over to the hybrid sliver underneath —
-         which is the same handover the whole car makes, drawn once. An
-         empty pack sitting flat at zero for the rest of the drive would
-         have said the true thing and shown nothing. */
-      const b = (P.evCap && state.evKwh > 0)
-        ? state.evKwh / P.evCap
-        : state.buffKwh / P.buffCap;
-      el.buffbar.setAttribute('width', (Math.max(0, Math.min(1, b)) * 100).toFixed(1));
+    const clamp01 = x => Math.max(0, Math.min(1, x));
+    if (P.evCap) {
+      /* both at once, and neither one ever leaves. The pack empties over
+         the kilometres the charge was sold for and then STAYS empty, in
+         plain sight, until somebody plugs the car in again; the sliver next
+         to it goes on breathing under braking exactly as the hybrid's does.
+         Watching those two together is watching the car change what it is. */
+      const pk = clamp01(state.evKwh / P.evCap);
+      el.packbar.setAttribute('width', (pk * 70).toFixed(1));
+      el.packbuff.setAttribute('width', (clamp01(state.buffKwh / P.buffCap) * 32).toFixed(1));
+      /* an empty gauge is a reading, not an absence — so the label says so
+         rather than leaving the eye to notice a bar that is not there */
+      el.pkLbl.setAttribute('fill', pk > 0.001 ? '#b9a6f0' : '#5c5175');
+    } else if (P.buffCap) {
+      el.buffbar.setAttribute('width', (clamp01(state.buffKwh / P.buffCap) * 100).toFixed(1));
     }
 
     rpmVal.innerHTML = Math.round(state.currentSpeed) + ' km/h <em>· ' +
