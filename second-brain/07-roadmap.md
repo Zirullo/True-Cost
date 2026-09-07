@@ -17,14 +17,14 @@
 
 ## Prossimo passo
 
-- **Il debito dei nomi**: `tripLiters`, `tankLiters`, `instantL100`, `t.l100`
-  contengono kWh sotto il profilo elettrico. Resta **tutto** del PHEV: il full
-  hybrid non lo ha forzato, perché compra solo litri e il suo tampone sta fuori
-  dai libri — [06-archivio-bev.md](06-archivio-bev.md),
-  [12-full-hybrid.md](12-full-hybrid.md)
-- **Il PHEV**, quarto profilo in `PT` — ed è quello che forzerà la mano sui nomi,
-  perché brucia benzina **e** kWh nello stesso viaggio
-- **Il taglio in rilascio**: in coasting senza freno tutti e tre pagano ancora il
+- **Il forfait elettrico del PHEV**: l'autonomia è una distanza e non una curva,
+  quindi il km a spina costa uguale a 30 e a 128 — ed è il motivo per cui in
+  città il plug-in batte l'elettrico. È la cosa da rifare per prima se qualcuno
+  lo chiede — [13-phev.md](13-phev.md)
+- **Un giorno, due viaggi**: il gemello storico del PHEV non sa dividere una
+  carica fra due viaggi dello stesso giorno, perché i diciotto stanno su
+  diciotto giorni diversi e non gliene offrono l'occasione — [13-phev.md](13-phev.md)
+- **Il taglio in rilascio**: in coasting senza freno tutti e quattro pagano ancora il
   consumo di crociera, mentre un motore vero taglia l'iniezione. È il simmetrico
   del costo dell'accelerazione, che è stato fatto —
   [12-full-hybrid.md](12-full-hybrid.md)
@@ -36,6 +36,21 @@
   [01-decisioni.md](01-decisioni.md)
 
 ## Fatto
+
+- ✅ **Il plug-in, e due energie nello stesso viaggio** (2026-09-07): quarta
+  motorizzazione, barra **ICE · HEV · PHEV · BEV**, tema viola. È l'ibrido con
+  un pacco da 11.4 kWh che si riempie **a casa** con **«P»**, buono per **38 km
+  ± 8.5 estratti a ogni ricarica**: finiti quelli, torna a essere l'ibrido, e il
+  quadrante **si ribalta da €/kWh a €/L in mezzo a una guidata**. Nessuna
+  ricarica al totem: elettricità a casa, benzina in strada. Apre a batteria
+  vuota, € 4.25 sui 48.09 km della foto — fra ibrido (6.30) ed elettrico
+  (3.11). Sul mese: **€ 107.45** contro 150.84 · 120.41 · 131.97, e vince il
+  mese perdendo la città — [13-phev.md](13-phev.md)
+
+- ✅ **I nomi dicono quello che portano** (2026-09-07): `tripUnits`, `tankUnits`,
+  `instantPer100`, `t.per100` al posto dei nomi in litri che sotto il BEV
+  portavano kWh, e **`tripKwh` come seconda colonna** accanto a loro. Il debito
+  che il roadmap assegnava al PHEV, saldato dal PHEV — [13-phev.md](13-phev.md)
 
 - ✅ **Il full hybrid, e un'auto che il risparmio se lo guadagna** (2026-09-07):
   terza motorizzazione in `PT`, barra di regia **ICE · HEV · BEV** e «V» che
