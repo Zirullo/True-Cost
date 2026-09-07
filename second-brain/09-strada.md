@@ -408,8 +408,15 @@ lontani.
 | soglia slot vuoto | 0.42 | il 42% degli slot resta vuoto |
 | jitter | ±3.5 m | spostamento dello slot lungo la strada |
 | `TREE_FAR` | 300 m | oltre, ci pensa la boscaglia del fondale |
-| `TREE_GAP` | 26 m | spazio lasciato libero attorno a una stazione |
+| `TREE_GAP_IN` | **100 m** | banchina sgombra **prima** di una stazione |
+| `TREE_GAP_OUT` | 26 m | e fin subito dopo il piazzale |
 | offset laterali | sinistra 19.5–31.5 m · destra 9.5–22.5 m | |
+
+**Il varco attorno a una stazione è volutamente sbilanciato.** Con 26 m per lato
+la fila di alberi arrivava fino al bordo del piazzale e teneva nascosto il cartellone
+finché non era troppo vicino per leggerlo: la stazione compariva invece di arrivare.
+Ora la banchina è sgombra per tutto l'avvicinamento — **100 m**, circa 2.8 s a 130 —
+e si richiude appena passato il piazzale. Dietro di noi non serve.
 
 **L'offset laterale è il punto.** Un albero a 9.5 m esce dall'inquadratura a 15 m
 davanti al cofano, quindi attraversa tutta la larghezza del vetro nell'ultimo mezzo
