@@ -82,15 +82,9 @@ L'apertura usa i **38 dichiarati e non un'estrazione**: il fotogramma di
 riferimento è l'unico posto dove un dado costerebbe più di quanto vale, e ogni
 altra auto apre riproducibile. La lotteria comincia dalla prima ricarica.
 
-| | distanza | consumo | totale |
-|---|---|---|---|
-| ICE | 48.09 km | 5.02 L | € 9.55 |
-| HEV | 48.09 km | 3.07 L | € 6.30 |
-| **PHEV** | 48.09 km | **0.68 L + 11.40 kWh** | **€ 4.25** |
-| BEV | 48.09 km | 11.57 kWh | € 2.89 |
-
-Si infila fra ibrido ed elettrico senza che sia stato tipato niente: è la curva a
-dirlo.
+Sui 48.09 km della foto sono **0.68 L + 11.40 kWh = € 4.25**, e si infila fra
+ibrido ed elettrico senza che sia stato tipato niente: è la curva a dirlo. La
+tabella dei quattro sta in [04-modello-costi.md](04-modello-costi.md).
 
 ## Il quadrante segue l'energia, non l'auto
 
@@ -166,14 +160,17 @@ già usa per i prezzi: stesso viaggio, stessa autonomia a ogni caricamento, e du
 viaggi non ne condividono una. Il mese deve contenere il commute che ce l'ha fatta
 e quello che per poco no.
 
-Sugli stessi 1194 km:
+Sugli stessi 1194 km — **è l'unica copia di questa tabella nel second brain**, e i
+numeri sono **misure**, non costanti: dipendono da `state.marketPrice`, quindi vanno
+ri-letti dal Report dopo ogni ritaratura di una curva, non copiati altrove.
+Rilevate il 2026-09-07, dopo la ritaratura del BEV:
 
 | | totale | €/km | consumo |
 |---|---|---|---|
-| ICE | € 150.84 | 0.1263 | 81.7 L |
-| HEV | € 120.41 | 0.1008 | 65.3 L |
-| **PHEV** | **€ 107.45** | **0.0900** | **32.7 L + 188.4 kWh di casa** |
-| BEV | € 131.97 | 0.1105 | 218.6 kWh |
+| ICE | € 151.96 | 0.127 | 81.7 L |
+| HEV | € 121.31 | 0.102 | 65.3 L |
+| **PHEV** | **€ 107.92** | **0.090** | **32.7 L + 188.4 kWh di casa** |
+| BEV | € 131.33 | 0.110 | 217.7 kWh |
 
 Il plug-in vince **il mese** e perde **la città**, ed entrambe le cose sono
 interessanti:
@@ -184,6 +181,11 @@ interessanti:
 | HEV | € 14.71 | € 2.05 |
 | PHEV | € 14.06 · 5.74 L + 11.4 kWh | € 1.73 · **0.00 L** + 6.9 kWh |
 | BEV | € 19.43 | € 1.59 |
+
+> ⚠️ Queste due colonne sono **anteriori alla ritaratura del BEV del 2026-09-07**
+> e non sono state ri-misurate. La riga BEV è quella che si è mossa di più: la
+> Torino–Milano rincara (22.0 kWh/100 contro 20.2), la City · Torino cala
+> (12.2 contro 14.4). **Il verso del confronto regge, le cifre no.**
 
 In autostrada il pacco è l'8% del viaggio e il PHEV è appena meglio dell'ibrido. In
 città non brucia **niente**. Il mese è dominato dai viaggi corti, ed è per questo

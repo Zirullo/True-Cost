@@ -5,6 +5,50 @@ Ordine cronologico inverso (la più recente in alto). Ogni voce: **cosa**, **per
 
 ---
 
+## 2026-09-08 · La plancia smette di essere cucita
+
+**Scelta**: la scena passa a **una sola fotografia**, `Green_Screen.jpeg`
+(1525 × 688): tutta la plancia, dal montante sinistro al lato opposto, scattata
+con il **parabrezza in verde croma**. `#ext` e `#dashext` — la spalmatura sfocata
+e l'SVG che dal 2026-09-04 ricostruivano la metà destra — sono **rimossi**. La
+scena passa da 1720 × 791 a **1639.78 × 767.2**.
+
+**Perché**: la giunzione si vedeva. Per quanto ben tarata, la metà destra era
+disegnata, e in una demo che vive di credibilità il cruscotto non può essere
+metà fotografia e metà illustrazione.
+
+**La decisione dentro la decisione: non riscrivere le coordinate.** La strada
+occupa qualche centinaio di righe di costanti in pixel — punto di fuga, orizzonte,
+focale, alberi, cartelli, nuvole. Riscriverle sulla lastra nuova voleva dire
+rimettere in discussione ogni numero della nota 09. Invece si tiene il righello
+vecchio: **1 unità = 1 pixel della foto 1147 × 641**, e la lastra viene *posata
+dentro* quello spazio alla scala a cui registra, **0.93**. Nel modulo della strada
+non si è toccato **un solo numero di prospettiva**; sono cambiate due righe, che
+leggono l'altezza del palco invece di calcolarla come `641 + rise`.
+
+**Il 0.93 non è stato scelto a occhio**: viene da una registrazione per
+correlazione di fase fra le due immagini, con un picco netto a s = 0.93,
+dx = 2, dy = 114. Il cluster disegnato cade dentro il cluster stampato — e cade
+leggermente più largo, che è la direzione giusta.
+
+**E la maschera del parabrezza non si traccia più a mano**: i 56 punti ricalcati
+sulla vecchia foto diventano **17**, generati dall'ultima riga verde di ogni
+colonna e spinti 3 px dentro il cruscotto. È il motivo per cui la lastra è stata
+scattata su verde croma: il vetro dichiara il proprio contorno.
+
+**Comporta**: (a) il progetto **dipende da `Green_Screen.jpeg`**, che va nel repo
+o la demo si apre senza cruscotto; (b) `--rise` conserva il suo significato (righe
+sopra il cockpit y 0), ma la lastra comincia 27.42 righe sotto il bordo alto del
+palco; (c) `#cluster` è ancorato **in alto** e non più in basso, perché la lastra
+è tagliata 24 righe più corta della foto vecchia; (d) l'ombra e l'alone freddo
+sotto il display, che erano due ellissi dentro `#dashext`, sono ora due
+`drop-shadow` su `#stack`; (e) `True-Cost project picture.jpg` **resta nel
+progetto**: non si vede più, ma è il righello di ogni coordinata del file.
+
+Dettagli: [11-plancia-estesa.md](11-plancia-estesa.md).
+
+---
+
 ## 2026-09-07 · Un'auto che il risparmio se lo guadagna
 
 Terza motorizzazione: il **full hybrid**. Non si attacca mai a una presa, compra
@@ -232,8 +276,9 @@ contrario. Non è stato arrangiato, cade fuori dalla fisica — ed è la cosa pi
 interessante che il confronto abbia da dire.
 
 Il totale, sullo stesso mese e sugli stessi **1194 km**: **€ 151.61 a benzina
-contro € 131.33 in elettrico**. Meno di quanto la retorica dell'elettrico
-lascerebbe pensare, e il motivo si legge nel pannello: quei kWh sono comprati
+contro € 131.33 in elettrico** — come misurati *quel* giorno, e questo è un log:
+le cifre correnti stanno in [13-phev.md](13-phev.md). Meno di quanto la retorica
+dell'elettrico lascerebbe pensare, e il motivo si legge nel pannello: quei kWh sono comprati
 alle colonnine a 0.60, non al muro di casa a 0.25.
 
 **La vista Prices sotto la batteria è una stima, e lo dice.** Non esiste un

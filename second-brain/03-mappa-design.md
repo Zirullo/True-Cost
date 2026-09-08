@@ -1,23 +1,25 @@
 # 03 · Mappa del design
 
-Tutte le coordinate sono in **pixel dell'immagine di riferimento**
+Tutte le coordinate sono in **pixel della foto originale**
 (`True-Cost project picture.jpg`, 1147 × 641) e coincidono con le unità del
-`viewBox` dell'SVG. Origine in alto a sinistra.
+`viewBox` dell'SVG. Origine in alto a sinistra. Quella foto non è più a schermo
+dal 2026-09-08, ma è ancora il righello di tutto il file: la lastra nuova è posata
+dentro questo stesso spazio a 0.93 — [11-plancia-estesa.md](11-plancia-estesa.md).
 
 > **La velatura in cabina vive dentro la maschera.** `#tint` copre tutta la scena
 > ma `--dashmask` ne scopre solo l'abitacolo: la banda **y 0.31 → 1.00**. Uno stop
-> scritto a 0% o a 100% non si vede mai. E l'angolo conta: a **168deg** su una
-> scena larga 2.17 volte la sua altezza il gradiente corre in diagonale, quindi la
+> scritto a 0% o a 100% non si vede mai (la banda oggi parte a **0.34**). E
+> l'angolo conta: a **168deg** su una scena larga 2.14 volte la sua altezza il gradiente corre in diagonale, quindi la
 > sinistra della plancia sta molto più indietro della destra. ICE e BEV se lo
 > possono permettere, essendo di una tinta sola da capo a fondo; l'ibrido no, e
 > infatti la prima volta è uscito **identico al benzina** al centro plancia. Chi
 > deve cambiare *attraverso* l'abitacolo usa **180deg** e stop fra .32 e 1 —
 > [12-full-hybrid.md](12-full-hybrid.md).
 
-> **La scena è più larga della foto.** Dal 2026-09-04 va da 0 a **1720**: foto e
-> cluster restano larghi 1147 e ancorati a sinistra — tutto quello che c'è in questa
-> nota è quindi invariato — e da x 1147 in poi c'è la plancia disegnata col display
-> centrale, le cui coordinate stanno in
+> **La scena è più larga della foto originale.** Dal 2026-09-08 va da 0 a
+> **1639.78** (la lastra intera, 1525/0.93): il cluster resta largo 1147 e ancorato
+> a sinistra — tutto quello che c'è in questa nota è quindi invariato — e la metà
+> destra della plancia è fotografia, col display centrale sopra. Coordinate in
 > [11-plancia-estesa.md](11-plancia-estesa.md).
 
 ## Schermo del cluster

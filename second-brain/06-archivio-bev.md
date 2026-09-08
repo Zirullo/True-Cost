@@ -1,10 +1,7 @@
 # 06 · Il BEV
 
-> Questa nota era un **archivio**: il pannello elettrico era stato tolto dalla UI
-> e le formule aspettavano in `OLD index.html`. Dal **2026-09-06 il BEV è vivo**
-> in `index.html`, come profilo di powertrain accanto all'ICE
-> ([01-decisioni.md](01-decisioni.md)). Le formule qui sotto sono quelle che
-> girano davvero, con le differenze dichiarate in fondo.
+> Il nome del file dice ancora *archivio* per non rompere i link: il BEV **è vivo**
+> dal 2026-09-06, e tutto quello che segue è codice che gira.
 
 ## Il concetto BEV
 
@@ -150,8 +147,8 @@ salire da zero.
 Ogni viaggio porta `t.veh`, e le viste mostrano solo la metà della vettura in
 uso. I diciotto viaggi hanno un gemello elettrico sulle stesse tratte, col
 consumo derivato da `PT.bev.per100` sulla velocità media — e l'ordine del mese
-si rovescia, perché in autostrada l'elettrico è caro e in città è economico.
-Stesso mese, stessi 1194 km: **€ 151.61 contro € 131.33**.
+si rovescia, perché in autostrada l'elettrico è caro e in città è economico. Le
+cifre del mese, per tutte e quattro, in [13-phev.md](13-phev.md).
 
 ### `BEV_C`: la media non è l'andatura
 
@@ -196,9 +193,3 @@ la **rigenerazione in rilascio** — vedi [08-domande-aperte.md](08-domande-aper
 La serie storica dei prezzi elettrici è **derivata** da quella dei carburanti,
 smorzata al 55 %, e la vista lo dichiara (`EST. MARKET`). Dettagli e ragioni in
 [01-decisioni.md](01-decisioni.md).
-
-## Il debito che resta
-
-`tripLiters`, `tankLiters`, `instantL100` e `t.l100` contengono kWh sotto il
-profilo elettrico. Lo forzerà il PHEV, che brucia entrambi e non può fingere
-che sia un contatore solo.

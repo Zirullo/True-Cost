@@ -10,7 +10,7 @@ Decisioni e alternative scartate: [01-decisioni.md](01-decisioni.md).
 
 Il canvas lavora nelle **stesse coordinate della foto** (1 unità = 1 px), come l'SVG
 del cluster — ma **è largo quanto la scena, non quanto la foto**: `SW` viene riletto
-da `--scenew` (oggi 1720) e vale per tutti i riempimenti a tutta larghezza. Il punto
+da `--scenew` (oggi 1639.78) e vale per tutti i riempimenti a tutta larghezza. Il punto
 di fuga resta quello della foto: [11-plancia-estesa.md](11-plancia-estesa.md). Un punto del mondo — `X` metri a lato, `Y` metri di altezza, `z` metri avanti —
 finisce a:
 
@@ -514,7 +514,8 @@ più vicino di così lo copre la plancia.
 
 Il guard-rail no. Sta **7.8 m di lato**, quindi a `Z_NEAR` è già a x 1472 — e finché
 la scena era larga 1147 quel troncone stava al sicuro dietro la plancia. Nella scena
-da 1720 è in mezzo al vetro, e il nastro **finiva a mezz'aria**.
+larga — 1720 allora, 1639.78 oggi — è in mezzo al vetro, e il nastro **finiva a
+mezz'aria**.
 
 Per questo `ribbon()`, `posts()` e `studs()` accettano un `zNear` opzionale, e il
 guard-rail passa il suo:
@@ -524,7 +525,8 @@ Z_RAIL = min(Z_NEAR, 0.85 · RAIL · F / (SW + 60 − VPX))     ≈ 4.95 m
 ```
 
 cioè: continua a disegnarlo finché non è **uscito dal bordo destro** della scena
-(a x 1720 ci arriva a z ≈ 6.1 m, e lì è già quasi tutto dietro il cruscotto).
+(al bordo destro ci arriva intorno a z ≈ 6 m, e lì è già quasi tutto dietro il
+cruscotto).
 Lo 0.85 è il margine per le curve, che spostano il nastro di qualche metro di lato.
 
 Alberi (z ≥ 6) e stazioni (z ≥ 4) erano già disegnati più vicini di `Z_NEAR`, quindi

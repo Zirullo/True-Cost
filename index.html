@@ -11,16 +11,36 @@
   --blue:#00AEEF;
   --green:#3ddc84;
   --amber:#F0A500;
-  /* ── how much sky sits above the photo ──────────────────────
-     The interior shot is 1147x641 and the glass runs OUT of the top
-     of it: there is no roof and no header rail in the picture. So the
-     stage is made --rise rows TALLER than the photo, the photo and the
-     cluster are pinned to its bottom, and the road canvas paints the
-     whole thing — the extra band is pure windshield.
-     --rise is the single source of truth: the road reads it back out of
-     this variable, so changing it here moves everything together. */
+  /* ── THE PLATE, AND THE COORDINATE SYSTEM IT DOES NOT OWN ──
+     The cockpit is one photograph again: Green_Screen.jpeg, 1525x688,
+     the WHOLE dashboard from the A-pillar to the far side, shot with a
+     chroma-green windshield so the glass can be cut out exactly. The
+     half of the dashboard that used to be drawn by hand past x 1147 is
+     gone with it — there is nothing left to reconstruct.
+
+     What has NOT changed is the unit everything is authored in. The
+     cluster, the road, the billboards and the signs are all written in
+     the ORIGINAL photo's pixels (1147x641), and they stay there: the new
+     plate is simply laid into that same space at 1/0.93, which is where
+     it registers against the old one. So one number does the whole job:
+
+         plate pixels = 0.93 x cockpit units
+
+     and the plate's own top row lands at cockpit y = -114/0.93 = -122.58,
+     its bottom at (688-114)/0.93 = 617.20. Nothing that draws had to move.
+
+     ── how much sky sits above the plate ──────────────────────
+     The glass still runs out of the top of the picture: no roof, no
+     header rail. So the stage is taller than the plate, the plate is
+     pinned to its bottom, and the road canvas paints the whole thing —
+     the band above is pure windshield.
+     --rise keeps its old meaning exactly: the number of rows between the
+     top of the stage and cockpit y 0. The road reads it back out of this
+     variable, so changing it here moves everything together. At 150 the
+     plate's own top row sits 27.42 rows down from the top of the stage,
+     and the sky above the horizon is the same depth it always was. */
   --rise:150;
-  --stageh:791;          /* = 641 + rise; recomputed from --rise at boot */
+  --stageh:767.2;        /* = rise + 617.2; recomputed from --rise at boot */
   /* the control deck is GONE from the page: no bar, no signature, no
      Info / Engine / Reset buttons. The variable stays at zero because the
      padding-top below still subtracts it, and because putting a bar back
@@ -31,12 +51,12 @@
      it lives outside the stage and looks like studio kit, not cockpit. */
   --regiah:42px;
   /* ── how wide the scene is ──────────────────────────────────
-     The photo is 1147 wide and stops just past the cluster. The scene
-     is wider: everything from x 1147 to --scenew is dashboard we draw
-     ourselves, and it exists to carry the centre display. The photo
-     and the cluster keep their own 1147x641 coordinates and stay
-     pinned to the LEFT of the stage, so nothing about them moves. */
-  --scenew:1720;
+     The plate IS the scene now: 1525 plate pixels = 1525/0.93 = 1639.78
+     cockpit units, end to end. The cluster still keeps its own 1147x641
+     coordinates and stays pinned to the LEFT of the stage, so nothing
+     about it moves; what used to be 1147 -> 1720 of drawn dashboard is
+     photograph from here on. */
+  --scenew:1639.78;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{
@@ -130,9 +150,9 @@ body{
 }
 /* ── WHERE THE STOPS HAVE TO GO, and it caught me out ────────────
    #tint covers the whole stage but --dashmask only REVEALS the cockpit:
-   everything below the line of the glass. On a 1720x791 stage that band
-   maps to gradient positions 37 % - 84 %, and nothing outside it is ever
-   painted. Stops written at 0 % and 100 % are therefore invisible, which
+   everything below the line of the glass. On a 1639.78x767.2 stage that band
+   starts at gradient position 34 % and runs to the bottom edge, and nothing
+   above it is ever painted. Stops written at 0 % and 100 % are therefore invisible, which
    is exactly how the hybrid first came out looking like the petrol car:
    its cool end sat at 0 %, up in the windshield, and the only thing on
    the dashboard was the same tan-to-brown the ICE already had.
@@ -149,7 +169,7 @@ body{
    other, and nowhere near GREEN, which on this cockpit means exactly one
    thing: energy coming back.
 
-   THE ANGLE IS 180, NOT 168, AND THAT MATTERS HERE. On a stage 2.17 times
+   THE ANGLE IS 180, NOT 168, AND THAT MATTERS HERE. On a stage 2.14 times
    as wide as it is tall, 168deg carries a real horizontal component: the
    gradient runs down-and-right, so the left of the dashboard sits far
    earlier along it than the right. The other two get away with that as
@@ -162,7 +182,7 @@ body{
      the same reason the battery takes .36 where petrol takes .17 */
   opacity:.30;
   /* Vertical, so these ARE fractions of the stage height, and the cockpit
-     is the band from .31 (the line of the glass) to 1. The middle stop is
+     is the band from .34 (the line of the glass) to 1. The middle stop is
      a near-neutral on purpose: interpolating straight from teal to amber
      walks through GREEN, and `color` as the blend mode would lay that hue
      on the trim at full strength. Letting the saturation fall away instead
@@ -238,14 +258,17 @@ body{
 #refuel-prompt.done .rp-ask{display:none}
 #refuel-prompt.done .rp-done{display:inline}
 
-/* the interior photo, with the windshield glass punched out */
+/* the interior photo, with the windshield glass punched out.
+   1525x688 plate over 1639.78x739.78 cockpit units: the whole width of
+   the scene, pinned to the bottom, its own top row 27.42 rows below the
+   top of the stage. */
 #interior{
   position:absolute;
   left:0;bottom:0;
-  width:calc(1147 / var(--scenew) * 100%);
-  height:calc(641 / var(--stageh) * 100%);
+  width:100%;
+  height:calc(739.78 / var(--stageh) * 100%);
   z-index:3;
-  background:url("True-Cost project picture.jpg") center/100% 100% no-repeat;
+  background:url("Green_Screen.jpeg") center/100% 100% no-repeat;
   -webkit-mask-image:var(--wsmask);
           mask-image:var(--wsmask);
   -webkit-mask-size:100% 100%;
@@ -254,61 +277,42 @@ body{
           mask-repeat:no-repeat;
 }
 
-/* the live instrument cluster drawn over the photo's display */
+/* the live instrument cluster drawn over the photo's display.
+   Its box is the ORIGINAL photo's 1147x641, laid on the stage at cockpit
+   y 0 — which is --rise rows down. Not bottom-pinned any more: the plate
+   is cropped 24 rows shorter than the old picture, and the cluster has to
+   stay where the cluster is, not where the bottom edge is. */
 #cluster{
   position:absolute;
-  left:0;bottom:0;
+  left:0;top:calc(var(--rise) / var(--stageh) * 100%);
   width:calc(1147 / var(--scenew) * 100%);
   height:calc(641 / var(--stageh) * 100%);
   z-index:5;
   display:block;
 }
 
-/* ══════════ CENTRE STACK — the dashboard we draw ourselves ══════════
-   Everything from x 1147 to the right edge of the scene. The photo has no
-   pixels there, so the surface is rebuilt: an edge smear for the colours,
-   an SVG for the geometry, and an HTML display group for the app.
-   Coordinates below are the PHOTO's (0-641 vertically), so --rise can change
-   without dragging any of this with it. */
+/* ══════════ CENTRE STACK ══════════
+   #ext and #dashext are GONE. They existed for one reason — the old photo
+   ran out of pixels at x 1147 and the right half of the dashboard had to be
+   rebuilt out of a stretched edge smear and hand-drawn SVG geometry. The
+   plate carries that surface photographically now, so the only thing left
+   over the far side of the dashboard is the display group itself.
 
-/* the last 20 px column of the photo, stretched right and blurred: it carries
-   over the exact colours of dashboard, trim and carbon. The clip-path follows
-   the windshield edge, which at x 1147 sits at y 108 and keeps rising. */
-#ext{
-  position:absolute;
-  left:calc(1135 / var(--scenew) * 100%);   /* 12 px under the photo: see below */
-  right:0;bottom:0;
-  height:calc(545 / var(--stageh) * 100%);   /* photo rows 96 -> 641 */
-  z-index:2;
-  background:url("True-Cost project picture.jpg") 100% 100% / 5735% 117.6% no-repeat;
-  filter:blur(7px) saturate(.85);
-  clip-path:polygon(0 2.2%, 100% 0, 100% 100%, 0 100%);
-}
-/* the light in the photo falls off as it moves away from the driver */
-#ext::after{
-  content:"";position:absolute;left:0;right:0;bottom:0;top:2.2%;
-  background:linear-gradient(90deg, rgba(8,10,14,0) 0%, rgba(8,10,14,.45) 55%, rgba(8,10,14,.72) 100%);
-}
+   The one thing the drawn version gave away with it is the cold glow it
+   painted on the dashboard under the screen; the two box-shadows on #bezel,
+   below, are what put the group back on the surface.
 
-/* the drawn geometry: cowl, trim, vent, carbon. Photo coordinates. */
-#dashext{
-  position:absolute;
-  left:calc(1147 / var(--scenew) * 100%);
-  right:0;bottom:0;
-  height:calc(641 / var(--stageh) * 100%);
-  z-index:4;
-  display:block;
-}
-
-/* the display group: one transform tilts bezel and glass together, 9 degrees
-   towards the driver. The climate button row that used to sit under the screen
-   is gone and that band is screen now, so the app has room to breathe. */
+   The display group: one transform tilts bezel and glass together, 9 degrees
+   towards the driver. Numbers are cockpit units, taken off the plate: the
+   screen sits in plate pixels 1050..1481 x 251..620, which is 1129 wide of
+   446 (the perspective adds the last 4 %) and 397 tall, 73 rows up from the
+   bottom edge of the scene. */
 #stack{
   position:absolute;
-  left:calc(1212 / var(--scenew) * 100%);
-  width:calc(476 / var(--scenew) * 100%);
-  bottom:calc(100 / var(--stageh) * 100%);
-  height:calc(404 / var(--stageh) * 100%);
+  left:calc(1129 / var(--scenew) * 100%);
+  width:calc(446 / var(--scenew) * 100%);
+  bottom:calc(73 / var(--stageh) * 100%);
+  height:calc(397 / var(--stageh) * 100%);
   z-index:6;
   transform-origin:left center;
   transform:perspective(1500px) rotateY(-9deg);
@@ -316,7 +320,15 @@ body{
 #bezel{
   position:relative;height:100%;border-radius:14px;
   background:linear-gradient(160deg,#1b1e23,#0a0c0f 45%,#050607);
-  box-shadow:0 10px 26px rgba(0,0,0,.75), inset 0 1px 0 rgba(255,255,255,.10);
+  /* the group has to sit ON the dashboard, not float over it: a soft drop
+     below it, and the screen's own cold light spilling onto the trim. Both
+     were blurred ellipses inside #dashext until the photo took that layer's
+     job, and both are box-shadows rather than a filter() on #stack: the app
+     inside repaints several times a second, and a filter would re-blur the
+     whole group with it. */
+  box-shadow:0 14px 30px rgba(0,0,0,.72),
+             0 0 74px 12px rgba(70,150,220,.13),
+             inset 0 1px 0 rgba(255,255,255,.10);
   padding:2.3%;
 }
 #glass{
@@ -1325,77 +1337,10 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     </g>
   </svg>
 
-  <!-- ▼▼ CENTRE STACK — the dashboard the photo does not have.
-          #ext carries the colours, #dashext the geometry, #stack the display.
-          Nothing in here touches the cluster or the road. ▼▼ -->
-  <div id="ext"></div>
-
-  <svg id="dashext" viewBox="1147 0 573 641" preserveAspectRatio="none">
-    <defs>
-      <linearGradient id="cowlG" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0"   stop-color="#4a4a50"/>
-        <stop offset=".35" stop-color="#33343a"/>
-        <stop offset="1"   stop-color="#17181d"/>
-      </linearGradient>
-      <linearGradient id="trimG" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0"   stop-color="#b9b7bd"/>
-        <stop offset=".28" stop-color="#8e8c93"/>
-        <stop offset=".55" stop-color="#c8c6cc"/>
-        <stop offset=".78" stop-color="#75737a"/>
-        <stop offset="1"   stop-color="#a2a0a6"/>
-      </linearGradient>
-      <linearGradient id="carbonG" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="#26272c"/><stop offset="1" stop-color="#101115"/>
-      </linearGradient>
-      <pattern id="defrostP" width="7" height="10" patternUnits="userSpaceOnUse">
-        <rect x="0" y="0" width="3" height="10" fill="rgba(255,255,255,.055)"/>
-      </pattern>
-      <pattern id="cfxP" width="14" height="14" patternUnits="userSpaceOnUse">
-        <rect width="14" height="14" fill="#15161a"/>
-        <rect x="0" y="0" width="7" height="7" fill="rgba(255,255,255,.05)"/>
-        <rect x="7" y="7" width="7" height="7" fill="rgba(255,255,255,.05)"/>
-      </pattern>
-      <filter id="extBlur6"><feGaussianBlur stdDeviation="6"/></filter>
-      <filter id="extBlur14"><feGaussianBlur stdDeviation="14"/></filter>
-    </defs>
-
-    <!-- the glass edge keeps running: y 108 at x 1147, 94 at the far side -->
-    <path d="M1147,108 L1720,94 L1720,136 L1147,150 Z" fill="rgba(0,0,0,.55)" filter="url(#extBlur6)"/>
-
-    <!-- top of the dashboard, suede, with the defroster grille -->
-    <path d="M1147,112 L1720,96 L1720,242 L1147,270 Z" fill="url(#cowlG)"/>
-    <path d="M1180,122 L1700,104 L1700,150 L1180,170 Z" fill="url(#defrostP)" opacity=".9"/>
-
-    <!-- carbon panel down low, continuing the one in the photo -->
-    <path d="M1147,410 L1720,390 L1720,641 L1147,641 Z" fill="url(#cfxP)"/>
-    <path d="M1147,410 L1720,390 L1720,641 L1147,641 Z" fill="url(#carbonG)" opacity=".55"/>
-
-    <!-- brushed aluminium: picks up the trim of the photo and frames the display -->
-    <path d="M1147,302 L1210,286 L1700,264 L1720,262 L1720,320 L1210,346 L1147,366 Z"
-          fill="url(#trimG)" opacity=".92"/>
-    <path d="M1147,302 L1210,286 L1700,264 L1720,262" fill="none"
-          stroke="rgba(255,255,255,.45)" stroke-width="1.4"/>
-    <path d="M1147,366 L1210,346 L1720,320" fill="none"
-          stroke="rgba(0,0,0,.55)" stroke-width="2"/>
-
-    <!-- air vent between cluster and display: narrower now, the screen grew -->
-    <g>
-      <rect x="1156" y="180" width="42" height="104" rx="9" fill="#0d0e11"/>
-      <rect x="1161" y="185" width="32" height="94" rx="6" fill="#17191d"/>
-      <g stroke="rgba(255,255,255,.10)" stroke-width="2">
-        <line x1="1164" y1="198" x2="1190" y2="195"/>
-        <line x1="1164" y1="214" x2="1190" y2="211"/>
-        <line x1="1164" y1="230" x2="1190" y2="227"/>
-        <line x1="1164" y1="246" x2="1190" y2="243"/>
-        <line x1="1164" y1="262" x2="1190" y2="259"/>
-      </g>
-    </g>
-
-    <!-- the group's own shadow, and the cold light it throws on the dashboard.
-         Both follow the taller screen: the shadow sits lower, the glow higher. -->
-    <ellipse cx="1450" cy="556" rx="238" ry="32" fill="rgba(0,0,0,.5)" filter="url(#extBlur14)"/>
-    <ellipse cx="1450" cy="310" rx="308" ry="222" fill="rgba(70,150,220,.07)" filter="url(#extBlur14)"/>
-  </svg>
+  <!-- ▼▼ CENTRE STACK — the display group, and nothing else.
+          The dashboard around it is photograph now: the smeared edge
+          (#ext) and the drawn cowl, trim, vent and carbon (#dashext)
+          came out with the plate that made them necessary. ▼▼ -->
 
   <div id="stack" class="untouched">
     <div id="display-hint">Click the display &mdash; it is live</div>
@@ -1731,8 +1676,8 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
   <!-- ▲▲ ─────────────────────────────────────────────────── ▲▲ -->
 
   <!-- ▼▼ THE COLOUR OF THE CAR.
-          A wash over the cockpit surfaces — the photographed dashboard and
-          the drawn one — carrying --dashmask so that it stops at the glass.
+          A wash over the cockpit surfaces — the whole photographed
+          dashboard — carrying --dashmask so that it stops at the glass.
           Late in the DOM but at z-index 4: above both dashboards, below the
           cluster and the centre display, which keep their own colours
           because instruments have to stay legible. ▼▼ -->
@@ -1820,57 +1765,72 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
 
 <script>
 /* ══════════════════════════════════════════════════════════
-   --stageh is only ever 641 + --rise. Deriving it here rather
-   than trusting the two to be typed in step means --rise in
-   the stylesheet is the one number anyone has to touch to
-   open up (or close down) the windshield.
+   --stageh is only ever --rise plus the plate's own 617.2 rows
+   below cockpit y 0. Deriving it here rather than trusting the
+   two to be typed in step means --rise in the stylesheet is the
+   one number anyone has to touch to open up (or close down) the
+   windshield.
    ══════════════════════════════════════════════════════════ */
 (function () {
   const root = document.documentElement;
   const rise = parseFloat(getComputedStyle(root).getPropertyValue('--rise')) || 0;
-  root.style.setProperty('--stageh', 641 + rise);
+  root.style.setProperty('--stageh', rise + 574 / 0.93);
 })();
 
 /* ══════════════════════════════════════════════════════════
-   Windshield mask — punches the glass area out of the photo
+   Windshield mask — punches the glass area out of the plate
    so #windshield (left empty on purpose) shows through,
-   ready for the speed effect. Traced from the source picture.
+   ready for the speed effect.
+
+   This is no longer traced by hand. The plate was shot against
+   chroma green, so the glass states its own outline: the array
+   below is the last green row of every column, simplified to
+   1.5 px and pushed 3 px DOWN into the dashboard so no green
+   fringe can survive the cut. Its coordinates are the plate's
+   own 1525x688 pixels, which is the box the mask is stretched
+   over — the one place in the file that is not in cockpit units.
    ══════════════════════════════════════════════════════════ */
 (function () {
+  const PS = 0.93;                 // plate pixels per cockpit unit
   const edge = [
-    [1147,108],[1080,107],[1000,106],[940,106],[920,106],[900,113],[880,120],
-    [860,127],[840,133],[820,131],[800,130],[780,128],[760,126],[740,125],
-    [720,125],[700,124],[680,123],[660,123],[640,122],[620,121],[600,122],
-    [580,122],[560,122],[540,123],[520,123],[500,125],[480,126],[460,127],
-    [440,128],[420,129],[400,130],[380,132],[360,134],[340,137],[320,140],
-    [300,144],[280,147],[260,149],[245,149],[232,138],[210,136],[180,134],
-    [150,132],[130,128],[110,125],[100,121],[90,117],[80,111],[70,103],
-    [60,93],[50,78],[40,60],[30,43],[20,32],[10,16],[0,0]
+    [0,116],[53,197],[70,215],[106,232],[158,240],[227,243],
+    [255,236],[391,223],[478,218],[772,218],[812,216],[853,217],
+    [861,214],[1040,215],[1141,220],[1317,223],[1525,230]
   ];
-  const hole = 'M0,0 L1147,0 ' + edge.map(p => 'L' + p[0] + ',' + p[1]).join(' ') + ' Z';
+  /* left to right along the dashboard's top edge, so the hole is walked
+     back the other way: across the top of the plate, down its right side,
+     and home along the glass. */
+  const back = edge.slice().reverse().map(p => 'L' + p[0] + ',' + p[1]).join(' ');
+  const hole = 'M0,0 L1525,0 ' + back + ' Z';
   const svg =
-    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1147 641' preserveAspectRatio='none'>" +
-    "<path fill='%23ffffff' fill-rule='evenodd' d='M0,0 H1147 V641 H0 Z " + hole + "'/></svg>";
+    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1525 688' preserveAspectRatio='none'>" +
+    "<path fill='%23ffffff' fill-rule='evenodd' d='M0,0 H1525 V688 H0 Z " + hole + "'/></svg>";
   const stage = document.getElementById('stage');
   stage.style.setProperty('--wsmask', 'url("data:image/svg+xml;utf8,' + svg + '")');
 
   /* ── and the same edge read the other way round ──────────────────
-     --dashmask is the DASHBOARD side of the glass, over the whole scene
-     rather than just the photo: everything below the line the array above
-     traces, plus the drawn dashboard out to --scenew, whose own edge the
-     stylesheet already states (y 108 at x 1147, 94 at the far side).
+     --dashmask is the DASHBOARD side of the glass, over the whole STAGE
+     rather than just the plate: everything below the line the array above
+     traces, down to the bottom edge of the scene.
 
      It exists so a colour wash can cover the cockpit and stop at the
      glass. Tinting the road as well would say that the world outside
-     changes colour when you change powertrain, and it does not. */
+     changes colour when you change powertrain, and it does not.
+
+     The conversion is the one this whole file turns on: a plate pixel is
+     0.93 of a cockpit unit, and the plate's top row sits at cockpit
+     y -114/0.93, so a plate row lands on the stage at p/0.93 + rise
+     - 114/0.93. */
   const rise = parseFloat(getComputedStyle(document.documentElement)
                  .getPropertyValue('--rise')) || 0;
   const W = parseFloat(getComputedStyle(document.documentElement)
-                 .getPropertyValue('--scenew')) || 1720;
-  const H = 641 + rise;
-  const dash = 'M' + W + ',' + (94 + rise) +
-               ' L1147,' + (108 + rise) + ' ' +
-               edge.map(p => 'L' + p[0] + ',' + (p[1] + rise)).join(' ') +
+                 .getPropertyValue('--scenew')) || 1639.78;
+  const H = rise + 574 / PS;
+  const top = rise - 114 / PS;                        // stage row of the plate's top
+  const sx = p => (p[0] / PS).toFixed(1);
+  const sy = p => (p[1] / PS + top).toFixed(1);
+  const dash = 'M' + W + ',' + sy(edge[edge.length - 1]) + ' ' +
+               edge.slice().reverse().map(p => 'L' + sx(p) + ',' + sy(p)).join(' ') +
                ' L0,' + H + ' L' + W + ',' + H + ' Z';
   const dsvg =
     "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 " + W + " " + H +
@@ -2990,24 +2950,28 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
        cut at 12.9 m and 15 deg/s: a 65 deg lens, which is what an interior
        shot is taken with anyway. NOTHING about the physics changed - travel
        is still metric, the dashes are still 12 m apart. */
-    /* how many rows of glass sit ABOVE the photo. It is declared in the
-       stylesheet (--rise) and read back here, so the CSS that pins the photo
-       to the bottom of the stage and the canvas that paints over it can never
-       drift apart. Everything below is still in the photo's own 1147x641
-       coordinates: the frame just translates by RISE before it draws, so
-       y = -RISE is the top of the stage and y = 0 is the top of the photo. */
+    /* how many rows of glass sit ABOVE cockpit y 0. It is declared in the
+       stylesheet (--rise) and read back here, so the CSS that lays the plate
+       on the stage and the canvas that paints over it can never drift apart.
+       Everything below is still in the ORIGINAL photo's 1147x641 coordinates
+       — the plate is only a picture laid into that space at 1/0.93, and not
+       one number in this module knows about it. The frame just translates by
+       RISE before it draws, so y = -RISE is the top of the stage and y = 0 is
+       the row the cluster starts at. */
     const RISE = parseFloat(
       getComputedStyle(document.documentElement).getPropertyValue('--rise')) || 0;
 
-    /* how wide the scene is. The photo is 1147 wide, the scene is wider (the
-       drawn centre stack lives past its right edge), and the canvas spans the
-       WHOLE of it. Read back from --scenew so the stylesheet stays the single
-       source of truth. Note what does NOT change: VPX. The vanishing point
-       belongs to the photo, not to the frame, so the carriageway keeps sitting
-       exactly where the interior shot says it does — off centre in the wider
-       view, which is precisely what a passenger-side window shows. */
+    /* how wide and how tall the scene is, in those same cockpit units, read
+       back from --scenew / --stageh so the stylesheet stays the single source
+       of truth. The canvas spans the WHOLE of the stage. Note what does NOT
+       change: VPX. The vanishing point belongs to the cockpit, not to the
+       frame, so the carriageway keeps sitting exactly where the interior shot
+       says it does — off centre in the wider view, which is precisely what a
+       passenger-side window shows. */
     const SW = parseFloat(
-      getComputedStyle(document.documentElement).getPropertyValue('--scenew')) || 1147;
+      getComputedStyle(document.documentElement).getPropertyValue('--scenew')) || 1639.78;
+    const SH = parseFloat(
+      getComputedStyle(document.documentElement).getPropertyValue('--stageh')) || (RISE + 617.2);
 
     const VPX = 575, HZ = 38, YMAX = 176;   // vanishing point · last visible row
     const F = 900, CAMH = 1.2;              // focal (px) · eye height (m)
@@ -3111,7 +3075,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
          or the road blinks out for a frame at random moments */
       if (px === cv.width) { sized = true; return; }
       cv.width = px;
-      cv.height = Math.round(px * (641 + RISE) / SW);
+      cv.height = Math.round(px * SH / SW);
       scale = px / SW;
       sized = true;
     }
@@ -4758,7 +4722,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
 
       /* the extra RISE rows live at NEGATIVE y in the photo's coordinates */
       ctx.setTransform(scale, 0, 0, scale, 0, scale * RISE);
-      ctx.clearRect(0, -RISE, SW, 641 + RISE);
+      ctx.clearRect(0, -RISE, SW, SH);
       ctx.save();
       ctx.beginPath(); ctx.rect(0, -RISE, SW, YMAX + RISE); ctx.clip();
       ctx.translate(0, bob);

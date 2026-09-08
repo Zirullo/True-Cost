@@ -12,8 +12,6 @@
   solo a veicolo fermo. Valutare se portarlo *dentro* lo schermo
 - **Scenari da pitch**: pulsanti preset ("autostrada", "città", "traffico") che
   muovono lo slider da soli, per raccontare la storia senza toccare i comandi
-- **Confronto esplicito** ICE vs BEV sullo stesso percorso: è il numero che colpisce
-  di più chi guarda
 
 ## Prossimo passo
 
@@ -37,6 +35,12 @@
 
 ## Fatto
 
+- ✅ **La plancia intera** (2026-09-08): la scena è una sola fotografia,
+  `Green_Screen.jpeg`, parabrezza in verde croma — la metà destra disegnata a mano
+  (`#ext`, `#dashext`) non c'è più, e la maschera del vetro si traccia da sé. Il
+  righello resta la foto vecchia: nella strada non è cambiato un numero —
+  [11-plancia-estesa.md](11-plancia-estesa.md)
+
 - ✅ **Il plug-in, e due energie nello stesso viaggio** (2026-09-07): quarta
   motorizzazione, barra **ICE · HEV · PHEV · BEV**, tema viola. È l'ibrido con
   un pacco da 11.4 kWh che si riempie **a casa** con **«P»**, buono per **38 km
@@ -44,8 +48,8 @@
   quadrante **si ribalta da €/kWh a €/L in mezzo a una guidata**. Nessuna
   ricarica al totem: elettricità a casa, benzina in strada. Apre a batteria
   vuota, € 4.25 sui 48.09 km della foto — fra ibrido (6.30) ed elettrico
-  (3.11). Sul mese: **€ 107.45** contro 150.84 · 120.41 · 131.97, e vince il
-  mese perdendo la città — [13-phev.md](13-phev.md)
+  (2.89). Sul mese vince, e perde la città: le cifre dei quattro in
+  [13-phev.md](13-phev.md)
 
 - ✅ **I nomi dicono quello che portano** (2026-09-07): `tripUnits`, `tankUnits`,
   `instantPer100`, `t.per100` al posto dei nomi in litri che sotto il BEV
@@ -76,9 +80,8 @@
 - ✅ **Lo stesso mese, guidato due volte** (2026-09-06): ogni viaggio porta
   `t.veh`, il log e il Report mostrano solo la metà della vettura in uso, e i
   diciotto viaggi hanno un gemello elettrico sulle stesse tratte col consumo
-  derivato dalla curva viva. Sullo stesso mese e sugli stessi 1194 km:
-  **€ 151.61 contro € 131.33**, con l'ordine dei viaggi che si rovescia fra
-  autostrada e città. Con essi una serie storica dei prezzi elettrici
+  derivato dalla curva viva, e l'ordine dei viaggi che si rovescia fra autostrada
+  e città. Con essi una serie storica dei prezzi elettrici
   **derivata e dichiarata tale**, e una velatura di colore sul cockpit che si
   ferma al vetro — [01-decisioni.md](01-decisioni.md)
 

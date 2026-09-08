@@ -9,24 +9,26 @@ Funziona aprendolo con doppio click.
 #shell  (wrapper, serve solo ad ancorare i pedali al bordo basso della scena)
  ├─ #regia  la barra di regia: lo switch ICE / BEV, e nient'altro.
  │          Sta FUORI dallo stage di proposito - vedi sotto
-#stage  (aspect-ratio --scenew/--stageh = 1720/791, max-width 1720px)
- ├─ z1  #windshield   <canvas id="road">  la strada, su TUTTI i 1720
- ├─ z2  #ext          x 1135→1720: l'ultima colonna della foto stirata e sfocata
- ├─ z3  #interior     la foto (x 0–1147), col vetro ritagliato via CSS mask
- ├─ z4  #dashext      <svg viewBox="1147 0 573 641">  la plancia disegnata
+#stage  (aspect-ratio --scenew/--stageh = 1639.78/767.2, max-width 1720px)
+ ├─ z1  #windshield   <canvas id="road">  la strada, su TUTTA la scena
+ ├─ z3  #interior     la lastra Green_Screen.jpeg, intera, col vetro ritagliato
+ │                    via CSS mask (z2 e z4 erano #ext e #dashext: non esistono più)
  ├─ z5  #cluster      <svg viewBox="0 0 1147 641">  il quadro strumenti live
  ├─ z6  #stack        il gruppo display centrale (HTML, inclinato 9°)
  └─ z7  #refuel-prompt
 ```
 
 Tutto scala insieme perché lo stage ha un aspect-ratio fisso e ogni layer usa lo
-stesso sistema di coordinate della foto: **1 unità = 1 pixel dell'immagine
-originale**. La foto e il cluster restano **larghi 1147 e ancorati a sinistra**:
-allargare la scena non li ha toccati.
+stesso sistema di coordinate: **1 unità = 1 pixel della foto originale**
+(`True-Cost project picture.jpg`, 1147 × 641). Quella foto non è più sullo
+schermo — dal 2026-09-08 c'è la lastra intera — ma resta il **righello**: la
+lastra è posata dentro quello spazio a `0.93`, e il cluster è rimasto largo 1147
+e ancorato a sinistra. Vedi [11-plancia-estesa.md](11-plancia-estesa.md).
 
 ### `--scenew`, la larghezza della scena
 
-`--scenew:1720` nel foglio di stile è l'unica fonte di verità: la usano
+`--scenew:1639.78` nel foglio di stile è l'unica fonte di verità (= 1525/0.93, la
+lastra intera in unità di cockpit): la usano
 `aspect-ratio`, il `padding-top` che appoggia il cockpit al fondo pagina, la
 posizione dei layer nuovi, e il canvas della strada che la rilegge in JS
 (`SW`). Il **punto di fuga resta VPX 575**, quello della foto: la carreggiata è
@@ -79,20 +81,23 @@ Contiene un solo `<canvas id="road">`, ridisegnato a ogni frame. La maschera del
 layer sopra lo ritaglia nella forma del vetro, quindi il canvas puo' disegnare
 liberamente oltre i bordi. Dettaglio del modulo: [09-strada.md](09-strada.md).
 
-### Layer 2b — `#ext` + `#dashext` + `#stack` (la plancia che la foto non ha)
+### Layer 2b — `#stack` (il gruppo display)
 
-Da x 1147 in poi non esistono pixel fotografici: quella metà destra è
-ricostruita. Vedi [11-plancia-estesa.md](11-plancia-estesa.md).
+L'unica cosa disegnata da noi sulla metà destra della plancia: il resto è
+fotografia. `#ext` e `#dashext` — la spalmatura e la geometria SVG che ricostruivano
+quella metà quando la foto finiva a x 1147 — sono state rimosse il 2026-09-08.
+Vedi [11-plancia-estesa.md](11-plancia-estesa.md).
 
 ### Layer 2 — `#interior`
 
-La foto come `background`, con una **mask SVG generata a runtime** (primo IIFE dello
-script) che buca l'area del vetro. La maschera è un rettangolo pieno con un foro
-`fill-rule="evenodd"`; il foro segue l'array `edge`, ~56 punti tracciati sul bordo
-plancia/vetro dell'immagine.
+La lastra `Green_Screen.jpeg` (1525 × 688) come `background`, con una **mask SVG
+generata a runtime** (primo IIFE dello script) che buca l'area del vetro. La
+maschera è un rettangolo pieno con un foro `fill-rule="evenodd"`; il foro segue
+l'array `edge`, **17 punti** che non sono tracciati a mano: sono l'ultima riga
+verde di ogni colonna della lastra, semplificata e spinta 3 px dentro il cruscotto.
 
-Se la giunzione stona, si toccano solo quei punti: `[x, y]` in coordinate immagine,
-da destra verso sinistra.
+Se la giunzione stona, si toccano solo quei punti: `[x, y]` in **pixel della
+lastra**, da sinistra verso destra.
 
 ### Layer 3 — `#cluster`
 
@@ -133,7 +138,7 @@ Nessun ridisegno completo: l'SVG resta lo stesso, cambiano solo testi e classi.
 |---|---|
 | `#windshield` | l'area del parabrezza |
 | `#road` | il canvas della strada procedurale |
-| `#interior` | la foto mascherata |
+| `#interior` | la lastra `Green_Screen.jpeg`, mascherata |
 | `#cluster` | l'SVG del quadro strumenti |
 | `#spd` `#rpmTxt` | velocità e giri sul quadrante |
 | `#eurKm` | il numero grande €/km |
@@ -143,8 +148,6 @@ Nessun ridisegno completo: l'SVG resta lo stesso, cambiano solo testi e classi.
 | `#fuelbar` | la barra livello carburante (cambia `width`) |
 | `#tick-group` `#num-group` | tacche e numeri del quadrante, generati in JS |
 | `#help-hit` `#reset-hit` | zone cliccabili dentro l'SVG ("?" e RESET) |
-| `#ext` | la base colore della plancia estesa (foto stirata + sfocata) |
-| `#dashext` | l'SVG della plancia disegnata: cruscotto, trim, bocchetta, carbonio |
 | `#stack` `#bezel` `#glass` | il gruppo display centrale (la fila clima `#hvac` non c'è più) |
 | `#app` | l'app True Cost sul display: `.ap-tab`, `#pane-history`, `#pane-map`, `#ap-canvas` |
 | `#hidden-controls` | lo slider della velocità, ritagliato a un pixel: lo scrivono pedali, frecce e cluster. È tutto ciò che resta del deck |

@@ -1,77 +1,138 @@
-# 11 · La plancia estesa e il display centrale
+# 11 · La plancia intera e il display centrale
 
-Dal 2026-09-04 la scena è larga **1720** invece di 1147. Da x 1147 in poi non
-esistono pixel fotografici: quella parte è **ricostruita**. Perché lo abbiamo fatto
-così — e cosa avevamo scartato — sta in [01-decisioni.md](01-decisioni.md).
+Dal **2026-09-08** la plancia non è più cucita. La scena è **una sola fotografia**,
+`Green_Screen.jpeg` (1525 × 688): tutto il cruscotto dal montante sinistro al lato
+opposto, scattato con il **parabrezza in verde croma** perché il vetro si possa
+ritagliare esatto. La metà destra disegnata a mano — `#ext` e `#dashext` — è
+sparita insieme al motivo che la giustificava.
 
-Coordinate: le stesse della foto (`True-Cost project picture.jpg`, 1147 × 641).
-La verticale va sempre 0–641, anche nei layer nuovi, così `--rise` può cambiare
-senza trascinarsi dietro niente.
+> Cosa c'era prima, dal 2026-09-04 al 2026-09-07: la foto vecchia
+> (`True-Cost project picture.jpg`, 1147 × 641) finiva appena passato il cluster,
+> e da x 1147 a 1720 la plancia era **ricostruita** — una spalmatura sfocata delle
+> ultime 20 colonne per i colori (`#ext`) e un SVG per la geometria (`#dashext`).
+> Funzionava, ma restava una giunzione: la plancia si vedeva che era spezzata.
+> Il file di allora è in `BCK/index.before-fullplate-*.html`.
 
-## I tre pezzi
+## L'unità di misura non è cambiata
 
-### `#ext` — la continuità dei colori
+Questo è il punto su cui gira tutto il resto. Cluster, strada, cartelloni e
+cartelli sono scritti nei **pixel della foto originale (1147 × 641)** e ci
+restano. La lastra nuova viene semplicemente **posata dentro quello stesso
+spazio**, alla scala a cui registra sulla vecchia:
 
-Un `div` con **la foto stessa come sfondo**, scalata ×28.65 e allineata a destra:
-di fatto le sue ultime **20 colonne** stirate su tutta la larghezza nuova, più un
-`blur(7px)`. Continua da sola le bande orizzontali — colline, guard-rail,
-cruscotto, alluminio, carbonio — con i colori esatti dell'immagine, e su quella
-base si disegna la geometria.
+```
+pixel della lastra = 0.93 × unità di cockpit
+```
 
-| Proprietà | Valore | Perché |
-|---|---|---|
-| `background-size` | `5735% 117.6%` | 5735 % = ×28.65 in orizzontale (20 px → 573); 117.6 % rimette la **scala verticale a 1:1** (il div è alto 545 righe di foto, l'immagine 641) |
-| `background-position` | `100% 100%` | allinea il bordo destro e il bordo basso della foto: in cima resta esposta la riga 96 |
-| `clip-path` | `polygon(0 2.2%, 100% 0, 100% 100%, 0 100%)` | il bordo del parabrezza continua: **y 108 a x 1147** (2.2 % di 545), **y 96** all'estremo destro |
-| `::after` | gradiente scuro verso destra | nella foto la luce cala allontanandosi dal guidatore |
-| `left` | **1135**, non 1147 | `blur()` sfuma a trasparente il bordo dell'elemento stesso: partendo 12 px più a sinistra la sfumatura finisce **sotto la foto** invece di lasciare una cucitura nera. Per questo la foto sta a z3 e `#ext` a z2 |
+Il numero non è scelto: viene da una registrazione per correlazione di fase fra
+le due immagini (picco netto a **s = 0.93, dx = 2, dy = 114**). Da lì tutto il
+resto è aritmetica:
 
-**Se stona la giunzione**: si tocca `clip-path` (il bordo del vetro) o la
-percentuale di `background-size` verticale — le due cose che allineano l'estensione
-alla foto. Non allargare la colonna sorgente oltre ~25 px: entrerebbe la cornice
-del cluster e comparirebbe una fascia scura.
+| | unità di cockpit |
+|---|---|
+| riga alta della lastra | `-114 / 0.93` = **-122.58** |
+| riga bassa della lastra | `(688-114) / 0.93` = **617.20** |
+| larghezza della lastra | `1525 / 0.93` = **1639.78** → `--scenew` |
+| altezza della scena | `--rise + 617.20` = **767.2** → `--stageh` |
 
-### `#dashext` — la geometria disegnata
+`--rise` **non cambia significato**: sono sempre le righe fra il bordo alto del
+palco e il cockpit y 0. A 150 la lastra comincia 27.42 righe sotto il bordo alto
+del palco, e il cielo sopra l'orizzonte è profondo come prima. Ecco perché
+**nel modulo della strada non si è toccato un numero**: `VPX 575`, `HZ 38`,
+`F 900` valgono ancora, perché il sistema di coordinate è ancora il loro. Le sole
+due righe cambiate leggono l'altezza del palco (`SH`) invece di darla per
+`641 + RISE`.
 
-Un SVG `viewBox="1147 0 573 641"`, `preserveAspectRatio="none"`.
+## I due pezzi rimasti
 
-| Elemento | Geometria | Note |
-|---|---|---|
-| Ombra sotto il vetro | `1147,108 → 1720,94`, alta 42 | sfocata, stacca vetro e plancia |
-| Cruscotto (scamosciato) | `1147,112 → 1720,96 → 1720,242 → 1147,270` | gradiente `#cowlG` |
-| Griglia sbrinatore | `1180,122 → 1700,104`, alta ~46 | pattern `#defrostP` |
-| Fascia in alluminio | `1147,302 → 1210,286 → 1700,264 → 1720,262` e ritorno a `1210,346 / 1147,366` | raccoglie il trim della foto, gradiente `#trimG` |
-| Pannello in carbonio | da `1147,410 → 1720,390` fino a 641 | pattern `#cfxP` + velatura |
-| Bocchetta d'aria | rect `1156,180` · 42 × 104 | fra cluster e display, 5 alette |
-| Ombra portata | ellisse `1450,556` rx 238 ry 32 | posa il gruppo display sulla plancia |
-| Alone freddo | ellisse `1450,310` rx 308 ry 222 | la luce dello schermo sulla plancia |
+### `#interior` — la lastra
 
-### `#stack` — il gruppo display
+Un `div` largo **tutta** la scena (`width:100%`), alto `739.78 / --stageh`,
+ancorato in basso, con `Green_Screen.jpeg` in `background` e la maschera del
+parabrezza addosso.
+
+### `#cluster` — il cluster disegnato
+
+`viewBox="0 0 1147 641"` **identico a prima**: dentro non si è spostato niente.
+È cambiato solo dove sta la scatola, e come è ancorata:
+
+```
+left 0
+top    var(--rise) / --stageh     ← non più bottom:0
+width  1147 / --scenew
+height  641 / --stageh
+```
+
+Ancorato **in alto**, non in basso: la lastra è tagliata 24 righe più corta della
+foto vecchia, e il cluster deve stare dov'è il cluster, non dov'è il bordo.
+
+Il disegno esce leggermente **più largo** del cluster stampato nella lastra, ed è
+la direzione giusta: quello che va coperto è coperto, e quel che avanza è un
+filo di cornice fotografica intorno al vetro.
+
+## La maschera del parabrezza, che ora si traccia da sola
+
+Fino al 2026-09-07 il bordo del vetro era un array di 56 punti **ricalcati a
+mano** sulla foto. Non più: la lastra è stata scattata su verde croma, quindi il
+vetro **dichiara il proprio contorno**. L'array in `index.html` è l'ultima riga
+verde di ogni colonna, semplificata a 1.5 px (Douglas-Peucker, da 1525 punti a
+**17**) e spinta **3 px dentro il cruscotto**, perché nessuna frangia verde
+sopravviva al taglio.
+
+Le sue coordinate sono i **pixel della lastra**, non le unità di cockpit: è
+l'unico posto del file che non parla in unità di cockpit, e ha ragione — la
+maschera viene stirata sulla scatola della lastra.
+
+`--dashmask` è lo stesso bordo letto al contrario, sopra **tutto il palco**, e lì
+la conversione c'è: `p / 0.93 + --rise - 114/0.93`. Serve alla velatura colorata
+di `#tint`, che deve coprire l'abitacolo e fermarsi al vetro — colorare anche la
+strada direbbe che il mondo fuori cambia colore quando cambi motore, e non è così.
+
+## `#stack` — il gruppo display
 
 HTML, non SVG: dentro ci gira **UI vera**. Un solo `transform` inclina insieme
-cornice e vetro.
+cornice e vetro. Le coordinate sono prese dal rendering di riferimento
+(`True_Cost_cockpit_base.jpeg`), dove lo schermo sta nei pixel di lastra
+**1050–1481 × 251–620**:
 
 ```
-left   1212 / 1720        (coordinate della scena)
-width   476 / 1720
-bottom  100 / 791         ancorato in basso: indipendente da --rise
-height  404 / 791
+left   1129 / --scenew      (unità di cockpit)
+width   446 / --scenew      la prospettiva aggiunge l'ultimo 4 %
+bottom   73 / --stageh
+height  397 / --stageh
 transform: perspective(1500px) rotateY(-9deg)   origine a sinistra
 ```
+
+Su `#bezel`, due `box-shadow`: `0 14px 30px` nero e `0 0 74px 12px` azzurro. Sono
+l'eredità di `#dashext`, dove erano due ellissi sfocate — l'ombra portata sotto il
+gruppo e la luce fredda che lo schermo getta sulla plancia. Senza, il display
+**galleggia** invece di posarsi.
+
+Sono `box-shadow` e **non** un `filter()` su `#stack` di proposito: dentro c'è
+un'app che si ridisegna più volte al secondo, e un filtro rifarebbe la sfocatura
+di tutto il gruppo a ogni ridisegno.
 
 Dentro: `#bezel` (cornice piano black, `padding` 2.3 % — **tutta** l'altezza) →
 `#glass` (il vetro, col riflesso obliquo in `::after`) → `#app`, l'applicazione.
 
 **La fila clima non c'è più.** Fino al 2026-09-04 sotto lo schermo c'era `#hvac`,
 sette tasti finti alti il 20 % del gruppo: decorazione che rubava spazio all'unica
-cosa che in questa demo deve essere leggibile. Rimossa, il vetro passa da 274 a
-**368 righe** di altezza (+34 %) senza toccare l'inquadratura. L'ombra portata è
-scesa a `cy 556` e la bocchetta si è stretta a 42 px per far posto al bordo
-sinistro del gruppo.
+cosa che in questa demo deve essere leggibile. Rimossa, il vetro è cresciuto del
+34 % in altezza senza toccare l'inquadratura.
 
-**I 9 gradi**: compromesso fra la profondità della foto Jeep di riferimento e la
+**I 9 gradi**: compromesso fra la profondità della foto di riferimento e la
 leggibilità dei numeri. Se l'app risultasse faticosa da leggere in pitch, il
 numero da abbassare è solo quello.
+
+## Se qualcosa non torna
+
+| Sintomo | Dove guardare |
+|---|---|
+| Frangia verde sul bordo del cruscotto | l'array `edge` nel blocco maschera: alzare i +3 px |
+| Il cluster disegnato non copre quello stampato | la scala 0.93 e `top: var(--rise)` su `#cluster` |
+| La velatura colorata sborda sulla strada | `--dashmask`, e la conversione `p / 0.93 + rise - 114/0.93` |
+| Il display non sta sulla plancia | i quattro numeri di `#stack`, presi da `True_Cost_cockpit_base.jpeg` |
+| La strada non è allineata al parabrezza | **non** i numeri della strada: sono ancora quelli giusti. Guardare `--scenew` / `--stageh` |
 
 ## L'app dentro `#app`
 
@@ -140,7 +201,7 @@ La fila dei bottoni è alta **46 px** invece di 34: il corpo delle viste scende 
 
 | Blocco | Cosa mostra | Da dove |
 |---|---|---|
-| Testata | costo del viaggio in euro, km, litri | `state.tripCost / tripKm / tripLiters` |
+| Testata | costo del viaggio in euro, km, unità | `state.tripCost / tripKm / tripUnits` |
 | Quattro celle | €/km ora, €/km medi, L/100 km, €/L nel serbatoio | `state` — gli stessi numeri del cluster |
 | Grafico a barre | **una barra ogni 200 m** di strada vera, 25 barre = ultimi 5 km | campionato in `sampleTrip()` dai delta di `tripKm`/`tripCost` |
 | Viaggi precedenti | **18 righe** fittizie **cliccabili** e scorrevoli, con freccia verde/rossa rispetto alla media | `TRIPS` nel modulo, **date calcolate da oggi** |
@@ -529,7 +590,8 @@ sarebbe l'unico modo di renderla inaffidabile. Il **disegno** invece sì:
 
 ## Cosa è cambiato nella strada
 
-Il canvas copre ora tutti i 1720. Nel modulo `road`:
+Il canvas copre tutta la scena: 1720 unità fino al 2026-09-07, **1639.78** da lì
+in poi — il numero lo dà `--scenew` e il modulo non lo sa. Nel modulo `road`:
 
 - `SW` viene **riletto da `--scenew`** e sostituisce il vecchio 1147 in tutti i
   riempimenti a tutta larghezza: cielo, sole, colline, erba, foschia, `clearRect`,
@@ -547,14 +609,18 @@ Il canvas copre ora tutti i 1720. Nel modulo `road`:
 Tutto il resto — prospettiva, metri reali, curve, traffico, stazioni — è invariato:
 vedi [09-strada.md](09-strada.md).
 
-## Cosa NON è cambiato
+## Cosa NON è cambiato (con l'allargamento del 2026-09-04)
 
-Foto, maschera del parabrezza, cluster SVG, fisica, prezzi, pedali: **niente**. La
-foto e il cluster sono larghi 1147 e ancorati a sinistra, con le stesse coordinate
-di prima. I pedali e il prompt del rifornimento sono stati ricentrati **sulla foto**
-(x 573.5), non sulla scena: appartengono al guidatore.
+Foto, maschera del parabrezza, cluster SVG, fisica, prezzi, pedali: **niente**. I
+pedali e il prompt del rifornimento sono stati ricentrati **sul punto di fuga**
+(x 573.5), non sulla scena: appartengono al guidatore, e ci sono rimasti.
+
+> Foto e maschera **sono** cambiate dopo, il 2026-09-08, con la lastra intera: vedi
+> l'inizio di questa nota. Il cluster SVG no — dentro non si è spostato niente,
+> è solo posato altrove.
 
 ## Il prezzo pagato
 
-A parità di finestra il cockpit è più piccolo di prima, perché lo stage è largo il
-50 % in più e scala tutto insieme. È il costo dell'inquadratura larga.
+A parità di finestra il cockpit è più piccolo di quando la scena era larga 1147,
+perché lo stage è largo il 43 % in più e scala tutto insieme. È il costo
+dell'inquadratura larga.

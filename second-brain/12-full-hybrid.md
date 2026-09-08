@@ -10,8 +10,8 @@ chilometro per chilometro, invece di dichiararlo in un coefficiente.
 Il roadmap assegnava al PHEV lo scioglimento di `tripLiters` / `instantL100` /
 `t.l100`, che sotto il BEV portano kWh. **Il full hybrid non lo forza**: il suo
 libro contabile è in litri e basta. L'energia che muove nel tampone vive in un
-campo separato, `buffKwh`, e **non entra mai nel conto in euro**. Il debito resta
-intero e resta del PHEV, che brucia entrambe le cose nello stesso viaggio.
+campo separato, `buffKwh`, e **non entra mai nel conto in euro**. Il debito è
+rimasto intero ed è rimasto del PHEV, che l'ha poi saldato — [13](13-phev.md).
 
 ## `liquid` contro `hasGears`
 
@@ -144,53 +144,25 @@ niente**. Un ibrido può solo **parcheggiarla**, e spenderla dopo come benzina c
 non brucia. Quindi il costo del km ibrido **si ferma a zero e non va sotto**:
 alzare il piede ferma il carburante, ma niente può restituire un litro già bruciato.
 
-## L'accelerazione si paga — e riguarda tutti e tre
+## L'accelerazione si paga — ed è stato l'ibrido a scoprirlo
 
-Il full hybrid ha fatto emergere un difetto vecchio. `per100` è una curva di
-**crociera**: dice quanto costa *tenere* una velocità e niente su come
-*raggiungerla*. Finché nessuno restituiva energia non si vedeva. La frenata la
-restituisce — e un'auto accreditata di energia cinetica che non le è mai stata
-addebitata riceve carburante gratis. È saltato fuori subito: dieci fermate in città
-venivano **zero**.
+È il full hybrid che ha fatto emergere un difetto vecchio: `per100` è una curva di
+**crociera** e nessuno pagava per *raggiungere* una velocità. Finché niente
+restituiva energia non si vedeva; la frenata la restituisce, e un'auto accreditata
+di energia cinetica mai addebitata riceve carburante gratis. È saltato fuori
+subito: dieci fermate in città venivano **zero**.
 
-Da qui, su **tutti e tre** i profili:
+Il termine `accCost` che ne è uscito vale su **tutti e quattro** i profili e vive
+in [04-modello-costi.md §3b](04-modello-costi.md) — formula, coefficienti e il
+motivo per cui a velocità costante è esattamente zero. Qui basta la conseguenza:
+il modello vivo adesso dice quello che il log diceva già, cioè che **in città si
+spende più che in autostrada**. Prima diceva il contrario, e contraddiceva i suoi
+stessi diciotto viaggi.
 
-```js
-if (P.accCost && v > v0) {
-  const kin = 0.5 * P.mass * ((v/3.6)**2 - (v0/3.6)**2) / 3.6e6;   // kWh
-  stepU += kin * P.accCost;
-}
-```
+### Due cose che si vedono solo qui
 
-`accCost` è il cambio fra un kWh alla ruota e l'unità con cui quel veicolo fa il
-pieno: **0.382 L/kWh** l'ICE (1350 kg, ~27%), **0.323** l'ibrido (Atkinson, ~32%),
-**1.136 kWh/kWh** il BEV (88% dalla batteria alla strada).
-
-A velocità costante il termine è **esattamente zero**, quindi la crociera di
-riferimento continua a leggere 7.14 L/100 km e nessuna taratura si è mossa. Ma il
-modello vivo adesso dice quello che il log diceva già: **in città si spende più che
-in autostrada**. Prima diceva il contrario, e contraddiceva i suoi stessi diciotto
-viaggi.
-
-### E i readout si assestano, non scattano
-
-`stepU` è un fatto fisico e cade tutto lì: chiedi velocità e il motore brucia in
-quel frame. Il **libro** continua a leggerlo grezzo — viaggio, serbatoio, euro. Il
-**quadrante** no. Un consumo istantaneo senza smorzamento non è un readout veloce,
-è un readout illeggibile: sfarfalla a quaranta e torna indietro nel tempo che un
-piede si muove, e l'occhio prende un lampo invece di una cifra. Quelli veri si
-assestano in circa un secondo.
-
-```js
-const kInst = Math.min(1, dt * INST_DAMP);      // INST_DAMP = 1.6, τ ≈ 0.6 s
-state.instantL100  += (instL100  - state.instantL100)  * kInst;
-state.instantEurKm += (instEurKm - state.instantEurKm) * kInst;
-```
-
-Lo stesso modo in cui i giri (9) e i kW (6) inseguono già — più lento, perché
-seguono il portafoglio e non il motore. **Nessun totale cambia**: i due campi sono
-letti solo dai tre posti che li stampano, e le barre di costo campionano i km e gli
-euro del viaggio, non questi.
+I readout smorzati sono in [04 §3c](04-modello-costi.md). Quello che quella nota
+non può mostrare è la **forma della salita**.
 
 Il €/km dell'ICE partendo da fermo, ogni 200 ms: `0.22 · 0.47 · 0.65 · 0.78 · 0.87
 · 0.93 · 0.97 · 1.00 · 1.02`. Sull'ibrido si legge anche il gomito a ~1.8 s: è il
@@ -235,29 +207,22 @@ velocità medie di quei viaggi. Una curva di crociera non avrebbe potuto dirlo �
 cifre benzina tipate portano le code e i semafori dentro di sé, ed è proprio quelle
 che l'ibrido restituisce.
 
-Sulla Torino–Milano, 142.6 km di autostrada: **€ 16.71 benzina · € 14.71 ibrido ·
-€ 19.43 elettrico**. E la freccia si rovescia: per il benzina è il viaggio
-*conveniente* del mese, per l'ibrido e per l'elettrico è quello *caro*, perché i
-loro mesi sono dominati dai viaggi urbani.
+E la freccia si rovescia: la Torino–Milano è il viaggio *conveniente* del mese per
+il benzina e quello *caro* per ibrido ed elettrico, perché i loro mesi sono
+dominati dai viaggi urbani. Le cifre dei quattro, viaggio per viaggio e sul mese,
+stanno in [13-phev.md](13-phev.md) in copia unica.
 
-## Il fotogramma di apertura è lo stesso per tutte e tre
+## Il fotogramma di apertura
 
 Ogni veicolo si sale con **lo stesso viaggio già alle spalle**: i 48.09 km della
-foto di riferimento, alla sua velocità di crociera. Quello che cambia è il conto —
-ed è la tesi del prodotto messa sullo schermo prima che qualcuno tocchi un comando.
+foto, alla sua velocità di crociera. Quello che cambia è il conto — ed è la tesi
+del prodotto messa sullo schermo prima che qualcuno tocchi un comando. La tabella
+dei quattro sta in [04-modello-costi.md](04-modello-costi.md), in copia unica.
 
-| | distanza | consumo | totale |
-|---|---|---|---|
-| ICE | 48.09 km | 5.02 L | **€ 9.55** |
-| HEV | 48.09 km | 3.07 L | **€ 6.30** |
-| BEV | 48.09 km | 11.57 kWh | **€ 2.89** |
-
-L'ICE tiene la coppia della foto, `openUnits: 5.02` / `openCost: 9.55`, incoerenza
-ereditata compresa (non sono mai stati il prodotto l'uno dell'altro: nemmeno
-l'immagine originale lo era). Gli altri due **non** possono permetterselo: dicono
-quello che la loro curva dice di quel viaggio, così nessun numero sul loro pannello
-contraddice un altro. Prima aprivano a zero, e al momento dello scambio non c'era
-niente da confrontare.
+L'ICE tiene la coppia della foto, `openUnits` / `openCost`, incoerenza ereditata
+compresa. Gli altri **non** possono permetterselo: dicono quello che la loro curva
+dice di quel viaggio, così nessun numero sul loro pannello ne contraddice un altro.
+Prima aprivano a zero, e al momento dello scambio non c'era niente da confrontare.
 
 Due conseguenze da tenere a mente:
 
@@ -277,10 +242,9 @@ Due conseguenze da tenere a mente:
 
 ## Il debito che resta
 
-- Il **coasting**: in rilascio senza freno tutti e tre pagano ancora il consumo di
-  crociera, mentre un motore vero taglia l'iniezione. È il simmetrico del termine
-  di accelerazione, e non è stato fatto: il modello attuale sovrastima il consumo,
-  ma lo sovrastima allo stesso modo per tutti e tre
+- Il **coasting**: in rilascio senza freno tutti e quattro pagano ancora il consumo
+  di crociera, mentre un motore vero taglia l'iniezione. È il simmetrico del termine
+  di accelerazione, e non è stato fatto: il modello sovrastima il consumo, ma lo
+  sovrastima allo stesso modo per tutti
 - Il tampone in guida aggressiva vive fra il 9% e il 33%: realistico, ma la
   barretta respira meno di quanto potrebbe
-- I nomi (`tripLiters`, `instantL100`, `t.l100`) restano quelli. Vedi sopra

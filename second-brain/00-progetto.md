@@ -38,9 +38,12 @@ Non serve hardware nuovo: i dati ci sono già.
 non può salire su una vettura prototipo. Non è codice destinato al veicolo.
 Serve per pitch, raccolta feedback e validazione del concetto.
 
-Il target visivo è la foto `True-Cost project picture.jpg`: cockpit reale con il
-cluster digitale che mostra la vista True Cost. Il simulatore riproduce quella
-schermata, ma **viva**: i numeri si muovono con la guida.
+Il target visivo è un cockpit reale con il cluster digitale che mostra la vista
+True Cost. Il simulatore riproduce quella schermata, ma **viva**: i numeri si
+muovono con la guida. Dal 2026-09-08 la plancia a schermo è `Green_Screen.jpeg`,
+intera; la foto originale `True-Cost project picture.jpg` resta il riferimento di
+design e il righello delle coordinate —
+[11-plancia-estesa.md](11-plancia-estesa.md).
 
 Vedi [02-architettura.md](02-architettura.md) per come è costruito e
 [01-decisioni.md](01-decisioni.md) per le scelte fatte.
