@@ -67,13 +67,12 @@ html,body{
 }
 body{
   display:flex;flex-direction:column;align-items:center;
-  min-height:100dvh;padding-bottom:0;
-  /* the whole cockpit drops to the bottom edge of the screen and the sky
-     fills whatever room is left above it. Padding, not a flex alignment,
-     so that on a short window the page simply scrolls instead of hiding
-     its own top row. Nothing is ever scaled down. */
+  min-height:100dvh;padding-top:0;padding-bottom:0;
+  /* the whole cockpit sits at the top edge of the screen; any leftover
+     room lands below it, not above. On a short window it's the bottom
+     that runs off-screen and scrolls into view, never the top row.
+     Nothing is ever scaled down. */
   --sw:min(1720px, 100vw);
-  padding-top:max(0px, calc(100dvh - var(--sw) * var(--stageh) / var(--scenew) - var(--deckh) - var(--regiah)));
 }
 
 /* ══════════ DIRECTOR'S BAR ══════════

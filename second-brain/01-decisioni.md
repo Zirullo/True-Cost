@@ -932,3 +932,25 @@ fuori percorso, non il contrario. E il colore è **una scala sola**
 (verde → ambra → rosso) calcolata sull'intervallo dei prezzi a schermo: se un
 giorno i prezzi si appiattissero, verde e rosso resterebbero comunque agli
 estremi — è una **classifica**, non una soglia assoluta.
+
+---
+
+## 2026-09-09 · Il cockpit si ancora in alto, non più in fondo pagina
+
+**Scelta**: tolto il `padding-top` calcolato che spingeva l'intero cockpit verso
+il bordo basso dello schermo su finestre più alte del contenuto. Ora `#regia` e
+`#stage` cominciano sempre dall'inizio della pagina; lo spazio che avanza resta
+**sotto**, non sopra.
+
+**Perché**: quel padding lasciava una barra nera vuota in cima, sopra la
+Director's Bar, ogni volta che la finestra era più alta della scena — visibile e
+senza motivo. Roberto: se qualcosa deve uscire dallo schermo per mancanza di
+spazio verticale, meglio che sia il fondo (che si raggiunge scorrendo) del cima
+(che si vede subito, vuota, prima di tutto il resto).
+
+**Comporta**: su una finestra molto più alta che larga il cockpit non è più
+centrato verticalmente — resta in alto e sotto c'è nero. Sulle finestre strette
+in altezza il comportamento non cambia: era già così che scorreva.
+
+Vedi [[true-cost-repo-pubblicazione]] per come si pubblica questo genere di
+modifica.

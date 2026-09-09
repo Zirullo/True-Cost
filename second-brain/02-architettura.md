@@ -29,18 +29,25 @@ e ancorato a sinistra. Vedi [11-plancia-estesa.md](11-plancia-estesa.md).
 
 `--scenew:1639.78` nel foglio di stile è l'unica fonte di verità (= 1525/0.93, la
 lastra intera in unità di cockpit): la usano
-`aspect-ratio`, il `padding-top` che appoggia il cockpit al fondo pagina, la
-posizione dei layer nuovi, e il canvas della strada che la rilegge in JS
-(`SW`). Il **punto di fuga resta VPX 575**, quello della foto: la carreggiata è
-decentrata a sinistra nell'inquadratura larga, ed è giusto così.
+`aspect-ratio`, la posizione dei layer nuovi, e il canvas della strada che la
+rilegge in JS (`SW`). Il **punto di fuga resta VPX 575**, quello della foto: la
+carreggiata è decentrata a sinistra nell'inquadratura larga, ed è giusto così.
+
+> Fino al 2026-09-09 c'era anche un `padding-top` calcolato che spingeva tutto
+> verso il fondo della pagina su finestre più alte del contenuto. Tolto: ora il
+> cockpit comincia sempre dall'alto e lo spazio che avanza resta sotto, non
+> sopra — vedi il log del 2026-09-09 in
+> [01-decisioni.md](01-decisioni.md).
 
 ### `#regia`, la barra che non è il cockpit
 
-Sopra la scena, alta `--regiah` (42px, sottratta dal `padding-top` che appoggia
-tutto al fondo pagina). Contiene **solo lo switch del veicolo**, e sta lì proprio
-perché non appartiene all'auto: nessuna vettura ha un bottone che trasforma un
-serbatoio in una batteria. Tenerla grigia e piatta, fuori dal vetro, è il modo di
-non mentire sul confine fra la demo e il prodotto.
+Sopra la scena, alta `--regiah` (42px). Contiene lo switch del veicolo e il link
+**Feedback** — un CTA ambrato, deliberatamente più vistoso del resto della barra
+perché va notato e cliccato, non solo letto — e sta lì proprio perché nessuno dei
+due appartiene all'auto: nessuna vettura ha un bottone che trasforma un serbatoio
+in una batteria, né un modulo per lasciare un commento. Il resto della barra
+resta grigio e piatto, fuori dal vetro, come modo di non mentire sul confine fra
+la demo e il prodotto.
 
 La **tariffa di casa** ci stava, e ne è stata tolta: è un prezzo che il guidatore
 paga davvero, non un comando di regia, e la sua casa è il pannello *Chargers*
