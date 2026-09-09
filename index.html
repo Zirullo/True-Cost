@@ -115,6 +115,21 @@ body{
   margin-left:auto;font-size:9px;letter-spacing:1.2px;text-transform:uppercase;
   color:rgba(120,140,160,.35);
 }
+.rg-feedback{
+  flex:none;margin-left:14px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;
+  color:#2b1600;text-decoration:none;font-weight:700;border-radius:999px;padding:7px 16px;
+  background:linear-gradient(180deg,#ffc94d,#e0940a);
+  transition:filter .15s;
+  animation:feedbackGlow 2.4s ease-in-out infinite;
+}
+.rg-feedback:hover{filter:brightness(1.1)}
+/* unlike the pedal/display nudge this one never gets a .untouched switch to
+   turn off: the feedback link has no "first touch" - it should stay findable
+   for as long as the demo runs. */
+@keyframes feedbackGlow{
+  0%,100%{box-shadow:0 0 0 1px rgba(240,165,0,.4), 0 0 10px 2px rgba(240,165,0,.35)}
+  50%    {box-shadow:0 0 0 3px rgba(240,165,0,.6), 0 0 26px 8px rgba(240,165,0,.55)}
+}
 
 /* ══════════ COCKPIT STAGE ══════════ */
 #stage{
@@ -1106,6 +1121,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     <button class="veh-opt"    data-v="bev" type="button">BEV</button>
   </div>
   <span class="rg-note">each vehicle keeps its own trip &middot; the speed carries over</span>
+  <a class="rg-feedback" href="https://forms.cloud.microsoft/e/eLKJmbKs13" target="_blank" rel="noopener">Feedback</a>
 </div>
 
 <div id="stage">
