@@ -7194,6 +7194,16 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
   stash('ice');
   applyProfile('ice', true);
 
+  /* the nudge has ten seconds to be answered by touch; past that it stops
+     asking on its own, glow and all - a demo left idle at a booth shouldn't
+     breathe red and blue forever. The feedback link keeps its glow: it isn't
+     a first-touch hint, it's meant to stay findable the whole time. */
+  setTimeout(() => {
+    pedals.classList.remove('untouched');
+    const stack = $('stack');
+    if (stack) stack.classList.remove('untouched');
+  }, 10000);
+
   let lastFrame = performance.now();
   (function loop(now) {
     now = now || performance.now();
