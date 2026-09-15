@@ -135,7 +135,9 @@ passo fisso di 0.016 s.
 
 - **`app.frame(dt)`** — il display centrale: campiona il costo ogni 200 m, muove le
   stazioni della mappa, e ridisegna testi (4 Hz) e canvas (~16 Hz) solo per la vista
-  aperta — [11-plancia-estesa.md](11-plancia-estesa.md).
+  aperta — [11-plancia-estesa.md](11-plancia-estesa.md). Il riconoscitore del
+  tragitto quotidiano gira dentro il disegno della sua vista e non nel battito:
+  non serve a nessun altro modulo — [14-daily-commute.md](14-daily-commute.md).
 
 Nessun ridisegno completo: l'SVG resta lo stesso, cambiano solo testi e classi.
 
@@ -157,6 +159,7 @@ Nessun ridisegno completo: l'SVG resta lo stesso, cambiano solo testi e classi.
 | `#help-hit` `#reset-hit` | zone cliccabili dentro l'SVG ("?" e RESET) |
 | `#stack` `#bezel` `#glass` | il gruppo display centrale (la fila clima `#hvac` non c'è più) |
 | `#app` | l'app True Cost sul display: `.ap-tab`, `#pane-history`, `#pane-map`, `#ap-canvas` |
+| `#pane-commute` | la sesta vista, il tragitto quotidiano, con il suo editor `#cm-set` — [14-daily-commute.md](14-daily-commute.md) |
 | `#hidden-controls` | lo slider della velocità, ritagliato a un pixel: lo scrivono pedali, frecce e cluster. È tutto ciò che resta del deck |
 | `#pedals` | i due pedali, ancorati a `#shell` — non al deck, che non c'è più (`#pedal-gas`, `#pedal-brake`) |
 | `#pedal-hint` | la scritta che invita a tenere premuto, sparisce al primo uso |
@@ -175,7 +178,9 @@ Nessun ridisegno completo: l'SVG resta lo stesso, cambiano solo testi e classi.
   e non lo trova. La porta rimasta è nel pannello **Trips** sul display — *Split here*
   e *End trip*, che passano da `closeTrip()` e chiamano lo stesso `resetTrip()`
 - **Tasti** → `E` motore, `V` veicolo, `R` rifornimento, `U` l'UFO. `E` è l'unico modo
-  di spegnere il motore da quando la barra in fondo è sparita
+  di spegnere il motore da quando la barra in fondo è sparita. Dal 2026-09-11 tutti
+  passano da `typing(e)` e **non scattano mentre si scrive in un campo**: l'editor
+  dei commute è il primo `input` di testo dell'app
 
 ## Fedeltà: come sono state ricavate le coordinate
 

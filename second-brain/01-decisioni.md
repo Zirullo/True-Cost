@@ -5,6 +5,97 @@ Ordine cronologico inverso (la più recente in alto). Ogni voce: **cosa**, **per
 
 ---
 
+## 2026-09-15 · Una macchina alla volta
+
+**Scelta**: la vista *Daily commute* smette di mettere le quattro motorizzazioni
+una accanto all'altra. Mostra **solo l'auto sotto di te**, e il confronto si fa
+**cambiando macchina** («V» o la barra di regia) e rileggendo lo stesso commute.
+Al posto delle quattro righe arriva il **grafico degli scarti**: una barra per
+run, appesa alla riga della media, rossa sopra e verde sotto. E la vista viene
+**staccata dal registro dei viaggi**.
+
+**Perché**: l'ha fermata Roberto, e aveva ragione — *«non è realistico un compare
+nella stessa vista delle 4 motorizzazioni»*. Nessuna auto su una strada sa quanto
+avrebbero speso le altre tre. Erano quattro numeri veri dentro uno schermo falso,
+cioè esattamente il contrario di quello per cui questa demo esiste: un cruscotto
+che si può credere. Il confronto non è sparito, ha cambiato gesto — e il gesto è
+quello che l'app aveva già ovunque, lo switch del veicolo, che ora questa vista
+**insegna** invece di aggirare.
+
+**Cosa comporta**:
+
+- **`cmPrice()` calcola una macchina sola**, con il veicolo nella chiave accanto
+  ai due prezzi. Una alla volta non è un risparmio, è la regola.
+- **La media della tratta diventa il numero grande**: `AVG € 6.86`, non il costo
+  di un viaggio. Un'abitudine non è un evento.
+- **Frecce e percentuali, dove servono.** Una **pastiglia** accanto alla fascia
+  (`▲ 34 % · VS USUAL`) per il viaggio in corso, misurata in €/km perché mezza
+  tratta non ha ancora speso i soldi di una tratta intera; e una freccia per
+  riga nello storico, misurata in euro contro la stessa media che disegna la
+  riga tratteggiata, così riga e barra non possono contraddirsi.
+- **Le barre pendono dalla media invece di poggiare sullo zero.** Da zero, un
+  commute i cui run stanno in tre centesimi era una fila di torri identiche che
+  non diceva niente. Con un **pavimento di scala all'8 %**, perché una strada
+  costante deve sembrare costante.
+- **La nota sotto il grafico nomina l'auto e il gesto**: *«These are petrol
+  figures — this car knows only itself. V switches the car… next is full
+  hybrid.»* È l'unico posto in cui il pannello ammette che le altre tre
+  esistono.
+- **Via l'aggancio ai viaggi**: niente più run archiviato dalla cartolina di
+  *Trips*, niente flag `real`, niente commute timbrato su `makeRecord`, niente
+  righe filtrate per veicolo. Tre accoppiamenti fra due moduli per un guadagno
+  che in demo non si vedeva. Due registri di due cose diverse, e nessuno dei due
+  sa dell'altro.
+
+Dettaglio in [14-daily-commute.md](14-daily-commute.md).
+
+---
+
+## 2026-09-11 · La tratta che torna
+
+**Scelta**: una **sesta vista** sul display centrale, **Daily commute**. Non
+parla di un viaggio: parla di un'**abitudine**. Ci si imposta uno o più tragitti
+quotidiani — un giorno, un'ora, una distanza, una forma di strada — l'app
+**riconosce** quale di quelli si sta guidando e **quanto ne è sicura**, e mostra
+la stessa tratta **costata in tutte e quattro le motorizzazioni**, con lo storico
+dei run passati accanto.
+
+**Perché**: le altre cinque viste rispondono a «quanto è costato questo
+viaggio». La domanda che un guidatore si ripete davvero, e a cui nessun cruscotto
+gli ha mai dato un numero, è «quanto mi costa andare al lavoro» — che è la stessa
+domanda moltiplicata per duecentosessanta. Ed è l'unico terreno su cui il
+confronto fra le quattro auto smette di essere un grafico e diventa una decisione:
+sulla stessa strada, alla stessa ora, tutti i giorni.
+
+**Cosa comporta**:
+
+- **Gli stessi commute per tutte e quattro.** Appartengono al guidatore, non alla
+  trasmissione. Cambia solo il conto, e non è digitato: la benzina è tre costanti
+  per forma di strada, le altre tre scendono da lì con **le stesse `HEV_F`,
+  `PHEV_W`, `BEV_C` del registro dei diciotto viaggi**, che per questo sono
+  uscite da `buildTrips()` e stanno ora accanto a `TRIPS`. Retarare una riga
+  ritara il mese e il commute insieme.
+- **Una regola nuova, e vera: l'auto si carica a casa, una volta, di notte.** Un
+  pacco al giorno per il plug-in e uno per l'elettrica; quello che la giornata
+  chiede oltre si compra in strada. Su 23 km non se ne accorge nessuno. Sul
+  lunedì Torino–Milano e ritorno l'elettrica compra 8.6 kWh fuori casa e **il
+  plug-in costa più del full hybrid** — che è la verità onesta su quelle auto.
+- **Il traffico non costa uguale a tutti e quattro**, e questo è l'unico posto
+  dell'app che lo dice: chi riprende la frenata ne restituisce una parte.
+- **Il riconoscitore può dire «non lo so»**, e lo dice: soglie a 0.75 e 0.48, il
+  giorno della settimana come segnale morbido e non come filtro, e la percentuale
+  scritta in chiaro accanto al nome.
+- **La sesta linguetta consuma l'ultimo spazio della fila**: 67.8 px a bottone,
+  gap a 5, icona a 12, etichetta a 8 px. Una settima vista costerebbe una di
+  quelle che ci sono.
+- **`typing(e)`**: i comandi a una lettera (`E` `V` `P` `R`, frecce) ora si
+  disinnescano quando il fuoco è in un campo di testo. L'app ha il suo primo
+  `input` in cui si scrive.
+
+Tutto il dettaglio in [14-daily-commute.md](14-daily-commute.md).
+
+---
+
 ## 2026-09-08 · La plancia smette di essere cucita
 
 **Scelta**: la scena passa a **una sola fotografia**, `Green_Screen.jpeg`

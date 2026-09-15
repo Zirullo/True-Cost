@@ -25,6 +25,7 @@ Punto di ingresso: leggi questo file, poi salta alla nota che ti serve.
 | [11-plancia-estesa.md](11-plancia-estesa.md) | La metà destra disegnata a mano e il display centrale | Per ritoccare la plancia estesa o lavorare sull'app |
 | [12-full-hybrid.md](12-full-hybrid.md) | Il full hybrid: curva del solo motore, tampone, e-CVT | Per ritarare l'ibrido o capire perché il km si ferma a zero |
 | [13-phev.md](13-phev.md) | Il plug-in: due energie in un viaggio, e le cifre del mese per tutti e quattro | Per ritarare il plug-in o citare un numero |
+| [14-daily-commute.md](14-daily-commute.md) | La sesta vista: il tragitto quotidiano, riconosciuto, con la sua media e lo scarto di oggi | Per toccare i commute, il riconoscitore o il grafico |
 
 ## File del progetto
 
@@ -74,5 +75,13 @@ e quattro le auto), *Pump map* (le stazioni intorno, e quelle **lungo la strada
 sono i cartelloni veri** del parabrezza; è la vista su cui la demo si apre),
 *Price history*, *Report* (la nota spese per il fleet manager) e *Trip management*
 (dove finisce un viaggio) — vedi [11-plancia-estesa.md](11-plancia-estesa.md).
+
+Dal **2026-09-11** le viste sono **sei**: si è aggiunta **Daily commute**, che non
+parla di un viaggio ma di un'abitudine — uno o più tragitti quotidiani impostati
+dal guidatore, **riconosciuti** mentre li si guida, con **quanto costa di solito**
+quella strada e **di quanto il viaggio di adesso è sopra o sotto**. Mostra una
+sola motorizzazione, quella sotto di te: il confronto fra le auto si fa
+**cambiando auto** e rileggendo lo stesso tragitto. Vedi
+[14-daily-commute.md](14-daily-commute.md).
 
 Dal **2026-09-07** il progetto è considerato completo: da qui in poi rifiniture.

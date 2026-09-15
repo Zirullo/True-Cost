@@ -197,6 +197,14 @@ corti e un'icona ciascuno che quattro nomi lunghi e una vista in meno.
 La fila dei bottoni è alta **46 px** invece di 34: il corpo delle viste scende da
 318 a 306 righe, e ci sta lo stesso tutto quello che c'era.
 
+Dal **2026-09-11** sono **sei**: si è aggiunta **COMMUTE**, e sei è dove
+l'aritmetica finisce. 454 px meno 22 di padding meno cinque gap fanno **67.8 px
+a bottone**: i gap scendono da 7 a 5, l'icona da 13 a 12, l'etichetta da 8.5 a
+**8 px** con quasi niente `letter-spacing`. Ci sta la più lunga delle sei —
+misurato: 66 px di contenuto in 66 px di bottone, su tutte e sei. **Una settima
+vista costerebbe una di quelle che ci sono**, e non è una previsione, è il conto.
+La vista è descritta per intero in [14-daily-commute.md](14-daily-commute.md).
+
 ### Vista 1 — Cost history (quella aperta all'avvio)
 
 | Blocco | Cosa mostra | Da dove |
@@ -587,6 +595,26 @@ là: un viaggio continua a registrarsi *e a chiudersi da solo* mentre stai
 guardando la mappa. La regola non si mette in pausa perché hai cambiato scheda —
 sarebbe l'unico modo di renderla inaffidabile. Il **disegno** invece sì:
 `tmPaint()` gira solo se la vista aperta è `trips`, come tutte le altre.
+
+### Vista 6 — Daily commute
+
+Le altre cinque parlano di **un** viaggio. Questa parla di un'**abitudine**: uno
+o più tragitti quotidiani impostati dal guidatore, **riconosciuti** mentre li si
+guida, con **quanto costa di solito** quella strada e **di quanto il viaggio di
+adesso è sopra o sotto**. Mostra **una motorizzazione sola** — il confronto fra
+le auto si fa cambiando auto e rileggendo lo stesso tragitto, perché nessuna
+vettura sa quanto avrebbero speso le altre tre. Ha la sua nota per intero:
+[14-daily-commute.md](14-daily-commute.md).
+
+Riusa `.ch-hero` / `.ch-grid` / `.ch-cell` da *Cost history*, `.sc` / `.lb` dalla
+mappa e `.tm-dot` / `.tm-btxt` da *Trip management*, per la stessa ragione di
+sempre: lo stesso numero deve avere la stessa faccia ovunque l'app lo mostri.
+
+`cmDetect()` gira dentro `cmPaint()`, che gira solo se la vista aperta è
+`commute`: dal 2026-09-15 il riconoscitore non ha più nessun consumatore fuori da
+questo pannello — il viaggio chiuso dalla scheda *Trips* non ci finisce più
+dentro — e una cosa che non serve a nessun altro non ha ragione di girare nel
+battito.
 
 ## Cosa è cambiato nella strada
 

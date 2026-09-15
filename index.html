@@ -402,11 +402,18 @@ body{
    spacing, so the longest one still sits inside its button. TRIPS made them
    five, and at that width no two-word label fits at all: every one is cut
    to the single word that tells it apart from the other four, and the icon
-   is left to carry the rest. */
-.ap-tabs{flex:none;height:46px;display:flex;gap:7px;padding:5px 11px 3px}
+   is left to carry the rest.
+
+   COMMUTE made them six, and six is where the arithmetic runs out: 454 px
+   less 22 of padding less five gaps leaves 67.8 px a button. So the gaps
+   close to 5, the icon drops to 12 and the label to 8 px with almost no
+   letter spacing - which is exactly enough for the longest of the six and
+   leaves no room at all for a seventh. A view added after this one costs
+   a view already there. */
+.ap-tabs{flex:none;height:46px;display:flex;gap:5px;padding:5px 11px 3px}
 #app .ap-tab{
-  flex:1;border-radius:9px;display:flex;align-items:center;justify-content:center;gap:5px;
-  font-size:8.5px;letter-spacing:.7px;font-weight:600;white-space:nowrap;
+  flex:1;border-radius:9px;display:flex;align-items:center;justify-content:center;gap:4px;
+  font-size:8px;letter-spacing:.5px;font-weight:600;white-space:nowrap;
   text-transform:uppercase;color:#9ab3c7;
   background:linear-gradient(180deg,#1d3042,#111c27);
   border:1px solid rgba(140,190,225,.22);
@@ -414,7 +421,7 @@ body{
              inset 0 1px 0 rgba(255,255,255,.11);
   transition:transform .09s, box-shadow .09s, color .12s, background .12s;
 }
-#app .ap-tab svg{width:13px;height:13px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8}
+#app .ap-tab svg{width:12px;height:12px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8}
 #app .ap-tab:hover{color:#dbecf8;background:linear-gradient(180deg,#24394d,#16232f)}
 #app .ap-tab:active{transform:translateY(2px);
   box-shadow:0 0 0 rgba(0,0,0,.5), 0 1px 3px rgba(0,0,0,.45),
@@ -876,6 +883,172 @@ body{
       box-shadow:0 0 12px rgba(61,220,132,.45)}
 #app .tc-act .go:hover{background:linear-gradient(180deg,#7bffb8,#31cd79)}
 
+/* ── DAILY COMMUTE ────────────────────────────────────
+   The sixth view, and the only one that is not about A drive. The other
+   five answer "what did this trip cost". This one answers the question a
+   driver actually repeats three hundred times a year: WHAT DOES THE WAY
+   TO WORK COST ME — what it usually costs, and whether the run happening
+   right now is already above or below that.
+
+   It shows ONE car: the one under you. An earlier version put all four
+   drivetrains side by side in this pane and it was not a real screen — no
+   car on a road knows what the other three would have spent. The
+   comparison is made the way the rest of the app makes it, by SWITCHING
+   the car and reading the same commute again.
+
+   It reuses .ch-hero / .ch-grid / .ch-cell from Cost history, .sc / .lb
+   from the map and .tm-dot / .tm-btxt from Trip management on purpose:
+   the same number should look the same wherever the app shows it. ── */
+.cm-pick{flex:none;height:20px;display:flex;align-items:center;gap:5px;overflow:hidden}
+#app .cm-pick .sc{max-width:112px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#app .cm-add{flex:none;color:#8fd8f5;border-color:rgba(0,174,239,.45);background:rgba(0,174,239,.10)}
+#app .cm-add:hover{color:#eaf6ff;background:rgba(0,174,239,.24)}
+#pane-commute .ch-hero{margin-top:6px}
+#pane-commute #cm-lab{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#app #cm-edit{font-size:7.5px;letter-spacing:1.2px;padding:2px 6px;border-radius:8px;
+  color:#8fd8f5;border:1px solid rgba(0,174,239,.45);background:rgba(0,174,239,.12)}
+#app #cm-edit:hover{color:#eaf6ff;background:rgba(0,174,239,.24)}
+
+/* the recogniser band: the same rhythm as the Trip management one, because
+   it is doing the same kind of work — saying out loud what the app thinks
+   is happening, and how sure it is */
+.cm-band{flex:none;height:34px;margin-top:6px;display:flex;align-items:center;gap:9px;
+  padding:0 10px;border-radius:8px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(120,170,210,.14);
+  transition:background .2s,border-color .2s}
+.cm-band .tm-dot{background:#7d93a6;box-shadow:none}
+#pane-commute.near .cm-band{background:rgba(0,174,239,.09);border-color:rgba(0,174,239,.38)}
+#pane-commute.near .cm-band .tm-dot{background:var(--blue);box-shadow:0 0 8px rgba(0,174,239,.9)}
+#pane-commute.seen .cm-band{background:rgba(61,220,132,.10);border-color:rgba(61,220,132,.40)}
+#pane-commute.seen .cm-band .tm-dot{background:var(--green);box-shadow:0 0 8px rgba(61,220,132,.9)}
+/* above or below the usual: a shape and a colour before it is a number,
+   because that is the only part of this pane a driver reads at a glance */
+.cm-delta{flex:none;min-width:56px;height:26px;padding:0 6px;border-radius:7px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  color:#8fa6ba;background:rgba(255,255,255,.05);border:1px solid rgba(120,170,210,.18);
+  transition:color .2s,background .2s,border-color .2s}
+.cm-delta b{font-size:12px;font-weight:600;line-height:1;letter-spacing:-.2px;white-space:nowrap}
+.cm-delta i{font-style:normal;font-size:6.4px;letter-spacing:.9px;color:#68829a;margin-top:3px}
+.cm-delta.up{color:#ff8f6d;background:rgba(255,120,90,.13);border-color:rgba(255,120,90,.45)}
+.cm-delta.dn{color:#5df0a2;background:rgba(61,220,132,.13);border-color:rgba(61,220,132,.45)}
+#app #cm-pin{flex:none;height:19px;padding:0 8px;border-radius:10px;white-space:nowrap;
+  font-size:8px;letter-spacing:1.1px;font-weight:600;color:#8fd8f5;
+  border:1px solid rgba(0,174,239,.45);background:rgba(0,174,239,.12)}
+#app #cm-pin:hover{color:#fff;background:rgba(0,174,239,.26)}
+#cm-pin[hidden]{display:none}
+
+.cm-body{flex:1;min-height:0;display:flex;gap:8px;margin-top:6px}
+.cm-col{flex:1;min-width:0;display:flex;flex-direction:column}
+.cm-col>.hd{flex:none;height:14px;display:flex;align-items:center;justify-content:space-between;
+  gap:6px;font-size:8.2px;letter-spacing:1.2px;color:#7f9bb1;
+  white-space:nowrap;overflow:hidden}
+.cm-col>.hd em{font-style:normal;color:#5f7a92;overflow:hidden;text-overflow:ellipsis}
+/* ── what it usually costs, and the shape of the month ──
+   One bar per run, oldest on the left, and the dashed line across the
+   middle is the average of all of them. The bars HANG OFF THAT LINE
+   rather than standing on zero: red growing up from it, green growing
+   down. Drawn from zero, a commute whose runs all cost within a cent of
+   each other was a row of identical towers that said nothing — and the
+   question this pane was asked is not what a run cost, it is whether it
+   cost more than usual. The last bar, white, is the run happening now. */
+/* the chart takes the WHOLE column. It used to stop at 96 px with a note
+   under it saying whose figures these were; the car is named on the regia
+   bar, so the note was a caption for something already on screen and the
+   height it was holding is worth more as chart. The bars are measured at
+   paint rather than assumed, because from here the box is whatever the
+   pane's height leaves it. */
+.cm-chart{flex:1;min-height:0;position:relative;padding:6px 8px 3px;
+  border-radius:8px;background:rgba(255,255,255,.03);border:1px solid rgba(120,170,210,.10)}
+.cm-chart .hd{display:flex;justify-content:space-between;align-items:baseline;gap:6px;
+  font-size:8.2px;letter-spacing:1.2px;color:#7f9bb1;white-space:nowrap;overflow:hidden}
+.cm-chart .hd em{font-style:normal;font-size:9px;letter-spacing:.6px;color:#7dd6a2}
+.cm-bars{position:absolute;left:8px;right:8px;top:24px;bottom:15px;
+  display:flex;align-items:stretch;gap:2px}
+.cm-bars i{flex:1;position:relative}
+.cm-bars i b{position:absolute;left:0;right:0;min-height:1.5px}
+.cm-bars i.up b{bottom:50%;border-radius:2px 2px 0 0;
+  background:linear-gradient(180deg,#ff9b74,#a8421a)}
+.cm-bars i.dn b{top:50%;border-radius:0 0 2px 2px;
+  background:linear-gradient(0deg,#5df0a2,#1d7b4a)}
+/* the run under you, projected onto a whole run — it is the only bar in
+   here that has not finished happening, so it is the only white one. It
+   keeps whichever side of the line it belongs on. */
+.cm-bars i.now b{background:linear-gradient(180deg,#ffffff,#78c4ec);
+  box-shadow:0 0 7px rgba(150,215,255,.8)}
+/* the line the bars hang from, so it is the AXIS of this chart and not a
+   decoration on it: it has to stay legible through a month that never
+   moved off it */
+.cm-avgline{position:absolute;left:8px;right:8px;pointer-events:none;
+  border-top:1px dashed rgba(61,220,132,.85);
+  filter:drop-shadow(0 0 3px rgba(61,220,132,.45))}
+.cm-axis{position:absolute;left:8px;right:8px;bottom:1px;display:flex;
+  justify-content:space-between;font-size:8px;color:#68829a}
+.cm-axis .liv{color:#cfe8fa}
+
+/* the log of runs: the same grammar as the trip list, one row per morning */
+#cm-runs{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;
+  scrollbar-width:thin;scrollbar-color:rgba(120,170,210,.3) transparent}
+#cm-runs::-webkit-scrollbar{width:3px}
+#cm-runs::-webkit-scrollbar-thumb{background:rgba(120,170,210,.3);border-radius:3px}
+/* no negative side margin here, unlike .ch-row: this list is narrow enough
+   that eight px of bleed put a horizontal scrollbar under it */
+.cm-run{display:grid;grid-template-columns:1fr 44px 38px 32px;align-items:center;
+  height:20px;font-size:10px;color:#c8d8e6;padding:0 3px;border-radius:4px;
+  border-top:1px solid rgba(120,170,210,.09)}
+.cm-run[hidden]{display:none}
+.cm-run .d{font-size:9px;color:#8fa6ba;letter-spacing:.3px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cm-run .d b{color:#c8d8e6;font-weight:600}
+.cm-run .u{text-align:right;font-size:9.5px;color:#9fb6c9;white-space:nowrap}
+.cm-run .e{text-align:right;font-weight:600;color:#fff}
+.cm-run .v{text-align:right;font-size:9px}
+.cm-run.up .v{color:#ff8f6d}
+.cm-run.dn .v{color:#3ddc84}
+.cm-empty{padding:14px 4px;font-size:9px;line-height:1.6;color:#68829a}
+
+/* ── setting one up, over the pane ──
+   More than one commute, because almost nobody has only one: the drive to
+   work, the run to the other site, the Monday in another city. Each one is
+   a day, an hour and a distance — which is all a car ever has to go on. */
+#cm-set{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;
+  padding:9px 11px 8px;background:#080f17}
+#cm-set[hidden]{display:none}
+.cs-top{flex:none;height:15px;display:flex;align-items:center;gap:7px;
+  font-size:8.6px;letter-spacing:1.3px;color:#7f9bb1}
+.cs-top b{color:#eaf6ff;font-weight:600}
+.cs-row{flex:none;height:22px;margin-top:6px;display:flex;align-items:center;gap:6px}
+.cs-row .lb{width:58px;flex:none}
+.cs-row .lb.w{width:auto}
+#app .cm-in{flex:1;min-width:0;height:22px;padding:0 8px;border-radius:6px;
+  font-family:inherit;font-size:11px;color:#eaf6ff;
+  background:rgba(255,255,255,.06);border:1px solid rgba(120,170,210,.22);outline:none}
+#app .cm-in:focus{border-color:rgba(0,174,239,.7);background:rgba(0,174,239,.10)}
+#app .cm-in::placeholder{color:#5f7a92}
+.cs-row input[type=range]{flex:1;min-width:0;height:12px;accent-color:#39c8e0;cursor:pointer}
+.cs-val{flex:none;width:60px;text-align:right;font-family:Consolas,monospace;
+  font-size:9.5px;font-weight:700;color:#8fe6f8;letter-spacing:.2px}
+#app .cs-day{flex:1;height:20px;border-radius:6px;
+  font-size:8.5px;letter-spacing:.6px;font-weight:600;
+  color:#8fa8bc;background:rgba(255,255,255,.05);border:1px solid rgba(120,170,210,.18)}
+#app .cs-day:hover{color:#dbecf8;background:rgba(255,255,255,.10)}
+#app .cs-day.on{color:#eaf9ff;background:rgba(0,174,239,.26);border-color:rgba(0,174,239,.75)}
+.cs-prev{flex:none;margin-top:8px;padding:6px 9px;border-radius:7px;
+  font-size:9px;line-height:1.55;color:#bff4d8;
+  background:rgba(61,220,132,.09);border:1px solid rgba(61,220,132,.28)}
+.cs-prev b{color:#fff;font-weight:600}
+.cs-act{flex:none;height:26px;margin-top:auto;display:flex;align-items:center;gap:7px}
+#app .cs-act button{flex:1;height:26px;border-radius:8px;
+  font-size:9px;letter-spacing:1.3px;font-weight:600;color:#a8c2d6;
+  background:rgba(255,255,255,.05);border:1px solid rgba(120,170,210,.20)}
+#app .cs-act button:hover{color:#eaf6ff;background:rgba(255,255,255,.10)}
+#app .cs-act button[disabled]{opacity:.32;cursor:default}
+#app .cs-act button[disabled]:hover{color:#a8c2d6;background:rgba(255,255,255,.05)}
+#app .cs-act .dis{color:#ffb0a0;border-color:rgba(255,120,90,.40);background:rgba(255,120,90,.10)}
+#app .cs-act .dis:hover{color:#fff;background:rgba(255,120,90,.24)}
+#app .cs-act .go{flex:1.35;border:0;color:#04150c;
+  background:linear-gradient(180deg,#5df0a2,#27b96c);box-shadow:0 0 12px rgba(61,220,132,.45)}
+#app .cs-act .go:hover{background:linear-gradient(180deg,#7bffb8,#31cd79)}
+
 /* cluster typography */
 #cluster text{font-family:"Segoe UI",Roboto,Arial,sans-serif;fill:#fff}
 .lbl{font-size:17px;letter-spacing:.6px;fill:#cfe0ee}
@@ -1269,13 +1442,13 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     </text>
     <text x="675" y="321" text-anchor="middle" class="lbl">CONSUMED</text>
     <text x="675" y="347" text-anchor="middle" font-size="27" class="val">
-      <tspan id="cons">5.02</tspan><tspan id="consUnit" font-size="18" fill="#d2e2ef"> L</tspan>
+      <tspan id="cons">3.44</tspan><tspan id="consUnit" font-size="18" fill="#d2e2ef"> L</tspan>
     </text>
 
     <!-- ── TOTAL TRIP COST ────────────────────────────────── -->
     <rect x="487" y="357" width="248" height="62" rx="9" fill="rgba(10,22,34,.3)" stroke="#9db4c6" stroke-width="1.1"/>
     <text x="611" y="379" text-anchor="middle" class="lbl-sm" letter-spacing="1.2">TOTAL TRIP COST</text>
-    <text id="total" x="611" y="411" text-anchor="middle" font-size="34" font-weight="600">EUR 9.55</text>
+    <text id="total" x="611" y="411" text-anchor="middle" font-size="34" font-weight="600">EUR 7.40</text>
 
     <!-- ── VEHICLE STATUS ─────────────────────────────────── -->
     <g>
@@ -1393,6 +1566,11 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
               <svg viewBox="0 0 16 16"><circle cx="8" cy="9.3" r="5.2"/><path d="M8 6.6v2.7l1.9 1.2M6.2 1.8h3.6M8 1.8v1.6" stroke-linecap="round"/></svg>
               Trips
             </button>
+            <!-- the drive that comes round again: two arrows closing a loop -->
+            <button class="ap-tab" type="button" data-v="commute">
+              <svg viewBox="0 0 16 16"><path d="M2.6 8A5.4 5.4 0 0 1 8 2.6h2.4" stroke-linecap="round"/><path d="M9.1 1.1 10.9 2.6 9.1 4.1" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.4 8A5.4 5.4 0 0 1 8 13.4H5.6" stroke-linecap="round"/><path d="M6.9 11.9 5.1 13.4l1.8 1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Commute
+            </button>
           </div>
 
           <div class="ap-body">
@@ -1404,8 +1582,8 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
                     <span id="ap-lab">THIS TRIP &middot; COST SO FAR</span>
                     <button type="button" id="ap-back" hidden>&#9664; LIVE</button>
                   </div>
-                  <div class="ch-big"><em>EUR</em><span id="ap-total">9.55</span></div>
-                  <div class="ch-sub" id="ap-sub">48.1 km &middot; 5.02 L burned</div>
+                  <div class="ch-big"><em>EUR</em><span id="ap-total">7.40</span></div>
+                  <div class="ch-sub" id="ap-sub">48.1 km &middot; 3.44 L burned</div>
                 </div>
                 <div class="ch-grid">
                   <div class="ch-cell"><b id="ap-c1">0.14</b><i id="ap-l1">&euro;/KM NOW</i></div>
@@ -1683,6 +1861,102 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
                 </div>
               </div>
             </div>
+
+            <!-- ── DAILY COMMUTE ───────────────────────────
+                 The one drive that repeats. Everything else in this app is
+                 about a trip; this pane is about a HABIT — the same road,
+                 the same hour, three hundred times a year — and about the
+                 only comparison that habit makes worth having: what the
+                 identical week would have cost in each of the four cars.
+
+                 The commutes are shared by all four drivetrains on purpose.
+                 Same road, same distance, same hour: the bill is the only
+                 thing allowed to change, and none of it is typed. -->
+            <div class="ap-pane" id="pane-commute" hidden>
+              <div class="cm-pick" id="cm-pick"></div>
+
+              <div class="ch-hero">
+                <div class="ch-cost">
+                  <div class="ch-lab">
+                    <span id="cm-lab">&mdash;</span>
+                    <button type="button" id="cm-edit">EDIT</button>
+                  </div>
+                  <!-- the headline is the AVERAGE, because a habit is not an
+                       event: what this road usually costs is the number the
+                       driver can actually act on -->
+                  <div class="ch-big"><em>AVG &euro;</em><span id="cm-total">0.00</span></div>
+                  <div class="ch-sub" id="cm-sub">&nbsp;</div>
+                </div>
+                <div class="ch-grid">
+                  <div class="ch-cell"><b id="cm-c1">0.0</b><i id="cm-l1">KM A DAY</i></div>
+                  <div class="ch-cell"><b id="cm-c2">0.00</b><i id="cm-l2">&euro; / KM</i></div>
+                  <div class="ch-cell"><b id="cm-c3">0.0</b><i id="cm-l3">L / 100 KM</i></div>
+                  <div class="ch-cell"><b id="cm-c4">0</b><i id="cm-l4">&euro; A MONTH</i></div>
+                </div>
+              </div>
+
+              <!-- the recogniser: a day, an hour and a distance, which is
+                   all a car has to go on. It says how sure it is. -->
+              <div class="cm-band">
+                <i class="tm-dot"></i>
+                <div class="tm-btxt">
+                  <div class="tm-b1" id="cm-b1">&mdash;</div>
+                  <div class="tm-b2" id="cm-b2">&nbsp;</div>
+                </div>
+                <!-- already above or below what this road usually costs -->
+                <div class="cm-delta" id="cm-delta"><b>&mdash;</b><i>VS USUAL</i></div>
+                <button type="button" id="cm-pin">It&#39;s this one</button>
+              </div>
+
+              <div class="cm-body">
+                <div class="cm-col">
+                  <div class="cm-chart">
+                    <div class="hd"><span>EACH RUN VS AVERAGE</span><em id="cm-ch-avg">&mdash;</em></div>
+                    <div class="cm-bars" id="cm-bars"></div>
+                    <div class="cm-avgline" id="cm-avgline"></div>
+                    <div class="cm-axis"><span id="cm-ax0">&mdash;</span>
+                      <span id="cm-ax1">&mdash;</span></div>
+                  </div>
+                </div>
+                <div class="cm-col">
+                  <div class="hd"><em id="cm-logh">RUNS</em></div>
+                  <div id="cm-runs"></div>
+                </div>
+              </div>
+
+              <!-- ── setting one up, over the pane ── -->
+              <div id="cm-set" hidden>
+                <div class="cs-top">COMMUTE &middot; <b id="cs-title">NEW</b></div>
+                <div class="cs-row"><span class="lb">NAME</span>
+                  <input class="cm-in" id="cs-name" type="text" maxlength="24"
+                         placeholder="Home &#8594; Office" spellcheck="false"></div>
+                <div class="cs-row"><span class="lb">FROM</span>
+                  <input class="cm-in" id="cs-from" type="text" maxlength="18"
+                         placeholder="Rivoli" spellcheck="false">
+                  <span class="lb w">TO</span>
+                  <input class="cm-in" id="cs-to" type="text" maxlength="18"
+                         placeholder="Mirafiori" spellcheck="false"></div>
+                <div class="cs-row"><span class="lb">EACH WAY</span>
+                  <input type="range" id="cs-km" min="1" max="180" step="0.5" value="23.5">
+                  <b class="cs-val" id="cs-kmv">23.5 km</b></div>
+                <div class="cs-row"><span class="lb">LEAVE AT</span>
+                  <input type="range" id="cs-lv" min="240" max="1350" step="5" value="460">
+                  <b class="cs-val" id="cs-lvv">07:40</b></div>
+                <div class="cs-row"><span class="lb">ROAD</span>
+                  <button class="sc" type="button" data-ch="road">Motorway</button>
+                  <button class="sc" type="button" data-ch="mix">Mixed</button>
+                  <button class="sc" type="button" data-ch="city">City</button>
+                  <span class="lb w" style="flex:1"></span>
+                  <button class="sc" type="button" id="cs-ret">Drives back too</button></div>
+                <div class="cs-row" id="cs-days"><span class="lb">DAYS</span></div>
+                <div class="cs-prev" id="cs-prev">&nbsp;</div>
+                <div class="cs-act">
+                  <button type="button" class="dis" id="cs-del">Delete</button>
+                  <button type="button" id="cs-cancel">Cancel</button>
+                  <button type="button" class="go" id="cs-save">Save commute &#9654;</button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1887,11 +2161,21 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
      and that is the whole argument of the product stated before anyone
      touches a control — the same road, three numbers.
 
-     The ICE keeps the photo's own pair, 5.02 L and EUR 9.55, inherited
-     incoherence and all (they were never each other's product; the source
-     image was not consistent either). The other two are not free to be
-     scenographic: they state what their own curve says that drive costs
-     them, so nothing on their panel contradicts anything else on it.
+     The ICE USED to keep the photo's own pair, 5.02 L and EUR 9.55,
+     inherited incoherence and all — they were never each other's product,
+     and the source image was not consistent either. That pair said 10.4
+     L/100 km while the readout right above it said 7.14, the figure its
+     own curve gives at 128, and the trip's EUR/km said 0.199 while the
+     header said 0.15. One car, three numbers, two of them agreeing and
+     one of them not.
+
+     It now says what the other three say: what ITS OWN CURVE gives for
+     those 48.09 km at 128, priced at the fuel in its tank. 3.44 L and
+     EUR 7.40 — 0.154 EUR/km, which is the 0.15 in the header. The photo
+     was the only typed figure in the app that no other figure could be
+     derived from, and everything that compares this drive to anything —
+     the commute pane above all — was reading it as a car that drinks
+     half again what it drinks.
      ══════════════════════════════════════════════════════════ */
   const OPEN_KM = 48.09, OPEN_KMH = 128;
 
@@ -1904,7 +2188,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     marketPrice: 1.85,        // live average around the vehicle: the centre the
                               // stations along the road scatter around
     tankCapacity: 45, tankUnits: 27.5,
-    tripKm: OPEN_KM, tripUnits: 5.02, tripCost: 9.55,
+    tripKm: OPEN_KM, tripUnits: 3.44, tripCost: 7.40,
     instantEurKm: 0.14, instantPer100: 7.14,
     /* ── added with the BEV variant ── */
     vehicle: 'ice',           // which profile in PT is under us
@@ -1982,9 +2266,10 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       gearVal: s => s.currentSpeed < 1 ? 'N' : s.gear + 1,
       /* L / 100 km, calibrated on the reference cluster */
       per100: v => 0.000282 * v * v - 0.0163 * v + 4.61,
-      /* the photo's own trip, and the only one in here that is TYPED rather
-         than worked out — because it is a photograph, not a calculation */
-      openUnits: 5.02, openCost: 9.55,
+      /* the opening trip, worked out from the curve above like every other
+         car's — see THE OPENING FRAME. It was typed once, off the photo,
+         and typed it disagreed with the readout sitting directly above it. */
+      openUnits: 3.44, openCost: 7.40,
       /* a running engine standing still burns 0.7 L/h and covers no ground */
       idleRate: 0.7,
       /* what it costs to GAIN speed — see the note in update(). 1350 kg, and
@@ -2428,7 +2713,17 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
   }
   if (engineBtn) engineBtn.addEventListener('click',
     () => { setEngine(!state.engineOn); engineBtn.blur(); });
+  /* Every command in this cockpit is one letter, which was free until the
+     app grew a field you type a name into: E, V, P and R would all have
+     fired under the cursor, and the arrows would have moved the car instead
+     of the caret. The UFO handler had already paid for this once. */
+  const typing = e => {
+    const t = e.target;
+    return !!(t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable));
+  };
+
   window.addEventListener('keydown', e => {
+    if (typing(e)) return;
     if (e.key !== 'e' && e.key !== 'E') return;
     if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
     e.preventDefault();
@@ -2637,7 +2932,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       b.classList.toggle('on', b.dataset.v === id));
 
     if (!boot) {
-      app.newTrip();                    // a trip never spans two vehicles
+      app.newTrip(true);                // a trip never spans two vehicles
       app.repaint();                    // and the open view stops describing the old one
     }
     paintTariff();
@@ -2651,6 +2946,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
      written in PT — which is the order electrification happens in: petrol,
      hybrid, plug-in hybrid, battery, and round again. */
   window.addEventListener('keydown', e => {
+    if (typing(e)) return;
     if (e.key !== 'v' && e.key !== 'V') return;
     if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
     e.preventDefault();
@@ -2763,6 +3059,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
 
   const arrowOf = e => e.key === 'ArrowUp' ? 'gas' : e.key === 'ArrowDown' ? 'brake' : null;
   window.addEventListener('keydown', e => {
+    if (typing(e)) return;         // arrows move a caret before they move a car
     const which = arrowOf(e);
     if (!which) return;
     e.preventDefault();            // no page scroll, and the slider cannot steal the key
@@ -2848,6 +3145,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
   }
 
   window.addEventListener('keydown', e => {
+    if (typing(e)) return;
     if (e.key !== 'p' && e.key !== 'P') return;
     if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
     if (!car().evCap) return;
@@ -2856,6 +3154,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
   });
 
   window.addEventListener('keydown', e => {
+    if (typing(e)) return;
     if (e.key !== 'r' && e.key !== 'R') return;
     if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
     if (!promptOpen || promptEl.classList.contains('done')) return;
@@ -4867,7 +5166,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
     /* ── tabs ──────────────────────────────────────────── */
     const panes = { history: $('pane-history'), map: $('pane-map'),
                     price: $('pane-price'), report: $('pane-report'),
-                    trips: $('pane-trips') };
+                    trips: $('pane-trips'), commute: $('pane-commute') };
     const tabs  = Array.prototype.slice.call(root.querySelectorAll('.ap-tab'));
     let view = 'map';
     function show(v) {
@@ -4879,6 +5178,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       else if (v === 'price')  { fit(); drawPrice(); }
       else if (v === 'report') paintReport();
       else if (v === 'trips')  tmPaint();
+      else if (v === 'commute') cmPaint();
       else                     paintHistory();
     }
     tabs.forEach(t => t.addEventListener('click', () => { show(t.dataset.v); t.blur(); }));
@@ -4952,6 +5252,16 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
           The log runs a full month back, because a fleet report is asked
           for by the month, not by the trip. Cost history scrolls them all;
           REPORT selects, totals and sends them. ── */
+    /* -- the three constants the twins are built on -----------------
+       They belong to the LOG rather than to buildTrips(), because a second
+       reader turned up: the Daily commute pane costs the same road in all
+       four cars, and it has to do it with the same numbers this month was
+       built with, or the two pages would quietly disagree about the same
+       vehicle. Each one is documented where it is used below. */
+    const HEV_F  = { road: 0.88, mix: 0.72, city: 0.58 };
+    const PHEV_W = 1.06;
+    const BEV_C  = { road: 1.46, mix: 1.45, city: 1.60 };
+
     const TRIPS = [
       { back: 1,  route: 'Torino &ndash; Milano',  km: 142.6, min: 95,  per100: 6.0, char: 'road', fill: 2, u: 0.62, v: 0.93, biz: 1 },
       { back: 2,  route: 'Commute &middot; A55',   km: 38.4,  min: 34,  per100: 7.6, char: 'mix',  fill: 5, u: 0.44, v: 0.55, biz: 0 },
@@ -5016,8 +5326,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
          Atkinson curve alone gives 0.88, and there is nothing to recover.
          In town the recovery and the engine shutting off do the rest. The
          log and the car under you had better agree about the same month. */
-      const HEV_F = { road: 0.88, mix: 0.72, city: 0.58 };
-      petrol.forEach(t => {
+      petrol.forEach(t => {                      // HEV_F is declared above the log
         TRIPS.push(Object.assign({}, t, { veh: 'hev', per100: t.per100 * HEV_F[t.char] }));
       });
 
@@ -5038,8 +5347,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
          gets the same range on every load while no two trips share one.
          Which is the point of the spread — the month has to contain the
          commute that just made it and the one that just did not. */
-      const PHEV_W = 1.06;
-      petrol.forEach(t => {
+      petrol.forEach(t => {                     // PHEV_W is declared above the log
         const P = PT.phev;
         const evRange = P.evRangeBase + (t.u * 2 - 1) * P.evRangeVar;
         const evKm    = Math.min(t.km, evRange);
@@ -5090,8 +5398,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
          is where this demo is driven. In town the log is the more honest
          of the two, and closing that gap means giving the live car
          lift-off regeneration. */
-      const BEV_C = { road: 1.46, mix: 1.45, city: 1.60 };
-      petrol.forEach(t => {
+      petrol.forEach(t => {                      // BEV_C is declared above the log
         const kmh = t.km / (t.min / 60);
         TRIPS.push(Object.assign({}, t, {
           veh: 'bev',
@@ -6458,8 +6765,16 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
 
     /* the demo opens on a drive already 48 km old, so the recorded trip has
        to open on it too — otherwise this pane would claim the car has never
-       moved while Cost history says it has */
-    (function seedTrip() {
+       moved while Cost history says it has.
+
+       It is a FUNCTION and not a one-off because every car is handed over
+       with those same 48 km behind it: throwing the switch opens a new trip
+       on the new car, and that trip has to open where the new car's cluster
+       already is. Left zeroed, the recorded trip said 0.0 km under a
+       cluster reading 48.1 — the very disagreement this was written to
+       stop — and the commute pane, which has only the recorded trip to go
+       on, dropped from 78 % sure to 49 % the instant the car changed. */
+    function seedTrip() {
       tKm  = lastTKm  = state.tripKm;
       tUnits = lastTUnits = state.tripUnits;
       tKwh = lastTKwh = state.tripKwh;
@@ -6468,7 +6783,8 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
       idleSec = 214;                                // two lights and a toll booth
       idleEur = idleSec / 3600 * car().idleRate * state.refuelPrice;
       tStart = new Date(Date.now() - tSec * 1000);
-    })();
+    }
+    seedTrip();
 
     /* ── the chips ── */
     const ruleBtns = Array.prototype.slice.call(TM.pane.querySelectorAll('.sc[data-k]'));
@@ -6744,7 +7060,715 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
 
     /* the deck's RESET TRIP zeroes the cluster; the recorded trip has to
        start over with it, or the two would disagree from that moment on */
-    function newTrip() { resetCounters(); resetSampler(); flashUp('COUNTERS RESET — NEW TRIP OPEN'); }
+    /* `seed` is the vehicle switch: the trip starts over, but on a car that
+       is already 48 km into the same road, so it opens on those 48 km
+       instead of on zero. RESET TRIP passes nothing and gets the zero. */
+    function newTrip(seed) {
+      resetCounters();
+      if (seed) seedTrip();
+      resetSampler(); cmNewTrip();
+      flashUp(seed ? 'NEW TRIP OPEN ON THIS CAR — ' + tKm.toFixed(1) + ' KM'
+                   : 'COUNTERS RESET — NEW TRIP OPEN');
+    }
+
+    /* ══════════ DAILY COMMUTE ═══════════════════════════════════════
+       The sixth view, and the only one in the app that is not about A
+       drive. Cost history, Pumps, Prices, Report and Trips all answer
+       "what did this trip cost". This one answers the question a driver
+       repeats three hundred times a year and has never once been shown
+       the answer to: WHAT DOES THE WAY TO WORK COST ME.
+
+       Three things had to be true for it to be worth a tab.
+
+       1. IT IS SET, NOT GUESSED. A commute here is a day, an hour and a
+          distance — which is all a car ever really has to go on — and the
+          driver writes all three down. There can be MORE THAN ONE,
+          because almost nobody has only one: the drive to work, the run
+          to the other site, the Monday in another city.
+
+       2. IT IS RECOGNISED. With those three written down, the app can
+          look at the drive under it and say which commute this is, and
+          how sure it is — and, crucially, say "none of them" when it is
+          none of them. The band under the hero is that sentence.
+
+       3. IT IS THE SAME COMMUTE FOR ALL FOUR CARS. The commutes belong to
+          the driver, not to the drivetrain: same road, same distance,
+          same hour, whichever car is switched on. The BILL is the only
+          thing allowed to change — and none of it is typed. The litres
+          come off the same curves as the eighteen trips, the euros off
+          the same price history, and the kilowatt-hours off the same
+          tariff slider. Which is what makes the four-row comparison
+          worth anything at all: it is not four numbers written next to
+          each other, it is one road costed four ways.
+
+       One rule holds the electric half together, and it is the rule a
+       commuter actually lives by: THE CAR IS CHARGED AT HOME, ONCE,
+       OVERNIGHT. So the plug-in gets one pack a day and the battery car
+       gets one pack a day, and whatever the day needs beyond that is
+       bought on the road at road prices. On a 23 km commute nobody ever
+       notices. On the Monday run to Milano and back it is the whole
+       story, and it is half the reason this pane exists. ── */
+
+    /* the three shapes of road, and the average speed each really returns
+       door to door — not a cruising speed: the lights and the queues are
+       already inside these numbers. The motorway line says 122 because
+       that is the road this demo is on: the car opens at 128 and the run
+       to Milano is made of it. */
+    const CM_KMH  = { road: 122, mix: 54, city: 26 };
+    const CM_ROAD = { road: 'motorway', mix: 'mixed roads', city: 'city streets' };
+    const CM_DOW  = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+    /* spelt out, because a commute that comes round once a week is named
+       by the day it comes round on, and "MONS" is not a word */
+    const CM_DOWS = ['MONDAYS', 'TUESDAYS', 'WEDNESDAYS', 'THURSDAYS',
+                     'FRIDAYS', 'SATURDAYS', 'SUNDAYS'];
+
+    /* a bad day in traffic does not cost the four cars the same thing, and
+       this is the only place in the app that says so. The petrol car pays
+       for every stop twice — the fuel it burnt getting to that speed, and
+       the heat it makes losing it again. Anything that can take braking
+       back gets part of that second half returned, so the same jam moves
+       its bill less. The battery car moves least of all. */
+    const CM_TRAF = { ice: 1, hev: 0.62, phev: 0.62, bev: 0.45 };
+    const cmTraf  = (veh, tr) => 1 + (tr - 1) * CM_TRAF[veh];
+
+    /* the four cars, in the order electrification happens in. This pane
+       shows ONE of them at a time — whichever is selected on the regia bar
+       — so the list is here to NAME the one under you, not to put four
+       numbers side by side: no car on a road knows what the other three
+       would have spent. */
+    const CM_VEH = [
+      { id: 'ice',  nm: 'petrol' },
+      { id: 'hev',  nm: 'full hybrid' },
+      { id: 'phev', nm: 'plug-in' },
+      { id: 'bev',  nm: 'electric' }
+    ];
+    const cmVeh = id => CM_VEH.filter(V => V.id === (id || state.vehicle))[0];
+
+    const CM_EL = {
+      pick: $('cm-pick'), lab: $('cm-lab'), total: $('cm-total'), sub: $('cm-sub'),
+      c1: $('cm-c1'), c2: $('cm-c2'), c3: $('cm-c3'), c4: $('cm-c4'),
+      l1: $('cm-l1'), l2: $('cm-l2'), l3: $('cm-l3'), l4: $('cm-l4'),
+      pane: $('pane-commute'), b1: $('cm-b1'), b2: $('cm-b2'), pin: $('cm-pin'),
+      delta: $('cm-delta'),
+      bars: $('cm-bars'), avgline: $('cm-avgline'), chAvg: $('cm-ch-avg'),
+      ax0: $('cm-ax0'), ax1: $('cm-ax1'),
+      logh: $('cm-logh'), runs: $('cm-runs'), edit: $('cm-edit')
+    };
+    /* the .cm-bars box is measured at paint now that the chart stretches;
+       this is only the fallback for the first paint, when the pane is still
+       hidden and every measurement in it is zero */
+    const CM_BARS_H = 55;
+
+    const cmHM   = m => ('0' + Math.floor(m / 60)).slice(-2) + ':' + ('0' + (m % 60)).slice(-2);
+    /* the names are typed by the driver and then written into innerHTML,
+       which is a door this app has never had to lock before */
+    const cmEsc  = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const cmWeek = c => c.days.reduce((a, b) => a + b, 0);
+    /* 52 weeks over 12 months: the figure a yearly bill is actually made of */
+    const cmMonth = c => cmWeek(c) * 52 / 12;
+    /* thousands with a thin space, because "1310" and "€ 1 310" are read at
+       different speeds and only one of them is a sum of money */
+    const cmEur  = n => Math.round(n).toString().replace(/\B(?=(\d{3})+$)/g, '&thinsp;');
+
+    /* ── the commutes themselves ──────────────────────────
+       Three to start with, because one would not have shown that there can
+       be more than one, and because they have to cover the three shapes of
+       road: the comparison only says something interesting when the city
+       run and the motorway run disagree about which car is cheapest — and
+       they do, which is the whole point. */
+    let cmSeq = 0;
+    const CM = [];
+    function cmAdd(o) {
+      const c = Object.assign({ id: ++cmSeq, char: 'mix', ret: 1,
+                                days: [1, 1, 1, 1, 1, 0, 0], leave: 460 }, o);
+      CM.push(c);
+      cmBuild(c);
+      return c;
+    }
+
+    /* ── the log of runs ──────────────────────────────────
+       A commute is not a trip that happened once: it is the same road over
+       and over, and the only things that change are the day and what the
+       road was like on it. So a run is a DATE plus two draws — the traffic
+       it met, and which pump was filling the tank that week — and nothing
+       else. Everything with a euro sign on it is worked out later, from
+       the commute's own definition, so a run survives a change of market
+       price exactly the way the eighteen trips do.
+
+       The dates are walked back from today over the days the commute
+       actually runs on, which is why a Monday-only commute shows five
+       weeks of Mondays and the weekday one shows a month of mornings. ── */
+    const CM_RUNS = 26;
+    function cmBuild(c) {
+      c.runs = [];
+      const now  = new Date();
+      const mins = now.getHours() * 60 + now.getMinutes();
+      for (let back = 0; back < 120 && c.runs.length < CM_RUNS; back++) {
+        const d = new Date(); d.setDate(d.getDate() - back);
+        const dow = (d.getDay() + 6) % 7;               // Monday first
+        if (!c.days[dow]) continue;
+        /* today only counts once the hour has come round: a commute that
+           leaves at 07:40 has not been driven yet at 06:00 */
+        if (back === 0 && mins < c.leave) continue;
+        c.runs.push({
+          back: back, dow: dow,
+          date: ('0' + d.getDate()).slice(-2) + ' ' + MON[d.getMonth()],
+          /* the traffic this particular morning met — drawn once and kept,
+             so the same run keeps its figure instead of shimmering. The
+             draw is NARROW and centred on 1: a commute is the same road at
+             the same hour, and what separates two of its mornings is a
+             queue at a toll booth, not a different journey. Drawn 0.90 to
+             1.20 it made mornings that cost eighteen per cent more than
+             the average — a spread that belongs to a month of different
+             trips, not to one road driven over and over — and it dragged
+             the average itself five per cent above a clean run. */
+          tr: 0.97 + rnd() * 0.06,
+          km: c.km * (0.985 + rnd() * 0.03),
+          u: rnd(), v: rnd(), fill: 1 + Math.floor(rnd() * 6)
+        });
+      }
+      if (!c.runs.length) c.runs.push({ back: 0, dow: 0, date: '--', tr: 1,
+                                        km: c.km, u: .5, v: .5, fill: 2 });
+      cmLogKey = null;
+    }
+
+    /* ── what one day of this commute drinks, in one car ──
+       The petrol figure carries the traffic; the other three carry it
+       damped by how much of a stop each of them can take back. After that
+       every car reads off exactly the same constants the trip log uses —
+       HEV_F, PHEV_W, BEV_C — so the month in Cost history and the month
+       here can never drift apart. */
+    function cmEnergy(c, veh, km, tr) {
+      /* EVERY car off its OWN curve, at the speed this road returns. The
+         petrol figure used to be typed and the other three derived from it
+         through the log's factors, and that is what put the pane 77 % away
+         from the drive under it: the commute was costing a motorway at 88
+         km/h in a car that was doing 128, and the two sides of the «vs
+         usual» pill were not the same road. Both sides read the same
+         curve now, so what is left between them is the only thing that
+         should be there — how this morning is being driven. */
+      const p = PT[veh].per100(CM_KMH[c.char]);
+      if (veh === 'bev') return { units: 0, kwh: km * p * cmTraf('bev', tr) / 100 };
+      if (veh === 'phev') {
+        const P = PT.phev;
+        /* one pack a day, off the wall at home. Which is why the plug-in's
+           advantage is enormous on the school run and almost nothing on
+           the run to Milano: the pack is the same size either way. */
+        const evKm = Math.min(km, P.evRangeBase);
+        return { units: (km - evKm) * p * cmTraf('phev', tr) / 100,
+                 kwh: P.evCap * evKm / P.evRangeBase };
+      }
+      return { units: km * p * cmTraf(veh, tr) / 100, kwh: 0 };
+    }
+
+    /* ── what that same stretch costs TODAY ────────────────
+       The pill compares this morning against the commute, and the average
+       the chart is drawn at cannot be the yardstick for it: that average
+       is priced across six months of pump history, and a tank filled this
+       week at a price the market has since moved off would read as bad
+       driving. So the yardstick is this commute REPRICED AT TODAY'S PUMP,
+       over the stretch already driven, in normal traffic. What is left in
+       the pill is the driving — the speed, the queue, the idling — which
+       is the only part of it the driver can do anything about. */
+    function cmToday(c, km) {
+      if (!km) return 0;
+      const P = car(), e = cmEnergy(c, state.vehicle, km, 1);
+      /* the litres are priced at what the fuel in THIS tank actually cost,
+         which is the price the trip's own euros were spent at */
+      const pump = (!P.evCap && tUnits > 0.05) ? tEur / tUnits : state.refuelPrice;
+      let eur = e.units * pump;
+      if (e.kwh) {
+        const pack = state.vehicle === 'bev' ? PT.bev.capacity : PT.phev.evCap;
+        const home = Math.min(e.kwh, pack);
+        eur += home * state.homeTariff +
+               (e.kwh - home) * PRICES.chargeAgo(0, 0.5, 0.5, PT.bev.energyBase);
+      }
+      return eur / km;
+    }
+
+    /* ── and what it costs ────────────────────────────────
+       Litres at the pump that was filling the tank that week, out of the
+       same history Price history draws. Kilowatt-hours off the wall at
+       home — up to one pack a day — and everything past that pack at a
+       public point, on the same electric market the totems quote. */
+    function cmCost(c, veh, r) {
+      const km = (c.ret ? 2 : 1) * r.km;
+      const e  = cmEnergy(c, veh, km, r.tr);
+      let eur = 0, home = 0, away = 0;
+      if (e.units) eur += e.units * PRICES.pumpAgo(r.back + r.fill, r.u, r.v);
+      if (e.kwh) {
+        const pack = veh === 'bev' ? PT.bev.capacity : PT.phev.evCap;
+        home = Math.min(e.kwh, pack);
+        away = e.kwh - home;
+        eur += home * state.homeTariff +
+               away * PRICES.chargeAgo(r.back, r.u, r.v, PT.bev.energyBase);
+      }
+      return { km: km, units: e.units, kwh: e.kwh, home: home, away: away,
+               eur: eur, epk: km ? eur / km : 0 };
+    }
+
+    /* Every euro on this pane is derived, never typed — the same contract
+       priceTrips() signs for the trip log, and for the same reason: a
+       figure typed against yesterday's market goes stale the moment the
+       API answers with a different one. So the whole pane is recomputed
+       whenever anything it is priced against moves: the pump, the wall at
+       home, and THE CAR.
+
+       One car at a time, and that is the point rather than a saving. The
+       comparison between drivetrains is made by switching the car and
+       reading this same commute again — which is a thing that happens to a
+       real driver, unlike four columns of numbers a car could not know. */
+    let cmPricedOn = null;
+    /* what the row box in the log is currently showing — see the note at the
+       guard itself in cmPaint() */
+    let cmLogKey = null;
+    function cmPrice() {
+      const key = state.marketPrice + ':' + state.homeTariff + ':' + state.vehicle;
+      if (cmPricedOn === key) return;
+      cmPricedOn = key;
+      const liquid = car().liquid;
+      CM.forEach(c => {
+        let eur = 0, units = 0, kwh = 0, km = 0, away = 0;
+        let lo = Infinity, hi = 0;
+        c.runs.forEach(r => {
+          const x = cmCost(c, state.vehicle, r);
+          r.cur = x;
+          eur += x.eur; units += x.units; kwh += x.kwh; km += x.km; away += x.away;
+          if (x.eur < lo) lo = x.eur;
+          if (x.eur > hi) hi = x.eur;
+        });
+        const n = c.runs.length || 1;
+        c.avg = {
+          eur: eur / n, units: units / n, kwh: kwh / n, km: km / n, away: away / n,
+          epk: km ? eur / km : 0,
+          per100: km ? (liquid ? units : kwh) / km * 100 : 0,
+          lo: lo === Infinity ? 0 : lo, hi: hi
+        };
+      });
+      cmLogKey = null;                // the rows have to be written again
+    }
+
+    /* ── which one is on screen, and which one is under the car ──
+       Two different questions, and the pane answers both at once: `cmSel`
+       is the commute being READ, `cmHit` the one the app thinks is being
+       DRIVEN. They are usually the same and they do not have to be. */
+    let cmSel = 0, cmPin = null, cmHit = null, cmConf = 0, cmLeg = 1, cmOff = false;
+    const cmNow = () => CM[Math.min(cmSel, CM.length - 1)];
+    /* what the drive under us is costing per kilometre right now. Under
+       200 m it is not a figure, it is a rounding error. */
+    const cmEpk = () => tKm > 0.2 ? tEur / tKm : 0;
+
+    /* ── recognising the drive you are actually on ────────
+       Three signals, and the app says how much of each it got rather than
+       pretending to certainty it has not earned:
+
+         THE HOUR  full marks within a quarter of an hour of the usual
+                   departure, nothing at all beyond an hour and a half
+         THE ROAD  how near the distance driven is to one leg of this
+                   commute — or to BOTH legs, for a trip that was never
+                   cut in half at the far end
+
+       The two weigh the SAME. The road used to weigh 0.6 against the
+       hour's 0.4, which read a long commute as less recognisable the
+       longer it is: a hundred and forty kilometres are still ahead of you
+       at the first toll booth, and the score said 74 % about a drive that
+       left at the right hour, on the right day, down the right road. Half
+       and half puts the demo's opening drive — a third of the way to
+       Milano — at 78 %, and it still climbs with every kilometre, which is
+       the behaviour that matters: the road earns the certainty.
+         THE DAY   a soft signal, not a filter. A commute driven on a
+                   Sunday is still that commute; it is just less likely,
+                   and the band says so instead of refusing to see it.
+
+       Nothing here writes to `state` and nothing closes a trip: the pane
+       observes. Only the close-out card can file a run, and only if the
+       driver saves the trip. ── */
+    function cmScore(c) {
+      const now  = new Date();
+      const dow  = (now.getDay() + 6) % 7;
+      const st   = tStart.getHours() * 60 + tStart.getMinutes();
+      let d = Math.abs(st - c.leave);
+      if (d > 720) d = 1440 - d;                       // the clock wraps at midnight
+      const ts = d <= 15 ? 1 : d >= 90 ? 0 : 1 - (d - 15) / 75;
+      let ds = 0, leg = 1;
+      (c.ret ? [1, 2] : [1]).forEach(n => {
+        const L = c.km * n;
+        /* on the way there it climbs; past the far end it falls away, and
+           a third again past it is not this commute any more */
+        const s = tKm <= L ? 0.35 + 0.65 * (tKm / L)
+                           : Math.max(0, 1 - (tKm - L) / (L * 0.35));
+        if (s > ds) { ds = s; leg = n; }
+      });
+      let s = ts * 0.5 + ds * 0.5;
+      if (!c.days[dow]) s *= 0.55;
+      return { s: s, leg: leg, off: !c.days[dow], ts: ts };
+    }
+
+    function cmDetect() {
+      if (cmPin) { cmHit = cmPin; cmConf = 1; cmOff = false; return; }
+      let best = null, bs = 0, leg = 1, off = false;
+      CM.forEach(c => {
+        const r = cmScore(c);
+        if (r.s > bs) { bs = r.s; best = c; leg = r.leg; off = r.off; }
+      });
+      cmHit = bs >= 0.48 ? best : null;
+      cmConf = bs; cmLeg = leg; cmOff = off;
+    }
+
+    /* the pin is about THIS drive, so a new trip clears it: the next drive
+       has to earn the label on its own */
+    function cmNewTrip() { cmPin = null; cmHit = null; cmConf = 0; }
+
+    /* ── the picker ───────────────────────────────────── */
+    function cmChips() {
+      CM_EL.pick.innerHTML = '';
+      CM.forEach((c, i) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'sc' + (i === cmSel ? ' on' : '');
+        b.textContent = c.name;
+        b.addEventListener('click', () => { cmSel = i; cmChips(); cmPaint(); b.blur(); });
+        CM_EL.pick.appendChild(b);
+      });
+      const add = document.createElement('button');
+      add.type = 'button';
+      add.className = 'sc cm-add';
+      add.innerHTML = '&plus; NEW';
+      add.addEventListener('click', () => { csOpen(null); add.blur(); });
+      CM_EL.pick.appendChild(add);
+    }
+
+    /* ── the pane ─────────────────────────────────────── */
+    function cmPaint() {
+      cmPrice();
+      /* read the drive under us first: the chart wants to know whether one
+         of its bars is happening right now */
+      cmDetect();
+      const c = cmNow(), P = car(), V = cmVeh(), A = c.avg;
+      const week = cmWeek(c), month = cmMonth(c);
+      const onIt = cmHit === c;        // the commute being read IS the one being driven
+
+      /* ── the hero: this commute, in the car under you ── */
+      /* one line, and 186 px of it: the schedule is said in the shortest
+         form that is still unambiguous, and a name long enough to push
+         the hour off the end loses the end rather than the line. */
+      CM_EL.lab.innerHTML = cmEsc(c.name.toUpperCase()) + ' &middot; ' +
+        (week === 7 ? 'DAILY' : week === 5 && !c.days[5] && !c.days[6]
+          ? 'MON&ndash;FRI' : week === 1 ? CM_DOWS[c.days.indexOf(1)]
+          : week + ' DAYS') + ' ' + cmHM(c.leave);
+      CM_EL.total.textContent = A.eur.toFixed(2);
+      /* a commute short enough that the plug-in never starts its engine
+         has no litres to report, and "0.00 L + 3.9 kWh" is a sentence about
+         a thing that did not happen */
+      const dry = P.evCap && A.units < 0.05;
+      let sub = c.runs.length + ' runs &middot; ' + A.km.toFixed(1) + ' km a day &middot; ' +
+                ((P.liquid && !dry) ? A.units.toFixed(2) + ' L' : A.kwh.toFixed(1) + ' kWh');
+      if (P.evCap && !dry) sub += ' + ' + A.kwh.toFixed(1) + ' kWh';
+      /* the one thing the driver has to be told about the electric half,
+         and the pane says it where the litres are, not in a footnote */
+      if (A.away > 0.05) sub += ' &middot; ' + A.away.toFixed(1) + ' kWh out';
+      else if (A.kwh > 0.05) sub += ' &middot; home';
+      CM_EL.sub.innerHTML = sub;
+
+      CM_EL.c1.textContent = A.km.toFixed(1);
+      CM_EL.c2.textContent = A.epk.toFixed(3);
+      /* the litres over the whole distance, which is how a plug-in is rated
+         on paper — except on a commute short enough that the engine never
+         starts, where that figure is 0.0 and a cell reading "0.0 L/100 km"
+         says nothing at all. There the cell switches to the energy the car
+         actually bought. It is the one place the label has to follow the
+         TRIP rather than the vehicle. */
+      CM_EL.c3.textContent = (dry ? A.kwh / A.km * 100 : A.per100).toFixed(1);
+      CM_EL.l3.innerHTML   = (P.liquid && !dry) ? 'L / 100 KM' : 'KWH / 100 KM';
+      CM_EL.c4.innerHTML   = cmEur(A.eur * month);
+      CM_EL.l4.innerHTML   = '&euro; A MONTH';
+
+      /* ── the month as a shape ──────────────────────────
+         One bar per run, OLDEST ON THE LEFT, and the dashed line across
+         them is what this commute usually costs in this car. Red above the
+         line, green below: the answer to "are we over or under" is made of
+         colour before it is made of numbers.
+
+         The last bar, white, is the run happening now — and it is a
+         PROJECTION, this run's euros per kilometre carried over a whole
+         run, because half a commute plotted against twenty-six whole ones
+         would read as the cheapest morning of the month. It only appears
+         once a fifth of the road is behind us, and the axis says which
+         bar it is. */
+      const hist = c.runs.map(r => r.cur.eur).reverse();
+      const epkNow = cmEpk();
+      /* the same deviation the pill is showing, carried over a whole run:
+         «if the rest of the road goes like the stretch behind us, the day
+         lands here». Multiplying this run's euros per kilometre by the
+         day's distance instead would have plotted a plug-in still inside
+         its pack, or a car still on the first climb, against twenty-six
+         finished days — and drawn the answer off the bottom of the box. */
+      const refNow = cmToday(c, tKm);
+      const liveEur = (onIt && epkNow && refNow && tKm > c.km * 0.2)
+        ? A.eur * (epkNow / refNow) : 0;
+      /* how far off the average each run landed, as a fraction. The scale
+         has a FLOOR of 8 %: without it a commute whose runs are all within
+         a cent of one another would have its rounding blown up to full
+         height and look wild. A steady road has to look steady. */
+      const dev = hist.map(v => v / A.eur - 1);
+      if (liveEur) dev.push(liveEur / A.eur - 1);
+      let mx = 0.08;
+      dev.forEach(d => { if (Math.abs(d) > mx) mx = Math.abs(d); });
+      const boxH = CM_EL.bars.clientHeight || CM_BARS_H;
+      const HALF = boxH / 2 - 3;
+      const last = dev.length - 1;
+      CM_EL.bars.innerHTML = dev.map((d, i) =>
+        '<i class="' + (d >= 0 ? 'up' : 'dn') + (liveEur && i === last ? ' now' : '') +
+        '"><b style="height:' + (Math.abs(d) / mx * HALF).toFixed(1) + 'px"></b></i>'
+      ).join('');
+      CM_EL.avgline.style.top = (CM_EL.bars.offsetTop + boxH / 2).toFixed(1) + 'px';
+      CM_EL.chAvg.innerHTML = 'AVG &euro; ' + A.eur.toFixed(2);
+      CM_EL.ax0.innerHTML = '&euro; ' + A.lo.toFixed(2) + ' &ndash; ' + A.hi.toFixed(2);
+      CM_EL.ax1.innerHTML = liveEur ? 'this run &euro; ' + liveEur.toFixed(2) : 'latest';
+      CM_EL.ax1.className = liveEur ? 'liv' : '';
+
+      /* ── the log ── */
+      /* the log is ONE box of rows shared by every commute, so the guard
+         that stops it being rebuilt four times a second has to live with
+         the box and not with the commute. Kept on the commute it read
+         "these rows are already right" about a set of rows belonging to a
+         DIFFERENT commute, and the pane went on showing the previous
+         one's month under the new one's heading. */
+      const key = c.id + ':' + state.vehicle + ':' + cmPricedOn + ':' + c.runs.length;
+      if (cmLogKey !== key) {
+        cmLogKey = key;
+        /* measured against the same average the dashed line is drawn at,
+           and in EUROS rather than euros per kilometre, so a row and the
+           bar above it can never disagree about the same morning */
+        const ref = A.eur || 1;
+        CM_EL.runs.innerHTML = c.runs.map(r => {
+          const x = r.cur;
+          let en = P.liquid ? (x.units < 0.05 ? 'EV only' : x.units.toFixed(2) + ' L')
+                            : x.kwh.toFixed(1) + ' kWh';
+          const dv = (x.eur / ref - 1) * 100;
+          return '<div class="cm-run ' + (dv > 0 ? 'up' : 'dn') + '">' +
+                 '<span class="d"><b>' + CM_DOW[r.dow] + '</b> ' + r.date + '</span>' +
+                 '<span class="u">' + en + '</span>' +
+                 '<span class="e">' + x.eur.toFixed(2) + '</span>' +
+                 '<span class="v">' + (dv > 0 ? '&#9650;' : '&#9660;') + ' ' +
+                 Math.abs(dv).toFixed(0) + '%</span></div>';
+        }).join('');
+        CM_EL.logh.innerHTML = c.runs.length + ' RUNS &middot; ' + V.nm.toUpperCase() +
+          ' &middot; AVG &euro; ' + A.eur.toFixed(2);
+      }
+
+      cmBand();
+    }
+
+    /* ── the band: what the app thinks is happening ───── */
+    function cmBand() {
+      const c = cmNow(), hit = cmHit;
+      const cls = CM_EL.pane.classList;
+      cls.remove('seen', 'near');
+      CM_EL.pin.innerHTML = cmPin ? 'Not this one' : 'It&#39;s this one';
+
+      /* ── are we already over or under what this road usually costs ──
+         The pill answers only about the commute ON SCREEN, and only while
+         that is the one being driven: an arrow that compared this morning
+         against a road we are not on would be worse than no arrow. */
+      const ref = cmToday(c, tKm), epk = cmEpk();
+      const D = CM_EL.delta;
+      D.classList.remove('up', 'dn');
+      if (hit === c && epk && ref) {
+        const dv = (epk / ref - 1) * 100;
+        D.classList.add(dv >= 0 ? 'up' : 'dn');
+        D.innerHTML = '<b>' + (dv >= 0 ? '&#9650;' : '&#9660;') + '&nbsp;' +
+                      Math.abs(dv).toFixed(0) + '%</b><i>VS USUAL</i>';
+      } else {
+        D.innerHTML = '<b>&mdash;</b><i>VS USUAL</i>';
+      }
+
+      /* Both lines live on one row of a 34 px band with the pin button
+         beside them, and .tm-b2 is nowrap: about seventy characters, and
+         the seventy-first is an ellipsis. Everything below is written to
+         that measure. */
+      if (!hit) {
+        CM_EL.b1.innerHTML = 'No commute recognised';
+        CM_EL.b2.innerHTML = tKm.toFixed(1) + ' km since ' +
+          ('0' + tStart.getHours()).slice(-2) + ':' + ('0' + tStart.getMinutes()).slice(-2) +
+          ' &middot; matches none of your ' + CM.length;
+        return;
+      }
+      const sure = cmPin || cmConf >= 0.75;
+      cls.add(sure ? 'seen' : 'near');
+      const done = cmLeg * hit.km;
+      CM_EL.b1.innerHTML = (sure ? 'Recognised &middot; <b>' : 'Looks like <b>') +
+        cmEsc(hit.name) + '</b>' +
+        (cmPin ? ' &middot; confirmed by hand'
+               : ' &middot; ' + (cmConf * 100).toFixed(0) + '% sure' +
+                 /* the one reason the app is holding back, said out loud —
+                    a number that will not say why it is low is worth less
+                    than no number */
+                 (cmOff ? ' &middot; not its usual day' : ''));
+      /* the two figures the pill is the difference between, spelled out.
+         Per kilometre rather than per run, because half a commute has not
+         spent a whole commute's money yet and the comparison has to hold
+         from the first kilometre. */
+      CM_EL.b2.innerHTML = tKm.toFixed(1) + '/' + done.toFixed(1) + ' km' +
+        (hit.ret && cmLeg === 2 ? ' both legs' : '') +
+        /* the pane can be reading one commute while the car is driving
+           another. The pill goes blank in that case, and this says why
+           instead of leaving a dash to be puzzled over. */
+        (hit !== c ? ' &middot; not the one on screen'
+          : epk ? ' &middot; &euro; ' + epk.toFixed(3) + ' vs ' +
+                  cmToday(hit, tKm).toFixed(3) + ' /km'
+          : '');
+    }
+
+    CM_EL.pin.addEventListener('click', () => {
+      cmPin = cmPin ? null : cmNow();
+      cmPaint(); CM_EL.pin.blur();
+    });
+    CM_EL.edit.addEventListener('click', () => { csOpen(cmNow()); CM_EL.edit.blur(); });
+
+    /* ══════════ SETTING ONE UP ═══════════════════════════════════════
+       Four fields and two rows of chips, and between them they are the
+       whole definition: a distance, an hour, a shape of road and the days
+       it comes round on. Nothing here is a route on a map — a map would
+       have promised a precision this demo does not have — and everything
+       here is something a driver can answer without looking anything up. */
+    const CS = {
+      pane: $('cm-set'), title: $('cs-title'), name: $('cs-name'),
+      from: $('cs-from'), to: $('cs-to'), km: $('cs-km'), kmv: $('cs-kmv'),
+      lv: $('cs-lv'), lvv: $('cs-lvv'), ret: $('cs-ret'), days: $('cs-days'),
+      prev: $('cs-prev'), del: $('cs-del'), cancel: $('cs-cancel'), save: $('cs-save')
+    };
+    let csEdit = null, csChar = 'mix', csRet = 1, csDays = [1, 1, 1, 1, 1, 0, 0];
+    const csCharBtns = Array.prototype.slice.call(CS.pane.querySelectorAll('[data-ch]'));
+    const csDayBtns = [];
+    CM_DOW.forEach((d, i) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'cs-day'; b.textContent = d.charAt(0) + d.charAt(1).toLowerCase();
+      b.addEventListener('click', () => { csDays[i] = csDays[i] ? 0 : 1; csSync(); b.blur(); });
+      CS.days.appendChild(b); csDayBtns.push(b);
+    });
+
+    function csSync() {
+      csCharBtns.forEach(b => b.classList.toggle('on', b.dataset.ch === csChar));
+      csDayBtns.forEach((b, i) => b.classList.toggle('on', !!csDays[i]));
+      CS.ret.classList.toggle('on', !!csRet);
+      const km = parseFloat(CS.km.value), lv = parseInt(CS.lv.value, 10);
+      CS.kmv.innerHTML = km.toFixed(1) + ' km';
+      CS.lvv.textContent = cmHM(lv);
+      const week = csDays.reduce((a, b) => a + b, 0);
+      const day  = km * (csRet ? 2 : 1);
+      const min  = Math.round(day / CM_KMH[csChar] * 60);
+      CS.save.disabled = !week;
+      CS.prev.innerHTML = week
+        ? '<b>' + km.toFixed(1) + ' km</b> each way' + (csRet ? ', <b>' + day.toFixed(1) +
+            ' km</b> a day' : ' &mdash; one way only') + ' &middot; <b>' + week +
+            '</b> day' + (week === 1 ? '' : 's') + ' a week<br>' +
+          CM_ROAD[csChar] + ', about <b>' + min + ' min</b> behind the wheel &middot; ' +
+          'roughly <b>' + cmEur(day * week * 52 / 12) + ' km</b> a month'
+        : 'No days chosen &mdash; a commute that never comes round is not a commute.';
+    }
+    ['input', 'change'].forEach(ev => {
+      CS.km.addEventListener(ev, csSync);
+      CS.lv.addEventListener(ev, csSync);
+    });
+    csCharBtns.forEach(b => b.addEventListener('click', () => { csChar = b.dataset.ch; csSync(); b.blur(); }));
+    CS.ret.addEventListener('click', () => { csRet = csRet ? 0 : 1; csSync(); CS.ret.blur(); });
+
+    function csOpen(c) {
+      csEdit = c;
+      CS.title.textContent = c ? c.name.toUpperCase() : 'NEW';
+      CS.name.value = c ? c.name : '';
+      CS.from.value = c ? (c.from || '') : '';
+      CS.to.value   = c ? (c.to || '') : '';
+      CS.km.value   = c ? c.km : 23.5;
+      CS.lv.value   = c ? c.leave : 460;
+      csChar = c ? c.char : 'mix';
+      csRet  = c ? (c.ret ? 1 : 0) : 1;
+      csDays = c ? c.days.slice() : [1, 1, 1, 1, 1, 0, 0];
+      /* the last one cannot be deleted: a pane about commutes with no
+         commute in it would have nothing to say */
+      CS.del.disabled = !c || CM.length < 2;
+      csSync();
+      CS.pane.hidden = false;
+    }
+    function csClose() { CS.pane.hidden = true; }
+
+    CS.cancel.addEventListener('click', () => { csClose(); CS.cancel.blur(); });
+    CS.del.addEventListener('click', () => {
+      if (!csEdit || CM.length < 2) return;
+      const i = CM.indexOf(csEdit);
+      CM.splice(i, 1);
+      if (cmPin === csEdit) cmPin = null;
+      if (cmHit === csEdit) cmHit = null;
+      cmSel = Math.max(0, Math.min(cmSel, CM.length - 1));
+      csClose(); cmChips(); cmPaint();
+      CS.del.blur();
+    });
+    CS.save.addEventListener('click', () => {
+      const week = csDays.reduce((a, b) => a + b, 0);
+      if (!week) return;
+      const from = CS.from.value.trim(), to = CS.to.value.trim();
+      const name = CS.name.value.trim() ||
+        (from && to ? from + ' → ' + to : from || to || 'Commute ' + (CM.length + 1));
+      const o = { name: name.slice(0, 24), from: from, to: to,
+                  km: parseFloat(CS.km.value), leave: parseInt(CS.lv.value, 10),
+                  char: csChar, ret: csRet, days: csDays.slice() };
+      if (csEdit) {
+        Object.assign(csEdit, o);
+        cmBuild(csEdit);
+        cmSel = CM.indexOf(csEdit);
+      } else {
+        cmAdd(o);
+        cmSel = CM.length - 1;
+      }
+      cmPricedOn = null;                 // the log it was built on has changed
+      csClose(); cmChips(); cmPaint();
+      CS.save.blur();
+    });
+
+    /* ── the three that are there at the start ────────────
+       Fictional, like the eighteen trips, and dated off today for the same
+       reason. The long motorway run comes first because it is the drive
+       this simulator is on — a hundred and forty kilometres of open road,
+       not a hop across town — and it is ANCHORED TO THE DRIVE THE DEMO
+       OPENS ON: a pane whose whole claim is that it recognises the commute
+       you are on had better recognise the one under it the moment it is
+       opened. The other two sit at their own hours and on most days will
+       not match — which is the other half of what this pane has to say.
+
+       The distances are half-kilometres because the editor's slider steps in
+       halves: a pane that opens on 23.4 km and then shows 23.5 the moment
+       you press EDIT is arguing with itself about its own data. */
+    cmAdd({ name: 'Torino → Milano', from: 'Torino', to: 'Milano Portello',
+            km: 142.5, char: 'road', leave: 380, days: [1, 0, 0, 0, 0, 0, 0], ret: 1 });
+    cmAdd({ name: 'Home → Office', from: 'Rivoli', to: 'Mirafiori',
+            km: 23.5, char: 'mix', leave: 460, days: [1, 1, 1, 1, 1, 0, 0], ret: 1 });
+    cmAdd({ name: 'Office → Plant', from: 'Mirafiori', to: 'Grugliasco',
+            km: 8.5, char: 'city', leave: 790, days: [1, 0, 1, 0, 1, 0, 0], ret: 1 });
+    /* …and it is anchored on BOTH the hour and the day, because a run that
+       comes round once a week is only recognisable on the day it comes
+       round on: left on Mondays it would be read on a Tuesday as somebody
+       else's drive, damped to a third of its score, and the pane would open
+       saying it does not know what this is. So the weekly run is moved onto
+       today — the long motorway leg the demo is actually driving — and the
+       label follows it, naming the day it now runs on.
+
+       It is anchored only if the hour is one a person could plausibly leave
+       for work at. Opened at two in the morning the pane would otherwise
+       announce a commute that departs at 01:10, which is a worse lie than
+       the one it is buying off. Outside 05:00–21:00 the commute keeps its
+       own Monday 06:20, the hour signal scores nothing, and the band falls
+       back to «Looks like … 55 % sure» off the distance alone — which is
+       the honest answer at that hour anyway. */
+    (function anchorFirst() {
+      const m = tStart.getHours() * 60 + tStart.getMinutes();
+      if (m < 300 || m > 1260) return;
+      CM[0].leave = Math.round(m / 5) * 5;
+      CM[0].days = [0, 0, 0, 0, 0, 0, 0];
+      CM[0].days[(tStart.getDay() + 6) % 7] = 1;       // Monday first, like cmScore
+      cmBuild(CM[0]);
+    })();
+    cmChips(); cmPaint();
 
     /* ── the beat ──────────────────────────────────────── */
     let accSlow = 0, accMap = 0, lastMkt = state.marketPrice;
@@ -6766,6 +7790,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
         if (view === 'map') paintList();
         else if (view === 'history' && !selTrip) paintTrip();
         else if (view === 'trips') tmPaint();
+        else if (view === 'commute') cmPaint();
         /* the market only moves when the API answers, and when it does every
            derived euro in the app has to move with it: the past trips are
            repriced off the new history, and the chart redrawn under them */
@@ -6775,6 +7800,7 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
           if (view === 'history') paintHistory();
           if (view === 'price') drawPrice();
           if (view === 'report') paintReport();
+          if (view === 'commute') cmPaint();
         }
       }
       if (view === 'map' && !navOn) {
@@ -6808,6 +7834,9 @@ input[type=range]{flex:1;height:4px;cursor:pointer;border-radius:2px;accent-colo
          the expense card goes on totalling litres under a battery */
       applySel();
       paintReport();
+      /* and the commutes are re-costed in the car that is now under us:
+         the same three roads, a different bill */
+      cmPaint();
     }
 
     return { frame, show, newTrip, repaint: () => { rebrand(); show(view); } };

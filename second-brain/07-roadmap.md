@@ -35,6 +35,20 @@
 
 ## Fatto
 
+- ✅ **Daily commute, la tratta che torna** (2026-09-11, rifatta il 2026-09-15): la
+  **sesta vista**, e la prima che non parla di un viaggio ma di un'**abitudine**.
+  Si impostano uno o più tragitti quotidiani (giorno, ora, distanza, forma di
+  strada, ritorno sì/no), l'app **riconosce quale si sta guidando e dice quanto ne
+  è sicura**, e mette in chiaro **quanto costa di solito** quella strada e **di
+  quanto oggi è sopra o sotto** — pastiglia con freccia e percentuale, e un
+  grafico in cui ogni run pende dalla riga della media. Mostra **una sola
+  motorizzazione**, quella sotto di te: il confronto si fa **cambiando auto** e
+  rileggendo lo stesso tragitto, perché nessuna vettura sa quanto avrebbero speso
+  le altre tre. I commute sono del guidatore, non della trasmissione: cambia solo
+  il conto, e scende dalle stesse costanti del registro dei viaggi. Regola nuova e
+  vera: **l'auto si carica a casa, una volta, di notte** — un pacco al giorno, il
+  resto si compra in strada — [14-daily-commute.md](14-daily-commute.md)
+
 - ✅ **La plancia intera** (2026-09-08): la scena è una sola fotografia,
   `Green_Screen.jpeg`, parabrezza in verde croma — la metà destra disegnata a mano
   (`#ext`, `#dashext`) non c'è più, e la maschera del vetro si traccia da sé. Il
@@ -106,7 +120,8 @@
   «lungo questa strada» ci sono i cartelloni veri, non stazioni inventate, e la
   demo si apre su quella vista — [11-plancia-estesa.md](11-plancia-estesa.md)
 
-- ✅ **L'app True Cost sul display centrale** (2026-09-04): quattro viste
+- ✅ **L'app True Cost sul display centrale** (2026-09-04, poi cresciuta a sei):
+  quattro viste
   cliccabili, *Cost history* (viaggio in corso dal vivo + un mese di viaggi
   passati), *Pump map* (stazioni colorate per prezzo, verde la più conveniente,
   entro 5 / 10 / 20 km o lungo la strada), *Price history* e **Report** (nota spese
